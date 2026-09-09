@@ -79,7 +79,7 @@ export default function Home() {
             <span className="text-dsa-500">Learn</span>
             <span className="text-ml-500"> Blazingly Fast</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-1">200+ CS & ML concepts. Under 5 min each.</p>
+          <p className="text-gray-400 text-sm mt-1">550+ CS & ML concepts. Under 5 min each.</p>
         </div>
 
         <ConceptSearch />
