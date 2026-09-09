@@ -9,6 +9,10 @@
       "destination": "/api/v1/support-status"
     },
     {
+      "source": "/api/v1/leaderboard",
+      "destination": "/api/v1/leaderboard"
+    },
+    {
       "source": "/api/og",
       "destination": "/api/og"
     },

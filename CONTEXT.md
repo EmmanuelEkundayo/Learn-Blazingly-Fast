@@ -186,17 +186,23 @@
     - Cheatsheet code examples left as-is (educational content).
     - Build passes, 66 tests passing.
 
+15. **Leaderboard Serverless Function (2026-09-09)**:
+    - `api/v1/leaderboard.js` added so the public leaderboard works on Vercel (GET top-50, POST submit, POST opt-out).
+    - `vercel.json` rewrite routes `/api/v1/leaderboard*` to the function; same `data/leaderboard.json` cwd pattern as `api/v1/reviews.js`.
+    - Express `server/index.js` keeps identical endpoints for dev (ports 3001/5173).
+    - Caveat: serverless function storage is ephemeral per-instance (same limitation as reviews on Vercel); durable persistence would need a managed store (KV/Postgres).
+
 ---
 
 ## How to run / verify
 
 ```bash
 npm test                             # vitest run — 66 passing
-node scripts/validate_concepts.js    # 424 concepts passing
+node scripts/validate_concepts.js    # 498 concepts passing
 node scripts/validate_prerequisites.js  # 18 prerequisites passing
 npm run lint                         # 0 errors, 45 warnings
 npm run typecheck                    # tsc --noEmit (0 errors)
-npm run build                        # optimized production build (~7s)
+npm run build                        # optimized production build
 npm run server                       # backend API server (port 3001)
 npm run dev                          # frontend dev server (port 5173)
 npm run test:e2e                     # Playwright E2E tests (16 tests)
@@ -213,10 +219,10 @@ npm run test:e2e                     # Playwright E2E tests (16 tests)
 3. **`vite.config.js`**: added `resolve.alias` `@` → `./src`.
 4. **`eslint.config.js`**: added TypeScript section for `src/**/*.{ts,tsx}` using `@typescript-eslint` recommended rules.
 5. **`package.json`**: added `"typecheck": "tsc --noEmit"`.
-6. **Converted files** (3 examples):
-   - `src/store/themeStore.js` → `.ts` — Zustand typed `Theme`/`ThemeState`.
+6. **Converted files** (3 examples, since deleted in the dark-mode sweep):
+   - `src/store/themeStore.js` → `.ts` — Zustand typed `Theme`/`ThemeState` (deleted 2026-09-09, dark-only).
    - `src/utils/seo.js` → `.ts` — `Concept`/`Project`/`Cheatsheet`/`Roadmap`/`PageMeta`/`ArticleMeta` interfaces.
-   - `src/components/ui/ThemeToggle.jsx` → `.tsx` — no structural change needed.
+   - `src/components/ui/ThemeToggle.jsx` → `.tsx` (deleted 2026-09-09, dark-only).
 7. Imports in `Layout.jsx` and all `src/pages/*` updated (extensionless resolution).
 
 **Next steps**: incrementally convert more `src/utils/*`, `src/store/*`, and `src/components/ui/*` to `.ts`/`.tsx`, then broader migration. Full list in Known Gaps below.
