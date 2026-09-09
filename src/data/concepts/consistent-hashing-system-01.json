@@ -23,10 +23,9 @@
   "visualization": {
     "type": "graph-traversal",
     "config": {
-      "mode": "hash-ring-simulation",
-      "show_virtual_nodes": true,
-      "show_rebinding_on_failure": true,
-      "step_annotations": true
+      "mode": "consistent-hashing-system",
+      "show_queue": true,
+      "show_visited": true
     }
   },
   "exercise": {
@@ -39,6 +38,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"virtual\"\nassert check(\"Virtual\")\nprint(\"PASS\")"
   },
-  "related": ["system-design-distributed-cache-01", "load-balancer-internals-01", "database-sharding-01"],
+  "related": ["system-design-distributed-cache", "load-balancer-internals", "database-sharding"],
   "tags": ["system-design", "hashing", "consistent-hashing", "distributed-systems", "algorithms", "software-engineering"]
 }

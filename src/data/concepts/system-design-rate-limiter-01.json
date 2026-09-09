@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "token-bucket-simulation",
-      "show_bucket_refill": true,
-      "show_request_dropping": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Clients", "items": ["requests", "burst"] },
+        { "label": "API Gateway", "items": ["rate limiter", "token bucket"] },
+        { "label": "Redis", "items": ["shared counter", "per user"] },
+        { "label": "Services", "items": ["allowed", "dropped 429"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Requests arrive from clients, potentially in bursts." },
+        { "active_layer": 1, "annotation": "The gateway's rate limiter checks the token bucket for each client in O(1)." },
+        { "active_layer": 2, "annotation": "Shared state in Redis keeps counters accurate across every gateway node." },
+        { "active_layer": 3, "annotation": "Requests within budget pass through; excess get a 429 until the bucket refills." },
+        { "active_layer": 1, "annotation": "Refilling tokens at a steady rate allows short bursts while capping sustained use." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"bursts\"\nassert check(\"bursts\")\nprint(\"PASS\")"
   },
-  "related": ["system-design-api-gateway-01", "redis-data-structures-01", "load-balancer-internals-01"],
+  "related": ["system-design-api-gateway", "redis-data-structures", "load-balancer-internals"],
   "tags": ["system-design", "rate-limiting", "security", "distributed-systems", "algorithms", "software-engineering"]
 }

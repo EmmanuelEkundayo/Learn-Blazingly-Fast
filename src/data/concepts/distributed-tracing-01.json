@@ -23,10 +23,20 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "trace-span-aggregation",
-      "show_trace_id_propagation": true,
-      "show_gantt_chart_view": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Client", "items": ["request", "trace id"] },
+        { "label": "Gateway", "items": ["propagate id", "start root"] },
+        { "label": "Service A", "items": ["span", "child span"] },
+        { "label": "Service B", "items": ["span", "child span"] },
+        { "label": "Collector", "items": ["aggregate", "gantt view"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A client request begins and generates a unique trace ID carried in headers." },
+        { "active_layer": 1, "annotation": "The gateway starts the root span and propagates the trace ID downstream." },
+        { "active_layer": 2, "annotation": "Each service opens a span recording its own start, end, and tags under the same trace ID." },
+        { "active_layer": 3, "annotation": "Calls into other services create child spans, forming a tree of timing data." },
+        { "active_layer": 4, "annotation": "A collector aggregates spans to reconstruct the full journey, surfacing the slow service." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +49,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"span\"\nassert check(\"Span\")\nprint(\"PASS\")"
   },
-  "related": ["service-mesh-01", "system-design-api-gateway-01", "profiling-benchmarking-01"],
+  "related": ["service-mesh", "system-design-api-gateway", "profiling-benchmarking"],
   "tags": ["tracing", "observability", "microservices", "jaeger", "opentelemetry", "software-engineering"]
 }

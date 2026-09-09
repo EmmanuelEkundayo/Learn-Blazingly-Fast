@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "fanout-write-vs-read",
-      "show_async_feed_generation": true,
-      "show_ranking_service": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Authors", "items": ["post", "follow graph"] },
+        { "label": "Fan-out", "items": ["write-time", "read-time"] },
+        { "label": "Feed Cache", "items": ["precomputed feed", "timeline"] },
+        { "label": "Readers", "items": ["browse feed", "infinite scroll"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "An author publishes a post; the system also records the follow graph of who should see it." },
+        { "active_layer": 1, "annotation": "Fan-out on write pushes the post into each follower's timeline; fan-out on read fetches on demand." },
+        { "active_layer": 2, "annotation": "Precomputed feed caches make reads O(1), so timelines load instantly." },
+        { "active_layer": 3, "annotation": "Readers scroll their cached timeline; celebrity posts use hybrid fan-out to avoid mass push storms." },
+        { "active_layer": 1, "annotation": "New posts appear within a second, trading strict consistency for availability." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"read\"\nassert check(\"Read\")\nprint(\"PASS\")"
   },
-  "related": ["system-design-chat-01", "system-design-distributed-cache-01", "cap-theorem-01"],
+  "related": ["system-design-chat", "system-design-distributed-cache", "cap-theorem"],
   "tags": ["system-design", "news-feed", "fan-out", "caching", "scaling", "software-engineering"]
 }

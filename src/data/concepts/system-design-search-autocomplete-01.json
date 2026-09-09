@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "autocomplete-trie-optimization",
-      "show_offline_data_pipeline": true,
-      "show_caching_layer": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Users", "items": ["type prefix", "suggestions"] },
+        { "label": "API", "items": ["trie lookup", "top-k"] },
+        { "label": "Cache", "items": ["hot prefixes"] },
+        { "label": "Offline Pipeline", "items": ["query logs", "rebuild trie"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A user types a prefix such as \"al\"; suggestions must return in microseconds." },
+        { "active_layer": 1, "annotation": "The API walks the trie in O(L) and returns the top-k popular completions." },
+        { "active_layer": 2, "annotation": "A caching layer serves the hottest prefixes to keep p99 latency in check." },
+        { "active_layer": 3, "annotation": "An offline pipeline aggregates query logs and periodically rebuilds the trie." },
+        { "active_layer": 1, "annotation": "Requests are never updated in real time; the trie refreshes from the offline job." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"trie\"\nassert check(\"Trie\")\nprint(\"PASS\")"
   },
-  "related": ["trie-01", "system-design-distributed-cache-01", "consistent-hashing-system-01"],
+  "related": ["trie", "system-design-distributed-cache", "consistent-hashing-system"],
   "tags": ["system-design", "autocomplete", "trie", "latency", "search", "software-engineering"]
 }

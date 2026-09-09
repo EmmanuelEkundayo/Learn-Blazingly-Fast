@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "sidecar-control-plane-split",
-      "show_service_discovery": true,
-      "show_traffic_management": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Service A", "items": ["app", "sidecar proxy"] },
+        { "label": "Service B", "items": ["app", "sidecar proxy"] },
+        { "label": "Service C", "items": ["app", "sidecar proxy"] },
+        { "label": "Control Plane", "items": ["routing", "mTLS", "telemetry"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Service A wants to call Service B; the app speaks to its own sidecar proxy instead of the network directly." },
+        { "active_layer": 1, "annotation": "The receiving sidecar intercepts the call, negotiating mTLS and enforcing policy with near-zero app changes." },
+        { "active_layer": 2, "annotation": "Traffic is routed, retried, and load-balanced by the sidecars without touching application code." },
+        { "active_layer": 3, "annotation": "The control plane distributes routing rules and collects latency/error telemetry from every sidecar." },
+        { "active_layer": 0, "annotation": "The result: resilient, observable, policy-enforced comms injected as an infrastructure layer." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"sidecar\"\nassert check(\"Sidecar\")\nprint(\"PASS\")"
   },
-  "related": ["system-design-api-gateway-01", "distributed-tracing-01", "kubernetes-basics-01"],
+  "related": ["system-design-api-gateway", "distributed-tracing", "kubernetes-basics"],
   "tags": ["service-mesh", "istio", "linkerd", "microservices", "infrastructure", "software-engineering"]
 }

@@ -23,10 +23,20 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "geospatial-matching-topology",
-      "show_quadtree_partitioning": true,
-      "show_driver_location_stream": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Drivers", "items": ["location stream", "heartbeat"] },
+        { "label": "Ingest", "items": ["kafka", "geohash"] },
+        { "label": "Matcher", "items": ["quadtree", "nearest driver"] },
+        { "label": "Riders", "items": ["request", "ETAs"] },
+        { "label": "Dispatch", "items": ["assign", "notify"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Drivers continuously stream location updates every few seconds." },
+        { "active_layer": 1, "annotation": "A high-throughput ingest layer (Kafka) and geospatial indexing absorb the write-heavy load." },
+        { "active_layer": 2, "annotation": "A quadtree/S2 index finds nearby available drivers in O(log N)." },
+        { "active_layer": 3, "annotation": "Riders request a ride; the matcher computes nearest candidates and ETAs." },
+        { "active_layer": 4, "annotation": "The best match is dispatched and both parties are notified in real time." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +49,6 @@
     ],
     "test_code": "def check(ans): return \"quad\" in ans.lower()\nassert check(\"Quadtree\")\nprint(\"PASS\")"
   },
-  "related": ["consistent-hashing-system-01", "kafka-architecture-01", "system-design-distributed-cache-01"],
+  "related": ["consistent-hashing-system", "kafka-architecture", "system-design-distributed-cache"],
   "tags": ["system-design", "geospatial", "uber", "real-time", "quadtree", "software-engineering"]
 }

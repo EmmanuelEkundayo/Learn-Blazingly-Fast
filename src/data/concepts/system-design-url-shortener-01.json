@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "request-response-topology",
-      "show_id_generator": true,
-      "show_cache_layer": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Clients", "items": ["create short", "visit short"] },
+        { "label": "API", "items": ["id generator", "base62"] },
+        { "label": "Cache", "items": ["hot redirects"] },
+        { "label": "Database", "items": ["id → url mapping"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A client submits a long URL to create a short alias, or visits an existing short code." },
+        { "active_layer": 1, "annotation": "On create, the API issues a unique ID and Base-62 encodes it into a short code; on visit, it decodes it." },
+        { "active_layer": 2, "annotation": "A Redis cache serves the hot redirect window in O(1), sparing the database on the 100:1 read-heavy load." },
+        { "active_layer": 3, "annotation": "The database is the source of truth for the id→url mapping, and is only hit on cache miss." },
+        { "active_layer": 2, "annotation": "Visitors are redirected immediately; click analytics are recorded asynchronously." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return 2700 < int(ans) < 2900\nassert check(\"2794\")\nprint(\"PASS\")"
   },
-  "related": ["consistent-hashing-system-01", "system-design-distributed-cache-01", "load-balancer-internals-01"],
+  "related": ["consistent-hashing-system", "system-design-distributed-cache", "load-balancer-internals"],
   "tags": ["system-design", "url-shortener", "scaling", "id-generation", "caching", "software-engineering"]
 }

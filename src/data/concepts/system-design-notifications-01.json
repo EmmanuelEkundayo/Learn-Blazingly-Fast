@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "notification-pipeline-stages",
-      "show_retry_logic": true,
-      "show_delivery_providers": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Producers", "items": ["events", "triggers"] },
+        { "label": "Queue", "items": ["priority", "debounce"] },
+        { "label": "Worker", "items": ["dispatch", "retry"] },
+        { "label": "Providers", "items": ["push FCM", "email", "sms"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Events (likes, orders, alerts) generate notification requests." },
+        { "active_layer": 1, "annotation": "The requests are enqueued with priority and debounced/aggregated to avoid spam." },
+        { "active_layer": 2, "annotation": "Workers dequeue and dispatch to the right channel, retrying with backoff on failure." },
+        { "active_layer": 3, "annotation": "Delivery providers (FCM, SendGrid, Twilio) are called; failures re-enter the queue." },
+        { "active_layer": 1, "annotation": "A message queue decouples request from delivery, so bursts never crash the pipeline." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"queue\"\nassert check(\"Queue\")\nprint(\"PASS\")"
   },
-  "related": ["message-queue-concepts-01", "retry-and-backoff-01", "system-design-chat-01"],
+  "related": ["message-queue-concepts", "retry-and-backoff", "system-design-chat"],
   "tags": ["system-design", "notifications", "queues", "reliability", "distributed-systems", "software-engineering"]
 }

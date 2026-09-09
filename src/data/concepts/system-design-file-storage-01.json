@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "object-storage-architecture",
-      "show_metadata_service": true,
-      "show_data_sharding": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Clients", "items": ["upload", "get by key"] },
+        { "label": "API", "items": ["presigned URL", "metadata"] },
+        { "label": "Metadata", "items": ["key registry", "shard map"] },
+        { "label": "Data Nodes", "items": ["shard A", "shard B", "replica"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Clients put or get objects addressed by an opaque key (bucket + key)." },
+        { "active_layer": 1, "annotation": "The API issues pre-signed URLs so large uploads bypass the app server and go straight to storage." },
+        { "active_layer": 2, "annotation": "A metadata service records key ownership and maps each object to its shards." },
+        { "active_layer": 3, "annotation": "Objects are split into chunks distributed across nodes with replicas for durability." },
+        { "active_layer": 1, "annotation": "Reads reassemble the object from shards by key in O(1) metadata lookup." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return \"shard\" in ans.lower()\nassert check(\"Sharding\")\nprint(\"PASS\")"
   },
-  "related": ["database-sharding-01", "cdn-basics-01", "acid-properties-01"],
+  "related": ["database-sharding", "cdn-basics", "acid-properties"],
   "tags": ["system-design", "storage", "cloud", "scalability", "distributed-caching", "software-engineering"]
 }

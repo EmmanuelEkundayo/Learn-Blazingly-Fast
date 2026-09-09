@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "pub-sub-messenger-flow",
-      "show_websocket_gateway": true,
-      "show_presence_service": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Client A", "items": ["websocket", "send/recv"] },
+        { "label": "Gateway", "items": ["conn mgmt", "presence"] },
+        { "label": "Message Service", "items": ["store msg", "sequence id"] },
+        { "label": "Client B", "items": ["websocket", "push delivery"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Client A opens a persistent WebSocket for full-duplex, low-latency communication." },
+        { "active_layer": 1, "annotation": "Horizontal gateway servers keep millions of connections alive and track presence." },
+        { "active_layer": 2, "annotation": "The message service persists the message and assigns a monotonic sequence ID for ordering." },
+        { "active_layer": 3, "annotation": "The gateway pushes the message over Client B's live channel instead of polling." },
+        { "active_layer": 1, "annotation": "Deliveries for offline users are queued and re-synced with sequential IDs across devices." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return \"socket\" in ans.lower()\nassert check(\"WebSockets\")\nprint(\"PASS\")"
   },
-  "related": ["websockets-01", "system-design-notifications-01", "system-design-distributed-cache-01"],
+  "related": ["websockets", "system-design-notifications", "system-design-distributed-cache"],
   "tags": ["system-design", "chat", "real-time", "websockets", "scaling", "software-engineering"]
 }

@@ -23,10 +23,19 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "distributed-cache-topology",
-      "show_write_through_vs_back": true,
-      "show_lru_eviction": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Clients", "items": ["get(key)", "set(key, v)"] },
+        { "label": "Cache Cluster", "items": ["node 0", "node 1", "node 2"] },
+        { "label": "Eviction", "items": ["LRU", "TTL"] },
+        { "label": "Database", "items": ["source of truth"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Clients request data by key — a fast in-memory read is preferred over hitting the DB." },
+        { "active_layer": 1, "annotation": "Consistent hashing places the key on a cache node for O(1) access." },
+        { "active_layer": 2, "annotation": "A cache hit returns immediately; on a miss, the value is fetched from the DB and loaded." },
+        { "active_layer": 3, "annotation": "The database remains the source of truth; cache-on-write and invalidation keep them consistent." },
+        { "active_layer": 2, "annotation": "LRU/TTL policies evict cold keys so hot data stays in RAM." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +48,6 @@
     ],
     "test_code": "def check(ans): return ans.lower() == \"back\"\nassert check(\"Back\")\nprint(\"PASS\")"
   },
-  "related": ["consistent-hashing-system-01", "redis-data-structures-01", "lru-cache-01"],
+  "related": ["consistent-hashing-system", "redis-data-structures", "lru-cache"],
   "tags": ["system-design", "caching", "redis", "memcached", "scalability", "distributed-systems", "software-engineering"]
 }

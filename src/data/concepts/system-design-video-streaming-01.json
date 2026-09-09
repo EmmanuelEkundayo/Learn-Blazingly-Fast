@@ -86,9 +86,9 @@
     "test_code": "def check(ans): return ans.upper() == \"CDN\"\nassert check(\"CDN\")\nprint(\"PASS\")"
   },
   "related": [
-    "cdn-basics-01",
-    "system-design-file-storage-01",
-    "load-balancing-01"
+    "cdn-basics",
+    "system-design-file-storage",
+    "load-balancing"
   ],
   "tags": [
     "system-design",

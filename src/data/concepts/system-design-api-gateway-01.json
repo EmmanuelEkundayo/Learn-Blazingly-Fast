@@ -92,9 +92,9 @@
     "test_code": "def check(ans): return \"limit\" in ans.lower()\nassert check(\"Limiting\")\nprint(\"PASS\")"
   },
   "related": [
-    "load-balancer-internals-01",
-    "service-mesh-01",
-    "system-design-rate-limiter-01"
+    "load-balancer-internals",
+    "service-mesh",
+    "system-design-rate-limiter"
   ],
   "tags": [
     "system-design",

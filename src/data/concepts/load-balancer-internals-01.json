@@ -23,10 +23,20 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "mode": "load-balancing-algorithms",
-      "show_health_check_pings": true,
-      "show_weighted_round_robin": true,
-      "step_annotations": true
+      "layers": [
+        { "label": "Clients", "items": ["request A", "request B"] },
+        { "label": "Load Balancer", "items": ["health checks", "round robin"] },
+        { "label": "Server 1", "items": ["app replica 1"] },
+        { "label": "Server 2", "items": ["app replica 2"] },
+        { "label": "Server 3", "items": ["app replica 3"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Incoming requests arrive at the load balancer from many clients." },
+        { "active_layer": 1, "annotation": "The LB routes each request O(1) using the selected algorithm (e.g. round robin) and skips unhealthy servers." },
+        { "active_layer": 2, "annotation": "Requests are dispatched across the replica pool so no single server is overwhelmed." },
+        { "active_layer": 3, "annotation": "Health-check pings remove failed servers from the rotation automatically." },
+        { "active_layer": 1, "annotation": "When traffic spikes, adding replicas scales the pool with zero downtime." }
+      ]
     }
   },
   "exercise": {
@@ -39,6 +49,6 @@
     ],
     "test_code": "def check(ans): return \"round\" in ans.lower() and \"robin\" in ans.lower()\nassert check(\"Round Robin\")\nprint(\"PASS\")"
   },
-  "related": ["consistent-hashing-system-01", "system-design-api-gateway-01", "nginx-config-01"],
+  "related": ["consistent-hashing-system", "system-design-api-gateway", "nginx-config"],
   "tags": ["load-balancing", "scaling", "high-availability", "networking", "system-design", "software-engineering"]
 }
