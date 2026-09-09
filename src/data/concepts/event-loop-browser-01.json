@@ -23,87 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "call_stack",
-          "label": "Call Stack",
-          "sub": "sync JS"
-        },
-        {
-          "id": "web_apis",
-          "label": "Web APIs",
-          "sub": "async ops"
-        },
-        {
-          "id": "microtasks",
-          "label": "Microtasks",
-          "sub": "Promises"
-        },
-        {
-          "id": "task_queue",
-          "label": "Task Queue",
-          "sub": "setTimeout"
-        },
-        {
-          "id": "render",
-          "label": "Render",
-          "sub": "rAF + paint"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "call_stack",
-          "to": "web_apis",
-          "label": "async call"
-        },
-        {
-          "from": "web_apis",
-          "to": "microtasks",
-          "label": "Promise resolves"
-        },
-        {
-          "from": "web_apis",
-          "to": "task_queue",
-          "label": "cb ready"
-        },
-        {
-          "from": "microtasks",
-          "to": "call_stack",
-          "label": "drain queue"
-        },
-        {
-          "from": "task_queue",
-          "to": "call_stack",
-          "label": "event loop"
-        },
-        {
-          "from": "call_stack",
-          "to": "render",
-          "label": "stack empty"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "call_stack",
-          "annotation": "Synchronous JS executes on the call stack. Each function call is a frame."
-        },
-        {
-          "active_state": "web_apis",
-          "annotation": "Async ops (fetch, setTimeout) are offloaded to browser Web APIs. Stack is freed."
-        },
-        {
-          "active_state": "microtasks",
-          "annotation": "When stack empties, microtask queue drains completely — all Promise .then()/.catch() callbacks."
-        },
-        {
-          "active_state": "task_queue",
-          "annotation": "One macrotask (setTimeout cb, click handler) is dequeued and run per event loop iteration."
-        },
-        {
-          "active_state": "render",
-          "annotation": "Between tasks, browser may run rAF callbacks and repaint. Stack must be empty."
-        }
-      ]
+      "mode": "browser-events",
+      "show_transitions": true
     }
   },
   "exercise": {

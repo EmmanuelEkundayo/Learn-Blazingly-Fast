@@ -47,7 +47,18 @@ const DEFAULT_STEPS = [
 
 // ─── Mode configs ──────────────────────────────────────────────────────────────
 
-function getModeConfig(mode) {
+function normalizeVectorMode(rawMode) {
+  const m = (rawMode || '').toLowerCase().trim()
+  const map = {
+    'rag': 'rag-retrieval-augmented-generation',
+    'semantic-clusters': 'vector-databases',
+    'faiss': 'vector-embeddings-faiss',
+  }
+  return map[m] || m
+}
+
+function getModeConfig(rawMode) {
+  const mode = normalizeVectorMode(rawMode)
   switch (mode) {
 
     case 'vector-databases': {

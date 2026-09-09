@@ -209,13 +209,16 @@ function generateFeatureScalingSteps() {
 
 function getModeSteps(mode) {
   switch (mode) {
-    case 'dbscan':                return generateDbscanSteps()
+    case 'dbscan':                  return generateDbscanSteps()
+    case 'hierarchical':
     case 'hierarchical-clustering': return generateHierarchicalSteps()
-    case 'gmm-em':                return generateGmmSteps()
-    case 'isolation-forest':      return generateIsolationForestSteps()
-    case 'knn':                   return generateKnnSteps()
-    case 'feature-scaling':       return generateFeatureScalingSteps()
-    default:                      return generateKMeansSteps()
+    case 'gmm-em':                  return generateGmmSteps()
+    case 'isolation-forest':        return generateIsolationForestSteps()
+    case 'knn':                     return generateKnnSteps()
+    case 'feature-scaling':         return generateFeatureScalingSteps()
+    case 'kmeans':
+    case 'k-means':
+    default:                        return generateKMeansSteps()
   }
 }
 

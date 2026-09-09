@@ -8,27 +8,28 @@
   "card": {
     "intuition": "Pick a pivot, partition everything smaller to its left and larger to its right, then recurse on both halves.",
     "analogy": "Organizing a messy shelf: pick one book as the reference point, put every shorter book left and every taller book right, then repeat for each pile.",
-    "time_complexity": "O(n log n) average, O(n²) worst",
+    "time_complexity": "O(n log n) average, O(n\u00b2) worst",
     "space_complexity": "O(log n) average (recursion stack)",
     "when_to_use": [
       "General-purpose in-place sorting when average-case performance matters",
-      "When cache performance is critical — quicksort has better locality than merge sort",
+      "When cache performance is critical \u2014 quicksort has better locality than merge sort",
       "When you need the k-th smallest element (quickselect variant)"
     ],
     "gotchas": [
-      "Worst case O(n²) occurs when pivot is always the min or max — use random pivot selection to avoid",
-      "Not stable — equal elements may change relative order",
+      "Worst case O(n\u00b2) occurs when pivot is always the min or max \u2014 use random pivot selection to avoid",
+      "Not stable \u2014 equal elements may change relative order",
       "Recursion depth can hit O(n) in the worst case, causing a stack overflow on large sorted inputs"
     ]
   },
   "visualization": {
     "type": "array-bars",
     "config": {
-      "array_size": 12,
-      "show_pivot": true,
-      "show_partition_bounds": true,
-      "step_annotations": true,
-      "highlight_comparisons": true
+      "mode": "sort-visualization",
+      "bar_colors": [
+        "#3b82f6",
+        "#f97316",
+        "#10b981"
+      ]
     }
   },
   "exercise": {
@@ -37,11 +38,21 @@
     "starter_code": "def partition(arr, lo, hi):\n    pivot = arr[hi]\n    i = lo - 1\n    for j in range(lo, hi):\n        if arr[j] <= pivot:\n            i += 1\n            ___________\n    ___________\n    return i + 1\n\ndef quicksort(arr, lo, hi):\n    if lo < hi:\n        pi = partition(arr, lo, hi)\n        quicksort(arr, lo, pi - 1)\n        quicksort(arr, pi + 1, hi)",
     "solution": "arr[i], arr[j] = arr[j], arr[i]  # swap smaller element forward\narr[i + 1], arr[hi] = arr[hi], arr[i + 1]  # place pivot",
     "hints": [
-      "i tracks the boundary of elements smaller than pivot — swap arr[i] and arr[j] when arr[j] <= pivot",
-      "After the loop, the pivot (at arr[hi]) belongs at index i+1 — swap it there"
+      "i tracks the boundary of elements smaller than pivot \u2014 swap arr[i] and arr[j] when arr[j] <= pivot",
+      "After the loop, the pivot (at arr[hi]) belongs at index i+1 \u2014 swap it there"
     ],
     "test_code": "a1 = [7,2,9,4,1,8,3,6,5,10]; e1 = sorted(a1[:])\nquicksort(a1, 0, len(a1)-1)\nassert a1 == e1, f'Expected {e1}, got {a1}'\na2 = [3,1,2]; quicksort(a2,0,2)\nassert a2 == [1,2,3], f'Expected [1,2,3], got {a2}'\na3 = [5]; quicksort(a3,0,0)\nassert a3 == [5]\na4 = [2,1]; quicksort(a4,0,1)\nassert a4 == [1,2], f'Two-element: {a4}'\nprint('PASS')"
   },
-  "related": ["merge-sort-01", "heap-sort-01", "binary-search-01"],
-  "tags": ["sorting", "divide-and-conquer", "in-place", "pivot", "partition"]
+  "related": [
+    "merge-sort-01",
+    "heap-sort-01",
+    "binary-search-01"
+  ],
+  "tags": [
+    "sorting",
+    "divide-and-conquer",
+    "in-place",
+    "pivot",
+    "partition"
+  ]
 }

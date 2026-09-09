@@ -8,7 +8,22 @@ const SPEED_MS = { 0.5: 2000, 1: 1000, 1.5: 667, 2: 500, 3: 333 }
 
 // ─── Mode-specific matrix configs ─────────────────────────────────────────────
 
-function getModeMatrix(mode) {
+function normalizeHeatmapMode(rawMode) {
+  const m = (rawMode || '').toLowerCase().trim()
+  const map = {
+    'attention': 'transformer-attention',
+    'attention-weights': 'transformer-attention',
+    'few-shot': 'few-shot-vs-zero-shot',
+    'finetuning-vs-prompting': 'few-shot-vs-zero-shot',
+    'quantization': 'pruning',
+    'source-line-execution-map': 'static-analysis',
+    'aria-attribute-matrix': 'screen-reader-compatibility',
+  }
+  return map[m] || m
+}
+
+function getModeMatrix(rawMode) {
+  const mode = normalizeHeatmapMode(rawMode)
   switch (mode) {
 
     case 'transformer-attention': {

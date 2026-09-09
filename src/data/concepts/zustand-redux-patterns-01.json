@@ -23,72 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "view",
-          "label": "View",
-          "sub": "React component"
-        },
-        {
-          "id": "action",
-          "label": "Action",
-          "sub": "event / intent"
-        },
-        {
-          "id": "store",
-          "label": "Store",
-          "sub": "Zustand state"
-        },
-        {
-          "id": "selector",
-          "label": "Selector",
-          "sub": "derived value"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "view",
-          "to": "action",
-          "label": "user event"
-        },
-        {
-          "from": "action",
-          "to": "store",
-          "label": "set() / dispatch"
-        },
-        {
-          "from": "store",
-          "to": "selector",
-          "label": "state change"
-        },
-        {
-          "from": "selector",
-          "to": "view",
-          "label": "re-render"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "view",
-          "annotation": "View: React component reads state via useStore(s => s.value) selector."
-        },
-        {
-          "active_state": "action",
-          "annotation": "Action: user interaction triggers a store method — e.g. store.increment()."
-        },
-        {
-          "active_state": "store",
-          "annotation": "Store: Zustand calls set() internally, producing new state immutably."
-        },
-        {
-          "active_state": "selector",
-          "annotation": "Selector: only components subscribed to changed slices re-render. Others skip."
-        },
-        {
-          "active_state": "view",
-          "annotation": "View updates with new value. Cycle complete — unidirectional data flow."
-        }
-      ]
+      "mode": "state-management",
+      "show_transitions": true
     }
   },
   "exercise": {

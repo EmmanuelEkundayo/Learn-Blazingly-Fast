@@ -23,63 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "pending",
-          "label": "Pending",
-          "sub": "async op running"
-        },
-        {
-          "id": "fulfilled",
-          "label": "Fulfilled",
-          "sub": "resolve(value)"
-        },
-        {
-          "id": "rejected",
-          "label": "Rejected",
-          "sub": "reject(error)"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "pending",
-          "to": "fulfilled",
-          "label": "resolve()"
-        },
-        {
-          "from": "pending",
-          "to": "rejected",
-          "label": "reject()"
-        },
-        {
-          "from": "fulfilled",
-          "to": "fulfilled",
-          "label": ".then()"
-        },
-        {
-          "from": "rejected",
-          "to": "fulfilled",
-          "label": ".catch()"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "pending",
-          "annotation": "Pending: initial state. The async operation is in flight."
-        },
-        {
-          "active_state": "fulfilled",
-          "annotation": "Fulfilled: resolve(value) called. .then() handlers enqueued as microtasks."
-        },
-        {
-          "active_state": "rejected",
-          "annotation": "Rejected: reject(error) called. .catch() or second .then() arg handles it."
-        },
-        {
-          "active_state": "fulfilled",
-          "annotation": "Settled state is permanent — a promise can never change state again."
-        }
-      ]
+      "mode": "promise-lifecycle",
+      "show_transitions": true
     }
   },
   "exercise": {

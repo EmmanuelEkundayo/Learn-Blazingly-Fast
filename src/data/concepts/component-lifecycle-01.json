@@ -23,82 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "mount",
-          "label": "Mount",
-          "sub": "constructor"
-        },
-        {
-          "id": "render",
-          "label": "Render",
-          "sub": "virtual DOM"
-        },
-        {
-          "id": "commit",
-          "label": "Commit",
-          "sub": "real DOM"
-        },
-        {
-          "id": "update",
-          "label": "Update",
-          "sub": "props/state"
-        },
-        {
-          "id": "unmount",
-          "label": "Unmount",
-          "sub": "cleanup"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "mount",
-          "to": "render",
-          "label": "initial"
-        },
-        {
-          "from": "render",
-          "to": "commit",
-          "label": "diff"
-        },
-        {
-          "from": "commit",
-          "to": "update",
-          "label": "effect"
-        },
-        {
-          "from": "update",
-          "to": "render",
-          "label": "re-render"
-        },
-        {
-          "from": "commit",
-          "to": "unmount",
-          "label": "removed"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "mount",
-          "annotation": "Mount: component created. State initialised, constructor runs."
-        },
-        {
-          "active_state": "render",
-          "annotation": "Render: React calls the function, producing a virtual DOM tree."
-        },
-        {
-          "active_state": "commit",
-          "annotation": "Commit: React diffs virtual DOM and patches the real DOM. useLayoutEffect fires."
-        },
-        {
-          "active_state": "update",
-          "annotation": "useEffect runs after paint. On state/prop change, re-render begins."
-        },
-        {
-          "active_state": "unmount",
-          "annotation": "Unmount: component removed. useEffect cleanup runs to cancel subscriptions/timers."
-        }
-      ]
+      "mode": "lifecycle",
+      "show_transitions": true
     }
   },
   "exercise": {

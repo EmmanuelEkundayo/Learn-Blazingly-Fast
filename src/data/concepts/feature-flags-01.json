@@ -23,78 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "off",
-          "label": "Off",
-          "sub": "0% traffic"
-        },
-        {
-          "id": "canary",
-          "label": "Canary",
-          "sub": "1-5%"
-        },
-        {
-          "id": "rollout",
-          "label": "Rollout",
-          "sub": "10-90%"
-        },
-        {
-          "id": "full",
-          "label": "Full On",
-          "sub": "100%"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "off",
-          "to": "canary",
-          "label": "enable"
-        },
-        {
-          "from": "canary",
-          "to": "rollout",
-          "label": "expand"
-        },
-        {
-          "from": "rollout",
-          "to": "full",
-          "label": "100%"
-        },
-        {
-          "from": "full",
-          "to": "off",
-          "label": "rollback"
-        },
-        {
-          "from": "canary",
-          "to": "off",
-          "label": "rollback"
-        },
-        {
-          "from": "rollout",
-          "to": "off",
-          "label": "rollback"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "off",
-          "annotation": "Flag OFF: feature disabled for all users. Safe default state."
-        },
-        {
-          "active_state": "canary",
-          "annotation": "Canary: 1-5% of users see the new feature. Errors monitored closely."
-        },
-        {
-          "active_state": "rollout",
-          "annotation": "Gradual rollout: percentage increases as confidence grows. Can pause at any point."
-        },
-        {
-          "active_state": "full",
-          "annotation": "Full on: 100% of users have the feature. Flag can be cleaned up from code."
-        }
-      ]
+      "mode": "feature-flags",
+      "show_transitions": true
     }
   },
   "exercise": {

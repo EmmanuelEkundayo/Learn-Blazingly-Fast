@@ -23,82 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "normal",
-          "label": "Normal",
-          "sub": "rendering"
-        },
-        {
-          "id": "throwing",
-          "label": "Error",
-          "sub": "thrown"
-        },
-        {
-          "id": "caught",
-          "label": "Caught",
-          "sub": "boundary"
-        },
-        {
-          "id": "fallback",
-          "label": "Fallback",
-          "sub": "UI shown"
-        },
-        {
-          "id": "reset",
-          "label": "Reset",
-          "sub": "retry"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "normal",
-          "to": "throwing",
-          "label": "throws"
-        },
-        {
-          "from": "throwing",
-          "to": "caught",
-          "label": "bubble up"
-        },
-        {
-          "from": "caught",
-          "to": "fallback",
-          "label": "getDerived"
-        },
-        {
-          "from": "fallback",
-          "to": "reset",
-          "label": "onReset"
-        },
-        {
-          "from": "reset",
-          "to": "normal",
-          "label": "retry"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "normal",
-          "annotation": "Normal render: component tree renders without errors."
-        },
-        {
-          "active_state": "throwing",
-          "annotation": "A child component throws during render or lifecycle."
-        },
-        {
-          "active_state": "caught",
-          "annotation": "Error bubbles up to the nearest error boundary (class component)."
-        },
-        {
-          "active_state": "fallback",
-          "annotation": "getDerivedStateFromError sets hasError=true. Fallback UI renders instead of crashed subtree."
-        },
-        {
-          "active_state": "reset",
-          "annotation": "User clicks retry → boundary resets state → subtree re-mounts cleanly."
-        }
-      ]
+      "mode": "error-states",
+      "show_transitions": true
     }
   },
   "exercise": {

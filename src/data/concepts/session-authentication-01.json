@@ -23,87 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "anon",
-          "label": "Anonymous",
-          "sub": "no session"
-        },
-        {
-          "id": "login",
-          "label": "Login",
-          "sub": "POST /login"
-        },
-        {
-          "id": "created",
-          "label": "Session",
-          "sub": "ID stored"
-        },
-        {
-          "id": "authed",
-          "label": "Authed",
-          "sub": "cookie sent"
-        },
-        {
-          "id": "expired",
-          "label": "Expired",
-          "sub": "TTL elapsed"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "anon",
-          "to": "login",
-          "label": "submit creds"
-        },
-        {
-          "from": "login",
-          "to": "created",
-          "label": "creds valid"
-        },
-        {
-          "from": "login",
-          "to": "anon",
-          "label": "invalid"
-        },
-        {
-          "from": "created",
-          "to": "authed",
-          "label": "Set-Cookie"
-        },
-        {
-          "from": "authed",
-          "to": "expired",
-          "label": "TTL / logout"
-        },
-        {
-          "from": "expired",
-          "to": "anon",
-          "label": "session cleared"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "anon",
-          "annotation": "Anonymous: user has no session. All protected routes return 401."
-        },
-        {
-          "active_state": "login",
-          "annotation": "Login: credentials POSTed. Server checks password hash against DB."
-        },
-        {
-          "active_state": "created",
-          "annotation": "Session created: server generates session ID, stores {userId, expiry} in session store."
-        },
-        {
-          "active_state": "authed",
-          "annotation": "Authenticated: session ID sent as httpOnly cookie. Browser auto-attaches on every request."
-        },
-        {
-          "active_state": "expired",
-          "annotation": "Expired: TTL elapsed or user logs out. Session deleted from store. Cookie cleared."
-        }
-      ]
+      "mode": "session-lifecycle",
+      "show_transitions": true
     }
   },
   "exercise": {

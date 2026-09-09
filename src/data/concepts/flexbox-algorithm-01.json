@@ -23,33 +23,8 @@
   "visualization": {
     "type": "matrix-grid",
     "config": {
-      "steps": [
-        {
-          "label": "Container",
-          "sub": "display: flex",
-          "annotation": "Flex container established. Children become flex items."
-        },
-        {
-          "label": "Main Axis",
-          "sub": "flex-direction",
-          "annotation": "Main axis set by flex-direction: row (default) or column."
-        },
-        {
-          "label": "Flexibility",
-          "sub": "flex-grow/shrink",
-          "annotation": "Available space distributed: flex-grow expands, flex-shrink contracts."
-        },
-        {
-          "label": "Alignment",
-          "sub": "justify/align",
-          "annotation": "justify-content aligns on main axis. align-items on cross axis."
-        },
-        {
-          "label": "Wrapping",
-          "sub": "flex-wrap",
-          "annotation": "flex-wrap: wrap allows items to flow to new lines when needed."
-        }
-      ]
+      "mode": "flexbox-algorithm",
+      "columns": 3
     }
   },
   "exercise": {

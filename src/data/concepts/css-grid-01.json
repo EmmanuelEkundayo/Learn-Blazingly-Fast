@@ -23,33 +23,8 @@
   "visualization": {
     "type": "matrix-grid",
     "config": {
-      "steps": [
-        {
-          "label": "Container",
-          "sub": "display: grid",
-          "annotation": "Parent becomes grid container. Children become grid items."
-        },
-        {
-          "label": "Tracks",
-          "sub": "columns / rows",
-          "annotation": "grid-template-columns/rows define track sizes. fr, minmax(), auto."
-        },
-        {
-          "label": "Placement",
-          "sub": "Auto or explicit",
-          "annotation": "Items auto-placed by grid algorithm, or placed with grid-column/row."
-        },
-        {
-          "label": "Areas",
-          "sub": "grid-template-areas",
-          "annotation": "Named areas create readable layouts. Items reference area by name."
-        },
-        {
-          "label": "Align",
-          "sub": "justify/align",
-          "annotation": "justify-items, align-items, gap control alignment and spacing."
-        }
-      ]
+      "mode": "grid-layout",
+      "columns": 4
     }
   },
   "exercise": {

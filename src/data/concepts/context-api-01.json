@@ -23,33 +23,8 @@
   "visualization": {
     "type": "tree-canvas",
     "config": {
-      "steps": [
-        {
-          "label": "Create Context",
-          "sub": "React.createContext()",
-          "annotation": "Context object created with default value."
-        },
-        {
-          "label": "Provider",
-          "sub": "<Provider value={}>",
-          "annotation": "Provider wraps subtree and supplies the current value."
-        },
-        {
-          "label": "Consumer",
-          "sub": "useContext(Ctx)",
-          "annotation": "Any descendant reads value via useContext — no prop drilling."
-        },
-        {
-          "label": "Update",
-          "sub": "setValue()",
-          "annotation": "Provider value changes — all consumers re-render."
-        },
-        {
-          "label": "Optimise",
-          "sub": "Memo + split",
-          "annotation": "Split contexts by update frequency to prevent unnecessary re-renders."
-        }
-      ]
+      "mode": "context",
+      "show_connections": true
     }
   },
   "exercise": {

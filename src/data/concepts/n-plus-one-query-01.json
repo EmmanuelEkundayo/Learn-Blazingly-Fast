@@ -23,32 +23,11 @@
   "visualization": {
     "type": "matrix-grid",
     "config": {
-      "steps": [
-        {
-          "label": "Load list",
-          "sub": "SELECT * posts",
-          "annotation": "Query 1: fetch N post records."
-        },
-        {
-          "label": "Loop",
-          "sub": "For each post",
-          "annotation": "Code iterates over posts."
-        },
-        {
-          "label": "N queries",
-          "sub": "SELECT author",
-          "annotation": "Each iteration fires a separate query for the author — N total."
-        },
-        {
-          "label": "1+N total",
-          "sub": "Slow page",
-          "annotation": "1 + N queries. 100 posts = 101 queries. Scales terribly."
-        },
-        {
-          "label": "Fix: JOIN",
-          "sub": "Eager load",
-          "annotation": "Fix with JOIN or ORM eager loading (includes) — 1 or 2 queries total."
-        }
+      "mode": "n-plus-one-queries",
+      "tables": [
+        "users",
+        "posts",
+        "comments"
       ]
     }
   },

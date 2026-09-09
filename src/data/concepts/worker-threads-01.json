@@ -23,32 +23,10 @@
   "visualization": {
     "type": "array-bars",
     "config": {
-      "steps": [
-        {
-          "label": "Main",
-          "sub": "Node.js event loop",
-          "annotation": "Node main thread: event loop handles I/O, coordinates workers."
-        },
-        {
-          "label": "Create",
-          "sub": "new Worker(file)",
-          "annotation": "Worker thread spawned from a separate JS file."
-        },
-        {
-          "label": "CPU work",
-          "sub": "Heavy computation",
-          "annotation": "CPU-intensive task runs in worker — does not block event loop."
-        },
-        {
-          "label": "Transfer",
-          "sub": "SharedArrayBuffer",
-          "annotation": "Large data transferred via SharedArrayBuffer (zero-copy) or postMessage."
-        },
-        {
-          "label": "Result",
-          "sub": "postMessage back",
-          "annotation": "Worker posts result back. Main thread handles in onmessage callback."
-        }
+      "mode": "thread-counts",
+      "bar_colors": [
+        "#3b82f6",
+        "#f97316"
       ]
     }
   },

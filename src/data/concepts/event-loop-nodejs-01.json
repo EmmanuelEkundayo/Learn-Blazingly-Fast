@@ -16,89 +16,15 @@
       "Debugging performance bottlenecks caused by a 'blocked' loop"
     ],
     "gotchas": [
-      "The Event Loop is single-threaded — if you run a heavy for-loop (10 billion iterations), the entire server stops responding to everyone",
+      "The Event Loop is single-threaded \u2014 if you run a heavy for-loop (10 billion iterations), the entire server stops responding to everyone",
       "process.nextTick() callbacks run BEFORE the next phase of the loop, which can starve I/O if used excessively"
     ]
   },
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "timers",
-          "label": "Timers",
-          "sub": "setTimeout"
-        },
-        {
-          "id": "io",
-          "label": "I/O",
-          "sub": "callbacks"
-        },
-        {
-          "id": "poll",
-          "label": "Poll",
-          "sub": "fetch I/O"
-        },
-        {
-          "id": "check",
-          "label": "Check",
-          "sub": "setImmediate"
-        },
-        {
-          "id": "close",
-          "label": "Close",
-          "sub": "close cbs"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "timers",
-          "to": "io",
-          "label": ""
-        },
-        {
-          "from": "io",
-          "to": "poll",
-          "label": ""
-        },
-        {
-          "from": "poll",
-          "to": "check",
-          "label": ""
-        },
-        {
-          "from": "check",
-          "to": "close",
-          "label": ""
-        },
-        {
-          "from": "close",
-          "to": "timers",
-          "label": "next tick"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "timers",
-          "annotation": "Timers phase: runs callbacks scheduled by setTimeout/setInterval whose delay has elapsed."
-        },
-        {
-          "active_state": "io",
-          "annotation": "I/O callbacks: executes deferred I/O callbacks (e.g. errors from previous cycle)."
-        },
-        {
-          "active_state": "poll",
-          "annotation": "Poll phase: retrieves new I/O events. Blocks here if queue is empty, waiting for I/O."
-        },
-        {
-          "active_state": "check",
-          "annotation": "Check phase: setImmediate() callbacks run — always after poll, before close events."
-        },
-        {
-          "active_state": "close",
-          "annotation": "Close callbacks: socket.on(\"close\") and similar cleanup handlers execute."
-        }
-      ]
+      "mode": "nodejs-events",
+      "show_transitions": true
     }
   },
   "exercise": {

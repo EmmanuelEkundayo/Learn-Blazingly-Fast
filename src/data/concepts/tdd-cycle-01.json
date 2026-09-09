@@ -23,58 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "red",
-          "label": "Red",
-          "sub": "test fails"
-        },
-        {
-          "id": "green",
-          "label": "Green",
-          "sub": "test passes"
-        },
-        {
-          "id": "refactor",
-          "label": "Refactor",
-          "sub": "clean up"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "red",
-          "to": "green",
-          "label": "write code"
-        },
-        {
-          "from": "green",
-          "to": "refactor",
-          "label": "passes"
-        },
-        {
-          "from": "refactor",
-          "to": "red",
-          "label": "new test"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "red",
-          "annotation": "Red: write a failing test first. It defines the desired behaviour before any implementation."
-        },
-        {
-          "active_state": "green",
-          "annotation": "Green: write the minimum code to make the test pass. No extras — just enough."
-        },
-        {
-          "active_state": "refactor",
-          "annotation": "Refactor: clean up duplication and improve design. Tests stay green throughout."
-        },
-        {
-          "active_state": "red",
-          "annotation": "Repeat: write the next failing test. The cycle drives the entire implementation."
-        }
-      ]
+      "mode": "tdd-cycle",
+      "show_transitions": true
     }
   },
   "exercise": {

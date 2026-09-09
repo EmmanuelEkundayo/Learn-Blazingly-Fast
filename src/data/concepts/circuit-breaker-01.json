@@ -23,67 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "closed",
-          "label": "CLOSED",
-          "sub": "requests pass"
-        },
-        {
-          "id": "open",
-          "label": "OPEN",
-          "sub": "fail fast"
-        },
-        {
-          "id": "half_open",
-          "label": "HALF-OPEN",
-          "sub": "probe"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "closed",
-          "to": "open",
-          "label": "threshold hit"
-        },
-        {
-          "from": "open",
-          "to": "half_open",
-          "label": "timeout"
-        },
-        {
-          "from": "half_open",
-          "to": "closed",
-          "label": "probe OK"
-        },
-        {
-          "from": "half_open",
-          "to": "open",
-          "label": "probe fail"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "closed",
-          "annotation": "CLOSED: all requests pass through. Failure counter increments on errors."
-        },
-        {
-          "active_state": "closed",
-          "annotation": "Failures accumulate. Once threshold (e.g. 5 failures / 60s) is hit, circuit trips."
-        },
-        {
-          "active_state": "open",
-          "annotation": "OPEN: all requests fail immediately with a fallback. Service gets time to recover."
-        },
-        {
-          "active_state": "half_open",
-          "annotation": "After timeout, one probe request is allowed through to test recovery."
-        },
-        {
-          "active_state": "closed",
-          "annotation": "Probe succeeded → circuit resets to CLOSED. Normal traffic resumes."
-        }
-      ]
+      "mode": "circuit-breaker",
+      "show_transitions": true
     }
   },
   "exercise": {

@@ -223,11 +223,139 @@ function BackpropFallback() {
   )
 }
 
+// ─── Preset Pipeline Configurations ──────────────────────────────────────────
+
+const TIMELINE_PRESETS = {
+  'traffic-switch-flip': {
+    steps: [
+      { label: 'Idle Green', sub: 'Environment ready', annotation: 'Green environment deployed in isolation while Blue serves 100% of live production traffic.' },
+      { label: 'Health Check', sub: 'Smoke testing', annotation: 'Automated integration tests and synthetic probes verify Green environment health.' },
+      { label: 'Router Flip', sub: 'Switch traffic', annotation: 'Load balancer / router flips upstream traffic from Blue to Green with zero downtime.' },
+      { label: 'Decommission', sub: 'Standby / teardown', annotation: 'Blue kept on standby for instant rollback; decommissioned once Green metrics stabilize.' },
+    ],
+  },
+  'cache-control-headers': {
+    steps: [
+      { label: 'Browser Request', sub: 'GET /resource', annotation: 'Client initiates HTTP request for static or API asset.' },
+      { label: 'Memory / Disk Cache', sub: 'max-age validation', annotation: 'Browser checks Cache-Control max-age; if fresh, serves directly without network call.' },
+      { label: 'Conditional Request', sub: 'If-None-Match', annotation: 'If stale, browser sends If-None-Match with ETag to origin server for validation.' },
+      { label: '304 Not Modified', sub: 'ETag unchanged', annotation: 'Server returns 304 Not Modified; browser updates cache expiration headers without payload transfer.' },
+    ],
+  },
+  'backup-lifecycle-incremental': {
+    steps: [
+      { label: 'Full Snapshot', sub: 'Base state', annotation: 'Periodic baseline full backup captures complete dataset snapshot.' },
+      { label: 'WAL / Delta', sub: 'Track changes', annotation: 'Incremental backups record only modified blocks and transaction logs since last checkpoint.' },
+      { label: 'Offsite Sync', sub: '3-2-1 rule', annotation: 'Backup artifacts encrypted and replicated to secondary cloud region or cold storage.' },
+      { label: 'Recovery Drill', sub: 'Restore verification', annotation: 'Automated point-in-time recovery test validates backup integrity and recovery time objective (RTO).' },
+    ],
+  },
+  'cnn-convolution': {
+    steps: [
+      { label: 'Input Matrix', sub: 'RGB image', annotation: 'Input feature map of dimension H × W × C fed into convolution layer.' },
+      { label: 'Kernel Slide', sub: 'Filter stride', annotation: 'Learnable weight kernel (e.g. 3×3) slides across spatial positions with stride.' },
+      { label: 'Dot Product', sub: 'Local receptive field', annotation: 'Element-wise multiplication and summation produce scalar response for each patch.' },
+      { label: 'Activation', sub: 'ReLU(z)', annotation: 'Non-linear activation applied to generate output feature map detecting edges and patterns.' },
+    ],
+  },
+  'cnn-pooling': {
+    steps: [
+      { label: 'Feature Map', sub: 'Input activations', annotation: 'High-dimensional feature map from preceding convolution layer.' },
+      { label: 'Window Overlap', sub: '2×2 grid', annotation: 'Pooling window moves across activations with stride 2.' },
+      { label: 'Max Operation', sub: 'Spatial invariance', annotation: 'Selects maximum activation value within each window, discarding weak signals.' },
+      { label: 'Subsampled Map', sub: '50% dimension', annotation: 'Spatial resolution halved; parameter count and computation reduced while retaining dominant features.' },
+    ],
+  },
+  'bert-pretraining': {
+    steps: [
+      { label: 'Tokenize', sub: 'WordPiece / BPE', annotation: 'Input sentence converted to token IDs with [CLS] and [SEP] boundary tokens.' },
+      { label: 'Masking', sub: '15% [MASK]', annotation: 'Masked Language Modeling (MLM): 15% of tokens replaced with [MASK] or random tokens.' },
+      { label: 'Self-Attention', sub: 'Bidirectional context', annotation: 'Transformer encoder layers attend to left and right context simultaneously across all positions.' },
+      { label: 'Loss Prediction', sub: 'Cross-entropy', annotation: 'Network predicts original masked tokens and next-sentence probability (NSP).' },
+    ],
+  },
+  'review-cycle-feedback-loop': {
+    steps: [
+      { label: 'Pull Request', sub: 'Branch commit', annotation: 'Developer opens pull request with atomic commits and clear description of changes.' },
+      { label: 'Automated CI', sub: 'Tests & linting', annotation: 'Continuous integration runs unit tests, linting, type checks, and security scans.' },
+      { label: 'Peer Review', sub: 'Architecture & code', annotation: 'Reviewers provide constructive feedback on correctness, edge cases, and maintainability.' },
+      { label: 'Merge & Deploy', sub: 'Main branch', annotation: 'Approval received and CI green; PR squashed and merged to main branch.' },
+    ],
+  },
+  'db-cache-flow': {
+    steps: [
+      { label: 'Query Inbound', sub: 'SELECT ...', annotation: 'Application requests database query result.' },
+      { label: 'Cache Lookup', sub: 'Redis / Memcached', annotation: 'Cache key checked for existing serialized query response.' },
+      { label: 'Cache Hit / Miss', sub: 'TTL check', annotation: 'Cache hit returns in <1ms; cache miss queries database primary and populates cache.' },
+      { label: 'Invalidation', sub: 'Write / update', annotation: 'Write operations invalidate associated query cache keys to prevent stale data.' },
+    ],
+  },
+  'transaction-flow': {
+    steps: [
+      { label: 'BEGIN', sub: 'Start transaction', annotation: 'Transaction begins with defined isolation level (e.g. Read Committed or Serializable).' },
+      { label: 'DML Mutations', sub: 'INSERT/UPDATE', annotation: 'Queries execute against temporary workspace with row/table locks acquired.' },
+      { label: 'Write-Ahead Log', sub: 'WAL flush', annotation: 'Modifications written to disk log for durability before changing data pages.' },
+      { label: 'COMMIT', sub: 'Release locks', annotation: 'Transaction commits atomically; changes visible to other transactions.' },
+    ],
+  },
+  'docs-pipeline-rendering': {
+    steps: [
+      { label: 'Source Markdown', sub: 'Git repository', annotation: 'Documentation authored as Markdown files co-located with source code.' },
+      { label: 'CI Validation', sub: 'Link & syntax check', annotation: 'Automated linter verifies broken links, frontmatter schema, and code snippet formatting.' },
+      { label: 'Static Build', sub: 'VitePress / Docusaurus', annotation: 'Static site generator converts Markdown and interactive components into HTML/CSS bundle.' },
+      { label: 'CDN Deployment', sub: 'Global edge', annotation: 'Static assets deployed to edge CDN for sub-100ms global delivery.' },
+    ],
+  },
+  'html-to-dom-parsing': {
+    steps: [
+      { label: 'Byte Stream', sub: 'Raw HTML', annotation: 'Browser receives raw HTML bytes from network or disk.' },
+      { label: 'Characters & Tokens', sub: 'Lexical analysis', annotation: 'Bytes decoded to characters, then parsed into HTML start and end tokens.' },
+      { label: 'DOM Nodes', sub: 'Object creation', annotation: 'Tokens converted into Element and Text DOM objects with properties.' },
+      { label: 'DOM Tree', sub: 'Parent-child links', annotation: 'DOM tree constructed showing full hierarchical parent-child relationships.' },
+    ],
+  },
+  'doubly-linked-list': {
+    steps: [
+      { label: 'Head Node', sub: 'prev = null', annotation: 'Head node points to first element; its prev pointer is null.' },
+      { label: 'Traverse Forward', sub: 'curr = curr.next', annotation: 'Traversal moves left to right following next pointers.' },
+      { label: 'Traverse Backward', sub: 'curr = curr.prev', annotation: 'Bidirectional capability allows reverse traversal following prev pointers in O(1).' },
+      { label: 'Node Insertion', sub: 'Re-link 4 pointers', annotation: 'Inserting a node requires updating 4 pointers without shifting remaining array elements.' },
+    ],
+  },
+  'code-simplification-diff': {
+    steps: [
+      { label: 'Identify Duplication', sub: 'DRY check', annotation: 'Analyze repeated patterns across modules to identify abstraction opportunities.' },
+      { label: 'Check Complexity', sub: 'KISS check', annotation: 'Question overly clever or convoluted designs; seek simplest workable solution.' },
+      { label: 'Remove Speculation', sub: 'YAGNI check', annotation: 'Strip speculative abstractions and features not currently required by requirements.' },
+      { label: 'Clean Code', sub: 'Refactored', annotation: 'Resulting code is readable, concise, maintainable, and fully tested.' },
+    ],
+  },
+}
+
+const DEFAULT_TIMELINE_STEPS = [
+  { label: 'Initiation', sub: 'Input & context', annotation: 'Phase 1: Input received, preconditions validated, and execution context initialized.' },
+  { label: 'Processing', sub: 'Core execution', annotation: 'Phase 2: Core domain operations and state transitions execute against requirements.' },
+  { label: 'Verification', sub: 'Invariants checked', annotation: 'Phase 3: Output verified against schema constraints, security checks, and invariants.' },
+  { label: 'Completion', sub: 'State recorded', annotation: 'Phase 4: Output delivered, state persisted, and telemetry metrics emitted.' },
+]
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export default function TimelineStep({ config = {} }) {
   if (config.steps && config.steps.length > 0) {
     return <PipelineViz config={config} />
   }
-  return <BackpropFallback />
+
+  // Explicit backprop mode
+  if (config.mode === 'backprop' || config.mode === 'backpropagation') {
+    return <BackpropFallback />
+  }
+
+  // Presets by mode
+  if (config.mode && TIMELINE_PRESETS[config.mode]) {
+    return <PipelineViz config={TIMELINE_PRESETS[config.mode]} />
+  }
+
+  // Domain-safe default pipeline
+  return <PipelineViz config={{ steps: DEFAULT_TIMELINE_STEPS }} />
 }

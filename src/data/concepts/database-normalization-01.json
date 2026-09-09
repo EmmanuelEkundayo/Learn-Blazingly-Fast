@@ -23,55 +23,11 @@
   "visualization": {
     "type": "matrix-grid",
     "config": {
-      "layers": [
-        {
-          "label": "Raw Table",
-          "items": [
-            "Redundant data",
-            "Update anomalies"
-          ]
-        },
-        {
-          "label": "1NF",
-          "items": [
-            "Atomic values",
-            "No repeating groups"
-          ]
-        },
-        {
-          "label": "2NF",
-          "items": [
-            "Full key dependency"
-          ]
-        },
-        {
-          "label": "3NF",
-          "items": [
-            "No transitive deps"
-          ]
-        }
-      ],
-      "steps": [
-        {
-          "active_layer": -1,
-          "annotation": "System overview — step through to trace the flow."
-        },
-        {
-          "active_layer": 0,
-          "annotation": "Unnormalised: repeated data causes update/insert/delete anomalies."
-        },
-        {
-          "active_layer": 1,
-          "annotation": "1NF: every cell is atomic, each row uniquely identified."
-        },
-        {
-          "active_layer": 2,
-          "annotation": "2NF: non-key columns depend on the whole primary key, not part of it."
-        },
-        {
-          "active_layer": 3,
-          "annotation": "3NF: non-key columns depend only on the key, nothing else."
-        }
+      "mode": "normalization-levels",
+      "levels": [
+        "1NF",
+        "2NF",
+        "3NF"
       ]
     }
   },

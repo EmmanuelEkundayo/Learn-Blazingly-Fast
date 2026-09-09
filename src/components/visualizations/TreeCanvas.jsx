@@ -11,7 +11,34 @@ const NODE_W = 110, NODE_H = 56
 
 // ─── Mode-specific tree data ──────────────────────────────────────────────────
 
-function getModeTree(mode) {
+function normalizeTreeMode(rawMode) {
+  const m = (rawMode || '').toLowerCase().trim()
+  const map = {
+    'bst': 'bst-operations',
+    'splay': 'bst-operations',
+    'treap': 'bst-operations',
+    'b-tree-index': 'bst-operations',
+    'avl': 'avl-tree',
+    'red-black': 'red-black-tree',
+    'persistent-tree': 'red-black-tree',
+    'aho-corasick': 'trie',
+    'bfs': 'bfs-tree',
+    'context': 'bfs-tree',
+    'event-bubbling-path': 'bfs-tree',
+    'prototype-chain-lookup': 'bfs-tree',
+    'lca': 'lowest-common-ancestor',
+    'diameter': 'lowest-common-ancestor',
+    'centroid': 'centroid-decomposition',
+    'heavy-light': 'centroid-decomposition',
+    'tree-dp': 'dfs-inorder',
+    'morris': 'dfs-inorder',
+    'rerooting': 'dfs-postorder',
+  }
+  return map[m] || m
+}
+
+function getModeTree(rawMode) {
+  const mode = normalizeTreeMode(rawMode)
   switch (mode) {
 
     case 'bst-operations': {

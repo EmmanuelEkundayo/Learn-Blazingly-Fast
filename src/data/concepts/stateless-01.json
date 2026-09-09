@@ -6,8 +6,8 @@
   "category": "Context & Sessions",
   "difficulty": "beginner",
   "card": {
-    "intuition": "Carries no information forward. Each model request resends the full context window because the model has no other way to see anything, and an agent is stateless across sessions by default — a new session starts empty with no trace of prior ones. The model itself is permanently stateless; its parameters are frozen and it never learns from corrections.",
-    "analogy": "An email thread you must paste all prior background into every time you write to a colleague who archives messages overnight — nothing carries forward, so you re-send everything needed each request.",
+    "intuition": "Carries no information forward. Each model request resends the full context window because the model has no other way to see anything, and an agent is stateless across sessions by default \u2014 a new session starts empty with no trace of prior ones. The model itself is permanently stateless; its parameters are frozen and it never learns from corrections.",
+    "analogy": "An email thread you must paste all prior background into every time you write to a colleague who archives messages overnight \u2014 nothing carries forward, so you re-send everything needed each request.",
     "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
     "space_complexity": "Each request must carry its full working state; nothing persists between calls, so the context must be rebuilt from scratch on every invocation.",
     "when_to_use": [
@@ -16,31 +16,15 @@
       "Relying on the environment's filesystem to persist state across sessions"
     ],
     "gotchas": [
-      "The model never learns from your corrections and doesn't remember yesterday — continuity within a session is manufactured by the harness re-sending the transcript",
+      "The model never learns from your corrections and doesn't remember yesterday \u2014 continuity within a session is manufactured by the harness re-sending the transcript",
       "Fixing a mistake the agent keeps repeating means writing the correction somewhere future sessions read, not just telling it once"
     ]
   },
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        { "id": "empty", "label": "Empty", "sub": "new session" },
-        { "id": "request", "label": "Request", "sub": "full context resent" },
-        { "id": "model", "label": "Model", "sub": "frozen params" },
-        { "id": "env", "label": "Environment", "sub": "persistent files" }
-      ],
-      "transitions": [
-        { "from": "empty", "to": "request", "label": "start session" },
-        { "from": "request", "to": "model", "label": "inference" },
-        { "from": "model", "to": "env", "label": "no state persists" },
-        { "from": "env", "to": "empty", "label": "reload at start" }
-      ],
-      "steps": [
-        { "active_state": "empty", "active_transition": { "from": "empty", "to": "request" }, "annotation": "A new session begins with nothing carried over from prior sessions." },
-        { "active_state": "request", "active_transition": { "from": "request", "to": "model" }, "annotation": "The full context window is resent with each model provider request." },
-        { "active_state": "model", "active_transition": { "from": "model", "to": "env" }, "annotation": "The model sees only the request; its frozen parameters learn nothing." },
-        { "active_state": "env", "active_transition": { "from": "env", "to": "empty" }, "annotation": "Whatever survives lives in files, which are reloaded at the start of future sessions." }
-      ]
+      "mode": "stateless-lifecycle",
+      "show_transitions": true
     }
   },
   "exercise": {
@@ -54,6 +38,21 @@
     ],
     "test_code": "req = build_stateless_request(\"# You are a coding assistant\", [\"Say hi\", \"What is 2+2?\"])\nassert req.startswith(\"# You are a coding assistant\")\nassert \"Say hi\" in req\nassert \"What is 2+2?\" in req\nprint('PASS')"
   },
-  "related": ["context", "context-window", "stateful", "session", "model", "harness", "memory-system"],
-  "tags": ["stateless", "context", "session", "memory", "model", "state"]
+  "related": [
+    "context",
+    "context-window",
+    "stateful",
+    "session",
+    "model",
+    "harness",
+    "memory-system"
+  ],
+  "tags": [
+    "stateless",
+    "context",
+    "session",
+    "memory",
+    "model",
+    "state"
+  ]
 }

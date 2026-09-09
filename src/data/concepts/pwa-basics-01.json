@@ -23,82 +23,8 @@
   "visualization": {
     "type": "state-diagram",
     "config": {
-      "states": [
-        {
-          "id": "install",
-          "label": "Install",
-          "sub": "SW registered"
-        },
-        {
-          "id": "activate",
-          "label": "Activate",
-          "sub": "old SW cleared"
-        },
-        {
-          "id": "fetch",
-          "label": "Intercept",
-          "sub": "fetch events"
-        },
-        {
-          "id": "cache",
-          "label": "Cache",
-          "sub": "CacheStorage"
-        },
-        {
-          "id": "offline",
-          "label": "Offline",
-          "sub": "serve cache"
-        }
-      ],
-      "transitions": [
-        {
-          "from": "install",
-          "to": "activate",
-          "label": "skipWaiting"
-        },
-        {
-          "from": "activate",
-          "to": "fetch",
-          "label": "clients.claim"
-        },
-        {
-          "from": "fetch",
-          "to": "cache",
-          "label": "cache.put"
-        },
-        {
-          "from": "fetch",
-          "to": "offline",
-          "label": "network fail"
-        },
-        {
-          "from": "cache",
-          "to": "offline",
-          "label": "cache.match"
-        }
-      ],
-      "steps": [
-        {
-          "active_state": "install",
-          "annotation": "Install: SW registered, precaches app shell files. New SW waits if old one active."
-        },
-        {
-          "active_state": "activate",
-          "annotation": "Activate: old caches pruned, clients.claim() takes control of open pages."
-        },
-        {
-          "active_state": "fetch",
-          "annotation": "Fetch: SW intercepts every network request — decides cache vs. network strategy."
-        },
-        {
-          "active_state": "cache",
-          "annotation": "Cache-first: serve from CacheStorage, update in background (stale-while-revalidate)."
-        },
-        {
-          "active_state": "offline",
-          "annotation": "Offline: network unavailable — SW serves cached assets. App still works."
-        }
-      ]
+      "mode": "pwa-lifecycle",
+      "show_transitions": true
     }
   },
   "exercise": {

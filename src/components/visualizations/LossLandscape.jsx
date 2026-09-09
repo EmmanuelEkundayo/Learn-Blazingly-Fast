@@ -8,7 +8,27 @@ const SPEED_MS = { 0.5: 1600, 1: 700, 1.5: 467, 2: 350, 3: 233 }
 
 // ─── Mode config lookup ───────────────────────────────────────────────────────
 
-function getModeConfig(mode) {
+function normalizeLossMode(rawMode) {
+  const m = (rawMode || '').toLowerCase().trim()
+  const map = {
+    'adam': 'adam-optimizer',
+    'bias-variance': 'bias-variance-tradeoff',
+    'convex-nonconvex': 'convex-vs-nonconvex',
+    'dqn-training': 'deep-q-network',
+    'gradient-descent': 'stochastic-gradient-descent',
+    'regularization': 'l1-l2-regularization',
+    'lr-schedule': 'learning-rate-scheduling',
+    'loss-comparison': 'loss-functions',
+    'mini-batch-gd': 'mini-batch-gradient-descent',
+    'bandit': 'multi-armed-bandit',
+    'sgd': 'stochastic-gradient-descent',
+    'gradient-flow': 'vanishing-exploding-gradients',
+  }
+  return map[m] || m
+}
+
+function getModeConfig(rawMode) {
+  const mode = normalizeLossMode(rawMode)
   switch (mode) {
     case 'stochastic-gradient-descent':
       return {

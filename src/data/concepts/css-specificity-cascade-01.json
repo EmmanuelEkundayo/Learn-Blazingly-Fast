@@ -17,38 +17,17 @@
     ],
     "gotchas": [
       "Inline styles (`style=\"...\"`) always beat external selectors, and `!important` beats everything (but should be avoided!)",
-      "An ID selector (`#id`) is 100 times more specific than a class selector (`.class`) — you can't beat an ID with a million classes"
+      "An ID selector (`#id`) is 100 times more specific than a class selector (`.class`) \u2014 you can't beat an ID with a million classes"
     ]
   },
   "visualization": {
     "type": "array-bars",
     "config": {
-      "steps": [
-        {
-          "label": "Collect Rules",
-          "sub": "All stylesheets",
-          "annotation": "Browser collects all CSS rules targeting an element."
-        },
-        {
-          "label": "Origin",
-          "sub": "UA / Author / User",
-          "annotation": "Rules ranked by origin: user-agent < author < inline."
-        },
-        {
-          "label": "Specificity",
-          "sub": "ID > class > tag",
-          "annotation": "Same-origin rules ranked: (ID count, class count, tag count) tuple."
-        },
-        {
-          "label": "Order",
-          "sub": "Last wins",
-          "annotation": "Equal specificity: later declaration wins."
-        },
-        {
-          "label": "Computed Value",
-          "sub": "Cascade winner",
-          "annotation": "Winning value computed — inheritable properties passed to children."
-        }
+      "mode": "specificity-counts",
+      "bar_colors": [
+        "#ef4444",
+        "#f97316",
+        "#10b981"
       ]
     }
   },
