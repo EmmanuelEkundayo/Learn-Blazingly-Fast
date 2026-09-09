@@ -1,0 +1,53 @@
+{
+  "id": "system-design-message-queue-01",
+  "slug": "system-design-message-queue",
+  "title": "System Design: Message Queue & Async Processing",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A durable buffer that decouples producers from consumers: publishers enqueue messages, and workers consume them at their own pace. This lets you absorb traffic spikes, smooth bursty loads, retry failed work, and fan work out across many consumers.",
+    "analogy": "A restaurant kitchen ticket rail: the chef (producer) fires a ticket onto the rail (queue), and multiple line cooks (consumers) pick up tickets as they finish their current dish. If a cook is slow, tickets pile up and wait rather than blocking the chef.",
+    "time_complexity": "Enqueue and dequeue are amortized O(1) per message on the queue itself; end-to-end latency is bounded by consumer throughput and backlog.",
+    "space_complexity": "Queue storage grows with the message backlog; un-consumed messages persist until acknowledged or they hit retention limits.",
+    "when_to_use": [
+      "Decoupling a fast producer from slow or varying-rate consumers (e.g. email, image processing)",
+      "Absorbing load spikes so bursts don't crash downstream services",
+      "Implementing reliable, retryable async work and fan-out to multiple workers"
+    ],
+    "gotchas": [
+      "At-least-once delivery with auto-retries can produce duplicates — consumers must be idempotent",
+      "A dead-letter queue is essential: poison messages that crash workers must be quarantined, not retried forever"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Producers", "items": ["web server", "cron job"] },
+        { "label": "Queue", "items": ["topic 1", "topic 2", "backlog"] },
+        { "label": "Consumers", "items": ["worker A", "worker B", "G", "dead-letter"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Producers publish messages (events, jobs) into a named topic without waiting for a reply." },
+        { "active_layer": 1, "annotation": "The queue durably stores messages, acting as a buffer that absorbs spikes in producer volume." },
+        { "active_layer": 2, "annotation": "Consumers poll the queue and process messages at their own rate, acking each one on success." },
+        { "active_layer": 1, "annotation": "Messages a consumer fails to process are retried; repeated failures land in a dead-letter queue." },
+        { "active_layer": 2, "annotation": "Processing results fan back into the system, and throughput scales by adding more consumers." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A producer publishes 2,000 messages in a 5-second burst and consumers process 100 messages/second each. How many consumers are needed so the backlog is cleared in 4 seconds?",
+    "starter_code": "messages = 2000\nrate_per_consumer = 100\nseconds = 4\n\nconsumers = messages / (rate_per_consumer * seconds)\n# Result is ___ consumers",
+    "solution": "5",
+    "hints": [
+      "Total processing rate needed = 2000 / 4 = 500 messages/second",
+      "Each consumer does 100/sec, so 500 / 100 = 5"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 5\n    except: return False\nassert check(\"5\")\nprint(\"PASS\")"
+  },
+  "related": ["event-driven-architecture", "system-design-notifications", "system-design-ecommerce", "distributed-tracing"],
+  "tags": ["system-design", "message-queue", "async", "producer-consumer", "decoupling", "event-sourcing", "software-engineering"]
+}

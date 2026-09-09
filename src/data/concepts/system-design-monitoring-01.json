@@ -1,0 +1,55 @@
+{
+  "id": "system-design-monitoring-01",
+  "slug": "system-design-monitoring",
+  "title": "System Design: Metrics & Observability",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A pipeline that collects metrics (counters, gauges, histograms), logs, and traces from every service into a central time-series store, then visualizes them on dashboards and triggers alerts. It turns a scattered system into something you can observe, debug, and alert on.",
+    "analogy": "A building's bank of gauges and alarms: every floor reports its temperature, power draw, and elevator status to a control room (time-series DB), which shows live dials and pages the engineer when a reading crosses a threshold.",
+    "time_complexity": "Ingestion is O(1) per sample batched and written; query time is O(log n) on the indexed time series.",
+    "space_complexity": "Storage grows with (number of series × sampling rate × retention); high-cardinality labels multiply series count dramatically.",
+    "when_to_use": [
+      "Tracking service health, latency, error rates, and saturation (the RED/USE method)",
+      "Correlating metrics, logs, and traces to debug production incidents",
+      "Setting alerts and SLOs that page engineers when user-facing reliability degrades"
+    ],
+    "gotchas": [
+      "High-cardinality labels explode storage and slow queries — keep dimensions bounded",
+      "Metrics are aggregates, not evidence: always correlate a spike with logs and traces before acting",
+      "Monitoring itself must not become a single point of failure or a noisy alerter that everyone ignores"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Services", "items": ["api", "worker", "db"] },
+        { "label": "Agents", "items": ["exporter", "ingestor"] },
+        { "label": "Store", "items": ["time-series", "log index"] },
+        { "label": "Dashboards", "items": ["grafana", "alerts"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Every service exposes and emits metrics, logs, and traces as it serves traffic." },
+        { "active_layer": 1, "annotation": "Agents scrape or push these into the observability pipeline." },
+        { "active_layer": 2, "annotation": "A time-series store and log index persist the data for fast querying." },
+        { "active_layer": 3, "annotation": "Dashboards visualize trends and alert rules page engineers on threshold breaches." },
+        { "active_layer": 1, "annotation": "Engineers drill from an alert to the related metrics, logs, and traces to find root cause." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A service serves 2,000,000 requests in a day with 1,200 errors. What is the error rate as a percentage?",
+    "starter_code": "total = 2_000_000\nerrors = 1200\n\nerror_rate_pct = (errors / total) * 100\n# Result is ___%  (round to 2 decimals)",
+    "solution": "0.06",
+    "hints": [
+      "Divide errors by total requests, then multiply by 100",
+      "1200 / 2000000 * 100 = 0.06%"
+    ],
+    "test_code": "def check(ans):\n    try: return round(float(ans),2) == 0.06\n    except: return False\nassert check(\"0.06\")\nprint(\"PASS\")"
+  },
+  "related": ["distributed-tracing", "system-design-notifications", "service-mesh", "system-design-message-queue"],
+  "tags": ["system-design", "monitoring", "observability", "metrics", "slo", "alerts", "software-engineering"]
+}

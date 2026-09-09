@@ -1,0 +1,54 @@
+{
+  "id": "system-design-search-engine-01",
+  "slug": "system-design-search-engine",
+  "title": "System Design: Distributed Search Engine",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "advanced",
+  "card": {
+    "intuition": "An inverted index (word → list of documents) stored across shards, queried in parallel and merged. Documents are ingested by a pipeline that tokenizes, normalizes, and ranks content; queries hit the index shards, which return top results scored by relevance.",
+    "analogy": "A library's back-of-book concordance: instead of reading every book to find a word, you look up the word in an alphabetized index that tells you which page of which book mentions it. The index is split across many tiny libraries, and a central librarian merges the pages each returns.",
+    "time_complexity": "Query is O(t · shards) where t is terms matched and shards are searched in parallel; each shard returns its top-k in O(k log k).",
+    "space_complexity": "The inverted index and the original documents both scale with corpus size; index size is typically 10–20% of raw text.",
+    "when_to_use": [
+      "Full-text search over a very large, changing document corpus",
+      "Relevance-ranked retrieval over keyword or phrase queries",
+      "Near-real-time ingestion (web search, product search, log search)"
+    ],
+    "gotchas": [
+      "Indexing and querying must be decoupled: documents are searchable only after the async pipeline finishes",
+      "Ranking quality depends on the scorer — naive term frequency punishes common words and favors huge documents unless normalized"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Docs", "items": ["crawler", "ingest"] },
+        { "label": "Index", "items": ["tokenize", "inverted index"] },
+        { "label": "Shards", "items": ["index shard 0", "index shard 1", "index shard 2"] },
+        { "label": "Users", "items": ["query", "ranked results"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Documents are harvested and pushed into the ingestion pipeline." },
+        { "active_layer": 1, "annotation": "The pipeline tokenizes text and builds an inverted index mapping words to documents." },
+        { "active_layer": 2, "annotation": "The index is distributed across shards so each holds a slice of the vocabulary." },
+        { "active_layer": 3, "annotation": "A query fans out to every shard in parallel; each returns its top-ranked hits." },
+        { "active_layer": 2, "annotation": "Results from all shards are merged and re-ranked before being returned to the user." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A search cluster indexes 40 million documents across 8 shards. If each shard can return its top 10 results for a query in 20 ms, what is the approximate end-to-end query latency if shards run in parallel and merge takes 5 ms?",
+    "starter_code": "shard_query_ms = 20\nmerge_ms = 5\n\nend_to_end_ms = shard_query_ms + merge_ms\n# Result is ___ ms",
+    "solution": "25",
+    "hints": [
+      "Shards run in parallel, so we take the max shard time, not the sum",
+      "20 + 5 = 25 ms"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 25\n    except: return False\nassert check(\"25\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-search-autocomplete", "system-design-video-streaming", "system-design-web-crawler", "system-design-database-sharding"],
+  "tags": ["system-design", "search", "inverted-index", "ranking", "distributed-systems", "full-text", "software-engineering"]
+}

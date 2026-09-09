@@ -1,0 +1,55 @@
+{
+  "id": "system-design-cdn-01",
+  "slug": "system-design-cdn",
+  "title": "System Design: CDN & Content Delivery",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A network of edge servers spread across the globe that cache static (and some dynamic) content as close to end users as possible, so requests never have to round-trip all the way to the origin datacenter. The origin server is authoritative; edges store copies and refresh them on a schedule or on invalidation.",
+    "analogy": "A chain of local coffee stands stocking the same packaged pastries: instead of every customer traveling to the central bakery (origin), they grab a pastry from the kiosk down the street. When a pastry expires or a new recipe ships, the bakery sends fresh stock out to every kiosk.",
+    "time_complexity": "Cache hit: O(1) retrieval of the asset from the edge node nearest the user; cache miss: one round-trip to the origin plus one edge write.",
+    "space_complexity": "Storage scales with the number of edge points-of-presence times the cached asset set; hot content is replicated near every region.",
+    "when_to_use": [
+      "Serving static assets (images, video, JS, CSS) to a globally distributed audience",
+      "Reducing origin load and bandwidth costs for read-heavy, cacheable content",
+      "Improving latency and reliability for users far from the origin datacenter"
+    ],
+    "gotchas": [
+      "Stale content: cached copies can outlive the source unless TTLs, versioned URLs, or purge mechanisms are used",
+      "Not a magic bullet: dynamically personalized or rapid-invalidation content requires push/purge APIs and careful cache-key design"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "User", "items": ["client", "browser"] },
+        { "label": "Edge POP", "items": ["cached asset?", "nearest node"] },
+        { "label": "Origin", "items": ["canonical copy", "CDN storage"] },
+        { "label": "Backend", "items": ["app server", "database"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A user requests an asset (e.g. a video or an image) from the nearest edge node." },
+        { "active_layer": 1, "annotation": "The edge returns the cached copy on a cache hit, keeping latency low and origin untouched." },
+        { "active_layer": 2, "annotation": "On a cache miss, the edge fetches the canonical copy from the origin and caches it locally." },
+        { "active_layer": 3, "annotation": "Origin-triggered backends (app + DB) generate or invalidate assets, pushed back out to edges." },
+        { "active_layer": 1, "annotation": "Future requests in that region now hit the warmed edge cache until the TTL expires." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Compute the TTL needed to hold recently invalidated content: an image is cached at an edge for 12 hours, but the origin pushes a purge after 4 hours. How many hours of stale content were served in the worst case?",
+    "starter_code": "cache_ttl_hours = 12\npurge_hours = 4\n\nstale_hours = cache_ttl_hours - purge_hours\n# Result is ______ hours",
+    "solution": "8",
+    "hints": [
+      "The asset can be served stale until the TTL would have expired naturally",
+      "Subtract the time the purge happened from the full TTL",
+      "12 - 4 = 8"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 8\n    except: return False\nassert check(\"8\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-video-streaming", "system-design-file-storage", "system-design-api-gateway", "system-design-distributed-cache"],
+  "tags": ["system-design", "cdn", "caching", "latency", "edge-computing", "content-delivery", "software-engineering"]
+}

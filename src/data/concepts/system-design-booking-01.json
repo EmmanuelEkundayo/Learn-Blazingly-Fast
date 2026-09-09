@@ -1,0 +1,55 @@
+{
+  "id": "system-design-booking-01",
+  "slug": "system-design-booking",
+  "title": "System Design: Appointment & Booking System",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A system that lets users find available time slots, reserve them, and prevents double-booking. Availability is modeled as a set of slots per provider per day, and reservations contend on that slot so only one user can claim it. When traffic spikes (event drops), optimistic or row-level locking keeps reservations consistent.",
+    "analogy": "A clinic's book: each page is one day, each line is a doctor with time slots. Two receptionists cannot both scribble their name onto the same line because the first one to write locks that line; everyone else sees it taken.",
+    "time_complexity": "Checking availability is O(slots) per provider/day; claiming a slot is an O(1) contended write plus lock.",
+    "space_complexity": "Storage grows with providers × days × slots; hyper-scale events need pre-allocated slot rows to survive hot rows.",
+    "when_to_use": [
+      "Reserving finite resources (appointments, seats, rooms, inventory) without overselling one slot",
+      "Multi-tenant calendars where many users contend for the same provider",
+      "Scheduling behind a reminder and notification pipeline"
+    ],
+    "gotchas": [
+      "A simple read-then-write check races on popular slots — you need atomic claim (lock or conditional update)",
+      "Overbooking for no-shows is a business decision, but must be modeled deliberately, not left to race conditions",
+      "Cancellation and waitlists need their own flows or you leak capacity"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Users", "items": ["browse", "book"] },
+        { "label": "API", "items": ["lookup avail", "atomic claim"] },
+        { "label": "Slots", "items": ["slot rows", "locks"] },
+        { "label": "Workers", "items": ["reminders", "waitlist"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Users browse a provider's calendar to see open time slots." },
+        { "active_layer": 1, "annotation": "The API reads availability and, on booking, tries to claim the chosen slot atomically." },
+        { "active_layer": 2, "annotation": "The slot is updated under a lock; only one user can successfully claim it." },
+        { "active_layer": 3, "annotation": "Background workers send reminders, expire pending holds, and backfill waitlisted users." },
+        { "active_layer": 1, "annotation": "The winning user gets a confirmation; losers see the slot as taken." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A clinic has 8 doctors, each with 12 slots a day. How many bookings can be made in a single day at most?",
+    "starter_code": "doctors = 8\nslots_per_doctor = 12\n\nmax_daily = doctors * slots_per_doctor\n# Result is ___ bookings/day",
+    "solution": "96",
+    "hints": [
+      "Multiply providers by slots per provider",
+      "8 * 12 = 96"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 96\n    except: return False\nassert check(\"96\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-chat", "system-design-rate-limiter", "system-design-ecommerce", "system-design-message-queue"],
+  "tags": ["system-design", "booking", "scheduling", "concurrency", "locking", "availability", "software-engineering"]
+}

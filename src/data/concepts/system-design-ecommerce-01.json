@@ -1,0 +1,56 @@
+{
+  "id": "system-design-ecommerce-01",
+  "slug": "system-design-ecommerce",
+  "title": "System Design: E-commerce & Shopping Cart",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A read-heavy catalog fronted by a searchable, cached inventory, connected to a cart service that holds line items, and an order service that turns a cart into an order through idempotent checkout. Inventory is decremented on checkout, and the whole flow is decoupled with a message queue so order fulfillment can lag behind placement.",
+    "analogy": "A department store: shoppers browse shelves (catalog + inventory screens) with many lookers and few buyers, fill a shopping cart, and take it to the register where the exact items are locked in an order and handed to the stockroom to pick and ship.",
+    "time_complexity": "Browsing and cart ops are O(1) per item with caching; checkout is O(items) plus the contended inventory decrement.",
+    "space_complexity": "Catalog, per-user carts, and orders each scale with their own volume; hot SKUs need careful inventory modeling.",
+    "when_to_use": [
+      "Building an online storefront with a huge catalog and read-heavy traffic",
+      "Modeling multi-step checkout where inventory and payment must stay consistent",
+      "Async order processing (pick, pack, ship, notify) decoupled from the customer-facing checkout"
+    ],
+    "gotchas": [
+      "Inventory must never go negative on checkout — decrement under a conditional/atomic update",
+      "A cart is not an order: checkout must be idempotent so retries don't create duplicate orders",
+      "Catalog read traffic dwarfs writes; pessimistically scaling the DB for writes wastes resources"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Shoppers", "items": ["browse", "add to cart"] },
+        { "label": "Catalog", "items": ["search", "cache"] },
+        { "label": "Cart", "items": ["line items", "per user"] },
+        { "label": "Checkout", "items": ["inventory", "idempotent"] },
+        { "label": "Orders", "items": ["queue", "fulfillment"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Shoppers browse the catalog and add items to their cart." },
+        { "active_layer": 1, "annotation": "Catalog lookups are served from a search index and cache to absorb read traffic." },
+        { "active_layer": 2, "annotation": "Cart line items accumulate per user without touching inventory yet." },
+        { "active_layer": 3, "annotation": "Checkout atomically decrements inventory and creates an order idempotently." },
+        { "active_layer": 4, "annotation": "Order placement fans out to a queue for pick, pack, ship, and notifications." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Inventory has 120 units of an item. Checkout decrements inventory by the quantity sold. After three orders of 5, 20, and 10, how many units remain?",
+    "starter_code": "inventory = 120\ndemands = [5, 20, 10]\n\nremaining = inventory - sum(demands)\n# Result is ___ units",
+    "solution": "85",
+    "hints": [
+      "Sum the sold quantities and subtract from starting inventory",
+      "120 - (5+20+10) = 85"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 85\n    except: return False\nassert check(\"85\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-payment-system", "system-design-message-queue", "system-design-distributed-cache", "system-design-notifications"],
+  "tags": ["system-design", "ecommerce", "shopping-cart", "inventory", "checkout", "catalog", "software-engineering"]
+}

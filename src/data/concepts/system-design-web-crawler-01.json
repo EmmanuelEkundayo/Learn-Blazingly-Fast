@@ -1,0 +1,56 @@
+{
+  "id": "system-design-web-crawler-01",
+  "slug": "system-design-web-crawler",
+  "title": "System Design: Web Crawler",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "advanced",
+  "card": {
+    "intuition": "A system that systematically fetches web pages, extracts links, and enqueues new URLs — starting from seed URLs and traversing the web graph until it can rediscover everything. A URL frontier controls which pages to fetch next, a seen-set dedupes visits, and politeness rules throttle how fast hosts are hammered.",
+    "analogy": "A tireless librarian who starts with a handful of books, reads each, notes the books its citations point to, and adds those to her reading pile — while making sure she never reads the same book twice and doesn't storm the same shelf too often.",
+    "time_complexity": "Each page requires one fetch plus O(1) link extraction and dedup check; total cost scales with the number of pages crawled.",
+    "space_complexity": "The URL frontier and seen-set grow with the count of distinct discovered URLs, which can be billions for the whole web.",
+    "when_to_use": [
+      "Building a search-engine index or a data pipeline over many websites",
+      "Monitoring sites for changes or capturing content at scale",
+      "Collecting large datasets from distributed sources"
+    ],
+    "gotchas": [
+      "Politeness matters: fetching too fast from one host gets you blocked and violates robots.txt expectations",
+      "The crawl frontier must dedupe aggressively, or the same page gets crawled repeatedly and wastes bandwidth",
+      "Crawling is I/O-bound and highly concurrent — you need careful throttling and graceful retries"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Seed URLS", "items": ["seed set", "frontier"] },
+        { "label": "Fetcher", "items": ["HTTP fetch", "politeness"] },
+        { "label": "Parser", "items": ["extract links", "extract text"] },
+        { "label": "Dedup", "items": ["seen-set", "bloom filter"] },
+        { "label": "Store", "items": ["raw pages", "queued urls"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "Seed URLs seed the priority frontier that decides what to fetch next." },
+        { "active_layer": 1, "annotation": "A pool of fetchers downloads pages, respecting per-host politeness limits." },
+        { "active_layer": 2, "annotation": "The parser extracts outbound links and page content." },
+        { "active_layer": 3, "annotation": "Links are deduped against the seen-set; new URLs are enqueued to the frontier." },
+        { "active_layer": 4, "annotation": "Raw pages and queued URLs persist so the crawl can resume across failures." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A crawler fetches 10 pages from host A every 60 seconds to be polite. How many requests per second does it allow to that host?",
+    "starter_code": "pages = 10\nseconds = 60\n\nrequests_per_second = pages / seconds\n# Result is ___ requests/second",
+    "solution": "0.1667",
+    "hints": [
+      "Divide the number of pages by the time window",
+      "10 / 60 = 0.1667"
+    ],
+    "test_code": "def check(ans):\n    try: return round(float(ans),2) == 0.17\n    except: return False\nassert check(\"0.1667\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-search-engine", "system-design-message-queue", "system-design-database-sharding", "system-design-file-storage"],
+  "tags": ["system-design", "web-crawler", "spider", "distributed-systems", "scraping", "frontier", "software-engineering"]
+}

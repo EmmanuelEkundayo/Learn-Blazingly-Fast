@@ -1,0 +1,56 @@
+{
+  "id": "system-design-database-sharding-01",
+  "slug": "system-design-database-sharding",
+  "title": "System Design: Database Sharding",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "advanced",
+  "card": {
+    "intuition": "Splitting a single logical database across many physical database nodes by partitioning rows, usually by a shard key. Each shard holds a subset of the data and handles its own reads and writes in parallel, letting the system scale beyond a single machine's storage and throughput limits.",
+    "analogy": "Dividing a city's phone book into volumes by first-letter ranges: looking up \"Anderson\" only requires opening the A volume instead of flipping through one giant book. Splitting the work across volumes means several people can search at once.",
+    "time_complexity": "O(log n) per-shard lookups where n is the rows per shard; routing adds O(1) hash or O(log N) range lookup to find the target shard.",
+    "space_complexity": "Total storage is distributed across S shards; each shard holds roughly 1/S of the data, but hot keys can skew utilization.",
+    "when_to_use": [
+      "Scaling write throughput or storage beyond what a single database instance can handle",
+      "Partitioning by a natural key (user_id, tenant_id, region) so related rows stay colocated",
+      "Isolating faults: one shard failing does not take down the entire dataset"
+    ],
+    "gotchas": [
+      "Querying across shards is expensive: joins, aggregations, and transactions spanning shards get complex",
+      "Choosing a poor shard key or an uneven distribution causes hotspot shards; resharing afterward is painful",
+      "Data is not inherently distributed — a hash on a monotonic ID can concentrate recent writes on one shard"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Clients", "items": ["API", "gateway"] },
+        { "label": "Router", "items": ["shard key", "hash fn"] },
+        { "label": "Shard 0", "items": ["id 0000-3FFF", "replica"] },
+        { "label": "Shard 1", "items": ["id 4000-7FFF", "replica"] },
+        { "label": "Shard 2", "items": ["id 8000-FFFF", "replica"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A request arrives carrying a shard key, usually a user or tenant id." },
+        { "active_layer": 1, "annotation": "A router hashes the key to determine which shard owns that row, routing the query." },
+        { "active_layer": 2, "annotation": "The request is served read-write from the owning shard; replicas add read redundancy." },
+        { "active_layer": 3, "annotation": "Different keys land on different shards, so writes and reads are processed in parallel." },
+        { "active_layer": 1, "annotation": "Cross-shard queries are forwarded to every shard and merged — the costly path to avoid." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A 10-node shard cluster can sustain 5,000 writes/second total. A hot product causes 2,500 writes/second to a single node. What is the maximum even per-node write rate the cluster can sustain if the load is perfectly balanced?",
+    "starter_code": "nodes = 10\npeak_write_rate = 5000\n\nper_node_even = peak_write_rate / nodes\n# Result is ___ writes/second per node",
+    "solution": "500",
+    "hints": [
+      "Evenly distributing means dividing the total capacity by the node count",
+      "5000 / 10 = 500"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 500\n    except: return False\nassert check(\"500\")\nprint(\"PASS\")"
+  },
+  "related": ["consistent-hashing-system", "system-design-distributed-cache", "system-design-key-value-store", "system-design-file-storage"],
+  "tags": ["system-design", "sharding", "database", "scaling", "partitioning", "distributed-systems", "software-engineering"]
+}

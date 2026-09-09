@@ -1,0 +1,55 @@
+{
+  "id": "system-design-key-value-store-01",
+  "slug": "system-design-key-value-store",
+  "title": "System Design: Distributed Key-Value Store",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "advanced",
+  "card": {
+    "intuition": "A row-oriented, partition-tolerant storage system that maps opaque keys to values, spread across many nodes using consistent hashing. It favors simple lookups, horizontal scalability, and tunable consistency over rich queries or complex transactions.",
+    "analogy": "A set of many luggage lockers in a huge hall, each numbered (key) and holding one item (value). Tickets are hashed to decide which hall a locker lives in, and several attendants each manage their own wing — any wing can be queried independently.",
+    "time_complexity": "Get/Put is O(1) hashing to find the owning node plus a single network hop; replication adds a bounded number of copies.",
+    "space_complexity": "Data is sharded across N nodes by consistent hashing; each node holds roughly 1/N plus replication copies, with virtual nodes smoothing distribution.",
+    "when_to_use": [
+      "Very high-throughput, low-latency lookups by primary key (sessions, config, leaderboard counters)",
+      "Eventually-consistent workloads where sacrificing strong consistency buys availability",
+      "Building blocks like a distributed cache or user-profile store"
+    ],
+    "gotchas": [
+      "No secondary indexes, joins, or range queries — you must design around primary-key access",
+      "Partitioning means you trade strong consistency for availability (CAP); multi-key atomicity is limited to a key range",
+      "Hot keys and skewed access patterns can still saturate a single node despite good hashing"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Client", "items": ["get(key)", "set(key, val)"] },
+        { "label": "Router", "items": ["consistent hash", "ring lookup"] },
+        { "label": "Node A", "items": ["range 0-3", "replica"] },
+        { "label": "Node B", "items": ["range 4-7", "replica"] },
+        { "label": "Node C", "items": ["range 8-11", "replica"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A client issues a get or set for a single key." },
+        { "active_layer": 1, "annotation": "Consistent hashing maps the key to an owning node on the ring." },
+        { "active_layer": 2, "annotation": "The owning node serves the value; replicas keep copies for availability." },
+        { "active_layer": 1, "annotation": "When nodes join or leave, only a fraction of keys need to move, not the whole dataset." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A key-value store holds 900 GB replicated 3x across 9 nodes. If each node is sized for a third of a node's load as headroom, what is the minimum per-node storage you should provision?",
+    "starter_code": "total_data_gb = 900\nreplication = 3\nnodes = 9\n\nper_node = (total_data_gb * replication) / nodes\n# Result is ___ GB per node",
+    "solution": "300",
+    "hints": [
+      "Replica count multiplies total stored data",
+      "900 * 3 / 9 = 300 GB"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 300\n    except: return False\nassert check(\"300\")\nprint(\"PASS\")"
+  },
+  "related": ["consistent-hashing-system", "system-design-distributed-cache", "system-design-database-sharding", "system-design-file-storage"],
+  "tags": ["system-design", "key-value-store", "database", "consistent-hashing", "distributed-systems", "scaling", "software-engineering"]
+}

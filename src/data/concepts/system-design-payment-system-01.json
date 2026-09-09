@@ -1,0 +1,56 @@
+{
+  "id": "system-design-payment-system-01",
+  "slug": "system-design-payment-system",
+  "title": "System Design: Payment System & Ledger",
+  "domain": "Software Engineering",
+  "category": "System Design",
+  "difficulty": "advanced",
+  "card": {
+    "intuition": "A payment flow that moves money via idempotent, auditable operations: a client requests a charge, the system authorizes against the provider, debits a ledger, and settles. Everything is logged to an append-only ledger so no transaction is ever lost, and idempotency keys prevent double charges.",
+    "analogy": "A bank teller who writes every transaction in a numbered, unerasable logbook: even if a customer asks twice to deposit the same check, the idempotency key ensures it is only credited once, and the logbook lets an auditor reconstruct exactly what happened.",
+    "time_complexity": "Each step (authorize, capture, ledger write) is O(1) for a single payment; end-to-end is dominated by provider network latency.",
+    "space_complexity": "The append-only ledger grows monotonically with every transaction; retention is typically years for compliance.",
+    "when_to_use": [
+      "Charging customers and crediting payouts with exactly-once semantics",
+      "Needing an audit trail of every money movement",
+      "Integrating with external PSPs/gateways that can be slow, flaky, or duplicate responses"
+    ],
+    "gotchas": [
+      "Idempotency is non-negotiable: retries from network timeouts must not double-charge",
+      "The DB and external provider can disagree — reconcile asynchronously rather than trusting one side blindly",
+      "Money is where consistency bugs are most expensive; never mutate a balance without a ledger entry"
+    ]
+  },
+  "visualization": {
+    "type": "architecture-diagram",
+    "config": {
+      "layers": [
+        { "label": "Client", "items": ["mobile app", "web"] },
+        { "label": "API", "items": ["idempotency", "validate"] },
+        { "label": "Provider", "items": ["PSP/gateway", "bank rails"] },
+        { "label": "Ledger", "items": ["append-only", "balance store"] },
+        { "label": "Reconciler", "items": ["job", "alerts"] }
+      ],
+      "steps": [
+        { "active_layer": 0, "annotation": "A client submits a charge request carrying a unique idempotency key." },
+        { "active_layer": 1, "annotation": "The API checks the key: an existing result is returned, otherwise the request proceeds." },
+        { "active_layer": 2, "annotation": "The request is authorized and captured through the payment provider." },
+        { "active_layer": 3, "annotation": "On success, an immutable ledger entry is appended and the balance is updated." },
+        { "active_layer": 4, "annotation": "A reconciler compares the ledger with provider reports to catch mismatches and duplicates." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A client retries a $50 charge 3 times due to network timeouts, all with the same idempotency key. The provider charged once. How many times is the user's account debited?",
+    "starter_code": "attempts = 3\nauthorized_charges = 1\n\ndebits = authorized_charges\n# Result is ___ debit(s)",
+    "solution": "1",
+    "hints": [
+      "The idempotency key deduplicates retries",
+      "The user is debited once, matching the single authorized charge"
+    ],
+    "test_code": "def check(ans):\n    try: return int(ans) == 1\n    except: return False\nassert check(\"1\")\nprint(\"PASS\")"
+  },
+  "related": ["system-design-ecommerce", "system-design-notifications", "system-design-key-value-store", "system-design-chat"],
+  "tags": ["system-design", "payments", "ledger", "idempotency", "fintech", "consistency", "software-engineering"]
+}
