@@ -1,5 +1,5 @@
 import { useEffect, lazy } from 'react'
-import { Routes, Route } from 'react-router'
+import { Routes, Route, Navigate } from 'react-router'
 import { Toaster } from 'react-hot-toast'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import OnboardingTrigger from './components/ui/OnboardingTrigger.jsx'
@@ -60,6 +60,8 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/"                element={<Home />} />
           <Route path="/concept/:slug"   element={<Concept />} />
+          <Route path="/concepts/:slug"  element={<Concept />} />
+          <Route path="/concepts"        element={<Navigate to="/browse" replace />} />
           <Route path="/browse"          element={<Browse />} />
           <Route path="/projects"        element={<Projects />} />
           <Route path="/project/:slug"   element={<Project />} />
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="/cheatsheets/:id" element={<CheatSheet />} />
           <Route path="/math"            element={<MathTricks />} />
           <Route path="/math/:slug"      element={<MathTrick />} />
+          <Route path="*"                element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </ErrorBoundary>

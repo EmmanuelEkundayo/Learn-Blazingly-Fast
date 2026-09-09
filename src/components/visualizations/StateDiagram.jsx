@@ -350,6 +350,21 @@ function resolveStateConfig(config) {
 export default function StateDiagram({ config = {} }) {
   const { states, transitions, steps } = resolveStateConfig(config)
 
+  const [idx, setIdx]         = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed]     = useState(1)
+
+  const cur              = steps[idx]
+  const activeState      = cur?.active_state      ?? null
+  const activeTransition = cur?.active_transition ?? null   // { from, to }
+
+  useInterval(
+    () => { if (idx < steps.length - 1) setIdx(i => i + 1); else setPlaying(false) },
+    playing ? SPEED_MS[speed] : null,
+  )
+
+  const handleReset = useCallback(() => { setIdx(0); setPlaying(false) }, [])
+
   const { W, H, positions } = computeLayout(states)
   const stateIdx = Object.fromEntries(states.map((s, i) => [s.id, i]))
 

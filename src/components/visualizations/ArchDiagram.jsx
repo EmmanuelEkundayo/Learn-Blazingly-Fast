@@ -156,6 +156,20 @@ function resolveArchConfig(config) {
 export default function ArchDiagram({ config = {} }) {
   const { layers, steps } = resolveArchConfig(config)
 
+  const [idx, setIdx]         = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed]     = useState(1)
+
+  const cur         = steps[idx]
+  const activeLayer = cur?.active_layer ?? -1
+
+  useInterval(
+    () => { if (idx < steps.length - 1) setIdx(i => i + 1); else setPlaying(false) },
+    playing ? SPEED_MS[speed] : null,
+  )
+
+  const handleReset = useCallback(() => { setIdx(0); setPlaying(false) }, [])
+
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-surface-600 bg-surface-800 p-4 overflow-x-auto">
