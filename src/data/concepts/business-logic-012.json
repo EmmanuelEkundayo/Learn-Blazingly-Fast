@@ -1,9 +1,9 @@
 {
-  "id": "bl-70f2e42f",
-  "slug": "business-logic-742",
-  "title": "Rate Limiting",
+  "id": "bl-ab4a4b1a",
+  "slug": "business-logic-012",
+  "title": "Factory Method Pattern",
   "domain": "Business Logic",
-  "category": "Security Best Practices",
+  "category": "Logging & Monitoring",
   "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -29,22 +29,22 @@
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Refactor the following business logic code to apply design patterns principles.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "type": "fill-in-the-blank",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider edge cases",
-      "Apply SOLID principles",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-4"
+    "bl-related-2"
   ],
   "tags": [
-    "actor",
+    "factory",
     "advanced",
     "business"
   ]

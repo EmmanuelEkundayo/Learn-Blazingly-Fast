@@ -1,10 +1,10 @@
 {
-  "id": "bl-4abe9469",
-  "slug": "business-logic-757",
-  "title": "CQRS",
+  "id": "bl-d701ad64",
+  "slug": "business-logic-026",
+  "title": "Byzantine Fault Tolerance",
   "domain": "Business Logic",
-  "category": "Microservices",
-  "difficulty": "advanced",
+  "category": "Cache Strategies",
+  "difficulty": "beginner",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -22,30 +22,30 @@
     ]
   },
   "visualization": {
-    "type": "architecture-diagram",
+    "type": "timeline-step",
     "config": {
-      "layers": 3,
-      "services": "cache"
+      "events": 5,
+      "timeframe": "release"
     }
   },
   "exercise": {
     "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks data integrity.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "prompt": "Identify the business rule violation: missing validation.",
+    "starter_code": "// business logic implementation starter & diff: beginner",
+    "solution": "// solution for business logic & diff: beginner",
     "hints": [
-      "Consider edge cases",
-      "Apply clean code",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: beginner\nassert true; // placeholder test"
   },
   "related": [
     "bl-related-4"
   ],
   "tags": [
-    "backpressure",
-    "advanced",
+    "byzantine",
+    "beginner",
     "business"
   ]
 }

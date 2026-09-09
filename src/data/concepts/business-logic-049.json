@@ -1,9 +1,9 @@
 {
-  "id": "bl-aee02716",
-  "slug": "business-logic-014",
+  "id": "bl-b466bc7e",
+  "slug": "business-logic-049",
   "title": "CAP Theorem",
   "domain": "Business Logic",
-  "category": "Microservices",
+  "category": "Performance Optimization",
   "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -22,15 +22,15 @@
     ]
   },
   "visualization": {
-    "type": "decision-boundary",
+    "type": "state-diagram",
     "config": {
-      "choices": 3,
-      "use_case": "auth"
+      "mode": "advanced",
+      "show_transitions": true
     }
   },
   "exercise": {
     "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks input format.",
+    "prompt": "Identify the business rule violation: missing validation.",
     "starter_code": "// business logic implementation starter & diff: advanced",
     "solution": "// solution for business logic & diff: advanced",
     "hints": [
@@ -41,7 +41,7 @@
     "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-3"
+    "bl-related-2"
   ],
   "tags": [
     "cap",

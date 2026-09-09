@@ -1,9 +1,9 @@
 {
-  "id": "bl-637acf9f",
-  "slug": "business-logic-116",
-  "title": "Backpressure",
+  "id": "bl-e7af68dc",
+  "slug": "business-logic-019",
+  "title": "Adapter Pattern",
   "domain": "Business Logic",
-  "category": "SOLID Principles",
+  "category": "DevOps & CI/CD",
   "difficulty": "intermediate",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -22,26 +22,26 @@
     ]
   },
   "visualization": {
-    "type": "architecture-diagram",
+    "type": "decision-boundary",
     "config": {
-      "layers": 3,
-      "services": "web"
+      "choices": 5,
+      "use_case": "auth"
     }
   },
   "exercise": {
     "type": "fill-in-the-blank",
-    "prompt": "Refactor the following business logic code to apply SOLID principles.",
-    "starter_code": "// business logic implementation starter // diff: intermediate",
-    "solution": "// solution for business logic // diff: intermediate",
+    "prompt": "Identify the business rule violation: missing validation.",
+    "starter_code": "// business logic implementation starter & diff: intermediate",
+    "solution": "// solution for business logic & diff: intermediate",
     "hints": [
-      "Consider edge cases",
-      "Apply SOLID principles",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: intermediate\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: intermediate\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-5"
+    "bl-related-3"
   ],
   "tags": [
     "adapter",

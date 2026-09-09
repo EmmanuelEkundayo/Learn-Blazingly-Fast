@@ -1,9 +1,9 @@
 {
-  "id": "bl-2b8606ff",
-  "slug": "business-logic-931",
-  "title": "Byzantine Fault Tolerance",
+  "id": "bl-2d3feddd",
+  "slug": "business-logic-024",
+  "title": "Actor Model",
   "domain": "Business Logic",
-  "category": "Logging & Monitoring",
+  "category": "Database Design",
   "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -24,27 +24,27 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "layers": 4,
-      "services": "web"
+      "layers": 5,
+      "services": "db"
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Identify the business rule violation: tight coupling.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "type": "fill-in-the-blank",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider boundary values",
-      "Apply SOLID principles",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-1"
+    "bl-related-2"
   ],
   "tags": [
-    "solid",
+    "actor",
     "advanced",
     "business"
   ]

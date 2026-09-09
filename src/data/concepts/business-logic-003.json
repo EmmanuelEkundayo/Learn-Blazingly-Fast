@@ -1,10 +1,10 @@
 {
-  "id": "bl-e34cee68",
-  "slug": "business-logic-643",
-  "title": "Factory Method Pattern",
+  "id": "bl-eafced75",
+  "slug": "business-logic-003",
+  "title": "Observer Pattern",
   "domain": "Business Logic",
-  "category": "DevOps & CI/CD",
-  "difficulty": "intermediate",
+  "category": "Microservices",
+  "difficulty": "beginner",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -22,30 +22,30 @@
     ]
   },
   "visualization": {
-    "type": "state-diagram",
+    "type": "decision-boundary",
     "config": {
-      "mode": "intermediate",
-      "show_transitions": true
+      "choices": 5,
+      "use_case": "checkout"
     }
   },
   "exercise": {
     "type": "fill-in-the-blank",
-    "prompt": "Identify the business rule violation: hardcoded values.",
-    "starter_code": "// business logic implementation starter // diff: intermediate",
-    "solution": "// solution for business logic // diff: intermediate",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: beginner",
+    "solution": "// solution for business logic & diff: beginner",
     "hints": [
-      "Consider boundary values",
-      "Apply SOLID principles",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: intermediate\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: beginner\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-5"
+    "bl-related-4"
   ],
   "tags": [
-    "actor",
-    "intermediate",
+    "observer",
+    "beginner",
     "business"
   ]
 }

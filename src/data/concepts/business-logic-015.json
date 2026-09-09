@@ -1,7 +1,7 @@
 {
-  "id": "bl-30107c57",
-  "slug": "business-logic-788",
-  "title": "Factory Method Pattern",
+  "id": "bl-9c6e1571",
+  "slug": "business-logic-015",
+  "title": "SOLID Open/Closed Principle",
   "domain": "Business Logic",
   "category": "Testing Strategies",
   "difficulty": "advanced",
@@ -25,23 +25,23 @@
     "type": "timeline-step",
     "config": {
       "events": 6,
-      "timeframe": "release"
+      "timeframe": "historical"
     }
   },
   "exercise": {
-    "type": "fill-in-the-blank",
-    "prompt": "Refactor the following business logic code to apply design patterns principles.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "type": "code-completion",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider input validation",
-      "Apply design patterns",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-2"
+    "bl-related-4"
   ],
   "tags": [
     "solid",

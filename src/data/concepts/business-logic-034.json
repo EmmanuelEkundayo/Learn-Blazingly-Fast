@@ -1,10 +1,10 @@
 {
-  "id": "bl-db6b20ea",
-  "slug": "business-logic-997",
-  "title": "Backpressure",
+  "id": "bl-aa1503ae",
+  "slug": "business-logic-034",
+  "title": "SOLID Open/Closed Principle",
   "domain": "Business Logic",
-  "category": "Performance Optimization",
-  "difficulty": "beginner",
+  "category": "Microservices",
+  "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -22,30 +22,30 @@
     ]
   },
   "visualization": {
-    "type": "state-diagram",
+    "type": "timeline-step",
     "config": {
-      "mode": "beginner",
-      "show_transitions": true
+      "events": 6,
+      "timeframe": "sprint"
     }
   },
   "exercise": {
     "type": "code-completion",
-    "prompt": "Identify the business rule violation: hardcoded values.",
-    "starter_code": "// business logic implementation starter // diff: beginner",
-    "solution": "// solution for business logic // diff: beginner",
+    "prompt": "Refactor the following business logic code to apply SOLID principles.",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider edge cases",
-      "Apply SOLID principles",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: beginner\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-1"
+    "bl-related-3"
   ],
   "tags": [
-    "actor",
-    "beginner",
+    "solid",
+    "advanced",
     "business"
   ]
 }

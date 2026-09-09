@@ -1,10 +1,10 @@
 {
-  "id": "bl-aee02716",
-  "slug": "business-logic-014",
-  "title": "CAP Theorem",
+  "id": "bl-4f7119e5",
+  "slug": "business-logic-044",
+  "title": "Byzantine Fault Tolerance",
   "domain": "Business Logic",
   "category": "Microservices",
-  "difficulty": "advanced",
+  "difficulty": "beginner",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -22,30 +22,30 @@
     ]
   },
   "visualization": {
-    "type": "decision-boundary",
+    "type": "state-diagram",
     "config": {
-      "choices": 3,
-      "use_case": "auth"
+      "mode": "beginner",
+      "show_transitions": true
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks input format.",
-    "starter_code": "// business logic implementation starter & diff: advanced",
-    "solution": "// solution for business logic & diff: advanced",
+    "type": "fill-in-the-blank",
+    "prompt": "Refactor the following business logic code to apply SOLID principles.",
+    "starter_code": "// business logic implementation starter & diff: beginner",
+    "solution": "// solution for business logic & diff: beginner",
     "hints": [
       "Consider edge cases, boundary values, input validation",
       "Apply SOLID principles, design patterns, clean code",
       "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: beginner\nassert true; // placeholder test"
   },
   "related": [
     "bl-related-3"
   ],
   "tags": [
-    "cap",
-    "advanced",
+    "byzantine",
+    "beginner",
     "business"
   ]
 }

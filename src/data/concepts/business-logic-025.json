@@ -1,9 +1,9 @@
 {
-  "id": "bl-8c8b17bf",
-  "slug": "business-logic-124",
-  "title": "Backpressure",
+  "id": "bl-ee81aadf",
+  "slug": "business-logic-025",
+  "title": "SOLID Open/Closed Principle",
   "domain": "Business Logic",
-  "category": "Database Design",
+  "category": "Logging & Monitoring",
   "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -22,29 +22,29 @@
     ]
   },
   "visualization": {
-    "type": "state-diagram",
+    "type": "decision-boundary",
     "config": {
-      "mode": "advanced",
-      "show_transitions": true
+      "choices": 5,
+      "use_case": "checkout"
     }
   },
   "exercise": {
-    "type": "code-completion",
+    "type": "fill-in-the-blank",
     "prompt": "Refactor the following business logic code to apply SOLID principles.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider input validation",
-      "Apply clean code",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-2"
+    "bl-related-4"
   ],
   "tags": [
-    "observer",
+    "solid",
     "advanced",
     "business"
   ]

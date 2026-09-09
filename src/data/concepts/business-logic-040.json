@@ -1,10 +1,10 @@
 {
-  "id": "bl-1fc85712",
-  "slug": "business-logic-884",
-  "title": "Consistent Hashing",
+  "id": "bl-37439249",
+  "slug": "business-logic-040",
+  "title": "Retry Pattern",
   "domain": "Business Logic",
   "category": "Logging & Monitoring",
-  "difficulty": "advanced",
+  "difficulty": "beginner",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -24,28 +24,28 @@
   "visualization": {
     "type": "timeline-step",
     "config": {
-      "events": 6,
+      "events": 8,
       "timeframe": "sprint"
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks data integrity.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "type": "fill-in-the-blank",
+    "prompt": "Identify the business rule violation: missing validation.",
+    "starter_code": "// business logic implementation starter & diff: beginner",
+    "solution": "// solution for business logic & diff: beginner",
     "hints": [
-      "Consider edge cases",
-      "Apply SOLID principles",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: beginner\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-4"
+    "bl-related-1"
   ],
   "tags": [
-    "idempotency",
-    "advanced",
+    "retry",
+    "beginner",
     "business"
   ]
 }

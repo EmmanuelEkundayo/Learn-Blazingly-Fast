@@ -1,9 +1,9 @@
 {
-  "id": "bl-4db8365e",
-  "slug": "business-logic-879",
-  "title": "Reactive Streams",
+  "id": "bl-a6f99677",
+  "slug": "business-logic-027",
+  "title": "Actor Model",
   "domain": "Business Logic",
-  "category": "Database Design",
+  "category": "Microservices",
   "difficulty": "intermediate",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -24,27 +24,27 @@
   "visualization": {
     "type": "decision-boundary",
     "config": {
-      "choices": 4,
-      "use_case": "login"
+      "choices": 2,
+      "use_case": "checkout"
     }
   },
   "exercise": {
     "type": "fill-in-the-blank",
-    "prompt": "Implement a business rule validator that checks business rules.",
-    "starter_code": "// business logic implementation starter // diff: intermediate",
-    "solution": "// solution for business logic // diff: intermediate",
+    "prompt": "Identify the business rule violation: missing validation.",
+    "starter_code": "// business logic implementation starter & diff: intermediate",
+    "solution": "// solution for business logic & diff: intermediate",
     "hints": [
-      "Consider input validation",
-      "Apply clean code",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: intermediate\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: intermediate\nassert true; // placeholder test"
   },
   "related": [
     "bl-related-2"
   ],
   "tags": [
-    "timeout",
+    "actor",
     "intermediate",
     "business"
   ]

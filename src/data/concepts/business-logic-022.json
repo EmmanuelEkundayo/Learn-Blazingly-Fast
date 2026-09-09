@@ -1,9 +1,9 @@
 {
-  "id": "bl-99ad7e4b",
-  "slug": "business-logic-565",
-  "title": "Circuit Breaker",
+  "id": "bl-c42313de",
+  "slug": "business-logic-022",
+  "title": "CQRS",
   "domain": "Business Logic",
-  "category": "Database Design",
+  "category": "Cache Strategies",
   "difficulty": "beginner",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -29,22 +29,22 @@
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks data integrity.",
-    "starter_code": "// business logic implementation starter // diff: beginner",
-    "solution": "// solution for business logic // diff: beginner",
+    "type": "fill-in-the-blank",
+    "prompt": "Refactor the following business logic code to apply SOLID principles.",
+    "starter_code": "// business logic implementation starter & diff: beginner",
+    "solution": "// solution for business logic & diff: beginner",
     "hints": [
-      "Consider edge cases",
-      "Apply clean code",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: beginner\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: beginner\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-1"
+    "bl-related-4"
   ],
   "tags": [
-    "cap",
+    "cqrs",
     "beginner",
     "business"
   ]

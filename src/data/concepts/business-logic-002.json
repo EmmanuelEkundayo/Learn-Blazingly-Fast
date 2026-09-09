@@ -1,10 +1,10 @@
 {
-  "id": "bl-b4a63489",
-  "slug": "business-logic-899",
-  "title": "Byzantine Fault Tolerance",
+  "id": "bl-2146e382",
+  "slug": "business-logic-002",
+  "title": "CQRS",
   "domain": "Business Logic",
-  "category": "SOLID Principles",
-  "difficulty": "intermediate",
+  "category": "Design Patterns",
+  "difficulty": "advanced",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -22,30 +22,30 @@
     ]
   },
   "visualization": {
-    "type": "state-diagram",
+    "type": "architecture-diagram",
     "config": {
-      "mode": "intermediate",
-      "show_transitions": true
+      "layers": 5,
+      "services": "db"
     }
   },
   "exercise": {
     "type": "code-completion",
-    "prompt": "Implement a business rule validator that checks business rules.",
-    "starter_code": "// business logic implementation starter // diff: intermediate",
-    "solution": "// solution for business logic // diff: intermediate",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider edge cases",
-      "Apply design patterns",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: intermediate\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-5"
+    "bl-related-3"
   ],
   "tags": [
-    "observer",
-    "intermediate",
+    "cqrs",
+    "advanced",
     "business"
   ]
 }

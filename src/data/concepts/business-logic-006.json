@@ -1,10 +1,10 @@
 {
-  "id": "bl-2e1bac9a",
-  "slug": "business-logic-847",
-  "title": "Retry Pattern",
+  "id": "bl-f92a00a1",
+  "slug": "business-logic-006",
+  "title": "Circuit Breaker",
   "domain": "Business Logic",
-  "category": "Security Best Practices",
-  "difficulty": "beginner",
+  "category": "Database Design",
+  "difficulty": "intermediate",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -24,28 +24,28 @@
   "visualization": {
     "type": "architecture-diagram",
     "config": {
-      "layers": 3,
-      "services": "web"
+      "layers": 5,
+      "services": "db"
     }
   },
   "exercise": {
     "type": "fill-in-the-blank",
-    "prompt": "Implement a business rule validator that checks data integrity.",
-    "starter_code": "// business logic implementation starter // diff: beginner",
-    "solution": "// solution for business logic // diff: beginner",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: intermediate",
+    "solution": "// solution for business logic & diff: intermediate",
     "hints": [
-      "Consider input validation",
-      "Apply clean code",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: beginner\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: intermediate\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-2"
+    "bl-related-4"
   ],
   "tags": [
     "circuit",
-    "beginner",
+    "intermediate",
     "business"
   ]
 }

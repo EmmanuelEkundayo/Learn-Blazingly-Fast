@@ -1,10 +1,10 @@
 {
-  "id": "bl-ba003141",
-  "slug": "business-logic-546",
-  "title": "State Pattern",
+  "id": "bl-a530bf52",
+  "slug": "business-logic-060",
+  "title": "Circuit Breaker",
   "domain": "Business Logic",
-  "category": "SOLID Principles",
-  "difficulty": "beginner",
+  "category": "Microservices",
+  "difficulty": "intermediate",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
     "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
@@ -25,27 +25,27 @@
     "type": "architecture-diagram",
     "config": {
       "layers": 4,
-      "services": "web"
+      "services": "api"
     }
   },
   "exercise": {
-    "type": "code-completion",
-    "prompt": "Identify the business rule violation: tight coupling.",
-    "starter_code": "// business logic implementation starter // diff: beginner",
-    "solution": "// solution for business logic // diff: beginner",
+    "type": "fill-in-the-blank",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: intermediate",
+    "solution": "// solution for business logic & diff: intermediate",
     "hints": [
-      "Consider boundary values",
-      "Apply clean code",
-      "Write integration tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: beginner\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: intermediate\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-4"
+    "bl-related-2"
   ],
   "tags": [
-    "cqrs",
-    "beginner",
+    "circuit",
+    "intermediate",
     "business"
   ]
 }

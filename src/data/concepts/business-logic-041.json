@@ -1,7 +1,7 @@
 {
-  "id": "bl-aee02716",
-  "slug": "business-logic-014",
-  "title": "CAP Theorem",
+  "id": "bl-fc393614",
+  "slug": "business-logic-041",
+  "title": "Event Sourcing",
   "domain": "Business Logic",
   "category": "Microservices",
   "difficulty": "advanced",
@@ -22,10 +22,10 @@
     ]
   },
   "visualization": {
-    "type": "decision-boundary",
+    "type": "timeline-step",
     "config": {
-      "choices": 3,
-      "use_case": "auth"
+      "events": 8,
+      "timeframe": "sprint"
     }
   },
   "exercise": {
@@ -44,7 +44,7 @@
     "bl-related-3"
   ],
   "tags": [
-    "cap",
+    "event",
     "advanced",
     "business"
   ]

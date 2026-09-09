@@ -1,7 +1,7 @@
 {
-  "id": "bl-ae0e5f97",
-  "slug": "business-logic-591",
-  "title": "Timeout and Cancellation",
+  "id": "bl-fddf9989",
+  "slug": "business-logic-009",
+  "title": "Event Sourcing",
   "domain": "Business Logic",
   "category": "Testing Strategies",
   "difficulty": "advanced",
@@ -22,29 +22,29 @@
     ]
   },
   "visualization": {
-    "type": "architecture-diagram",
+    "type": "state-diagram",
     "config": {
-      "layers": 3,
-      "services": "db"
+      "mode": "advanced",
+      "show_transitions": true
     }
   },
   "exercise": {
-    "type": "code-completion",
+    "type": "fill-in-the-blank",
     "prompt": "Implement a business rule validator that checks input format.",
-    "starter_code": "// business logic implementation starter // diff: advanced",
-    "solution": "// solution for business logic // diff: advanced",
+    "starter_code": "// business logic implementation starter & diff: advanced",
+    "solution": "// solution for business logic & diff: advanced",
     "hints": [
-      "Consider boundary values",
-      "Apply clean code",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: advanced\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: advanced\nassert true; // placeholder test"
   },
   "related": [
     "bl-related-5"
   ],
   "tags": [
-    "cap",
+    "event",
     "advanced",
     "business"
   ]

@@ -1,9 +1,9 @@
 {
-  "id": "bl-f04904ab",
-  "slug": "business-logic-909",
-  "title": "Byzantine Fault Tolerance",
+  "id": "bl-ff177e53",
+  "slug": "business-logic-035",
+  "title": "Strategy Pattern",
   "domain": "Business Logic",
-  "category": "Testing Strategies",
+  "category": "Database Design",
   "difficulty": "intermediate",
   "card": {
     "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
@@ -22,29 +22,29 @@
     ]
   },
   "visualization": {
-    "type": "decision-boundary",
+    "type": "state-diagram",
     "config": {
-      "choices": 5,
-      "use_case": "checkout"
+      "mode": "intermediate",
+      "show_transitions": true
     }
   },
   "exercise": {
     "type": "code-completion",
-    "prompt": "Refactor the following business logic code to apply SOLID principles.",
-    "starter_code": "// business logic implementation starter // diff: intermediate",
-    "solution": "// solution for business logic // diff: intermediate",
+    "prompt": "Implement a business rule validator that checks input format.",
+    "starter_code": "// business logic implementation starter & diff: intermediate",
+    "solution": "// solution for business logic & diff: intermediate",
     "hints": [
-      "Consider input validation",
-      "Apply design patterns",
-      "Write unit tests to verify correctness"
+      "Consider edge cases, boundary values, input validation",
+      "Apply SOLID principles, design patterns, clean code",
+      "Write unit tests, integration tests to verify correctness"
     ],
-    "test_code": "// test case for business logic // diff: intermediate\nassert true; // placeholder test"
+    "test_code": "// test case for business logic & diff: intermediate\nassert true; // placeholder test"
   },
   "related": [
-    "bl-related-4"
+    "bl-related-3"
   ],
   "tags": [
-    "observer",
+    "strategy",
     "intermediate",
     "business"
   ]
