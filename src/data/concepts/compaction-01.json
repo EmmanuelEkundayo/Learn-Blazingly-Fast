@@ -1,0 +1,70 @@
+{
+  "id": "compaction-01",
+  "slug": "compaction",
+  "title": "Compaction",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Compaction is a handoff done in-memory: the previous session's history is summarised and the summary seeds a fresh session. It is lossy by design — the transcript is a primary source and the summary a secondary source, trading detail for headroom. Because the summary is written by the model, it can be prompted, and timing matters: compact at a phase boundary, after the plan is settled, not mid-task.",
+    "analogy": "Condensing a long stand-up into a status email: detail is traded for headroom, and you can tell the writer which topics must survive the compression before they write.",
+    "time_complexity": "The model is stateless, so the summary is cheaper to re-read than the full transcript, but every subsequent request still bills the carried tokens.",
+    "space_complexity": "The context window is finite, and compaction frees budget by dropping the original history and seeding the next session with a smaller summary.",
+    "when_to_use": [
+      "When the context window is heavy and work remains, such as a test pass still to run",
+      "Writing what must survive into the summary prompt, like preserving schema decisions",
+      "Compacting at a phase boundary after the plan is settled rather than mid-task",
+      "When clearing would lose more than you can afford to lose"
+    ],
+    "gotchas": [
+      "Lossy by design — whatever did not make it into the summary is gone from the context",
+      "The summary is written by the model, so prompt it to preserve what matters or it decides for you",
+      "Timing matters — compact at a phase boundary, not in the middle of a task"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Window near full",
+          "sub": "history in context",
+          "annotation": "A long session fills the context window with tool results, file reads, and wrong turns."
+        },
+        {
+          "label": "Summarise",
+          "sub": "model condenses history",
+          "annotation": "The harness asks the model to summarise the session into a compact account."
+        },
+        {
+          "label": "Drop original",
+          "sub": "old history discarded",
+          "annotation": "The original transcript is thrown away from context, keeping only the summary."
+        },
+        {
+          "label": "Seed fresh session",
+          "sub": "continue on the summary",
+          "annotation": "A fresh session continues from the summary, carrying what survived the compression."
+        },
+        {
+          "label": "Pointer on disk",
+          "sub": "recover lost detail",
+          "annotation": "Some harnesses keep the old transcript on disk and leave a context pointer so lost detail can be recovered."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete compact so it keeps only the keys worth preserving and returns the summary plus the fresh session it seeds.",
+    "starter_code": "def compact(history, keep_keys):\n    summary = {k: history[k] for k in keep_keys if k in history}\n    fresh = ___________\n    return {'summary': summary, 'fresh': fresh}",
+    "solution": "fresh = 'session seeded with summary'",
+    "hints": [
+      "Only the keys you keep survive compaction; everything else is dropped from context.",
+      "The fresh session runs on the summary, not the original history."
+    ],
+    "test_code": "out = compact({'schema': 'v2', 'exploration': 'x'}, ['schema'])\nassert out['summary'] == {'schema': 'v2'}\nassert out['fresh'] == 'session seeded with summary'\nprint('PASS')"
+  },
+  "related": ["handoff", "clearing", "autocompact", "secondary-source", "primary-source", "context-window", "context-pointer"],
+  "tags": ["compaction", "summarization", "context-window", "lossy", "handoff"]
+}

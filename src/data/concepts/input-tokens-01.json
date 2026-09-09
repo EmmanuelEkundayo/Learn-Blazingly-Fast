@@ -1,0 +1,48 @@
+{
+  "id": "input-tokens-01",
+  "slug": "input-tokens",
+  "title": "Input tokens",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Input tokens are everything the harness sends on each model provider request: the system prompt, conversation history, and tool results — everything the model reads before it writes. They are billed at a lower rate than output tokens but make up most of an AI-coding bill, because the stateless model re-sends the entire session every turn.",
+    "analogy": "Input tokens are like re-printing the whole project spec for every meeting: each turn you photocopy everything said before at a discount rate, and over fifty turns the photocopying dwarfs the notes you actually write.",
+    "time_complexity": "A single request may produce a few hundred output tokens but re-send a hundred thousand input tokens of accumulated history, so inputs dominate the bill; prefix caching shrinks it, and clearing or compacting shrinks what gets re-sent.",
+    "space_complexity": "The session's whole history occupies the input side of the context window on every request, so accumulation decides how close you are to truncation, compaction, or a handoff.",
+    "when_to_use": [
+      "Explaining a high bill when the agent barely writes anything — it's the inputs re-sending history",
+      "Deciding when to clear or compact between tasks to keep input costs down",
+      "Reasoning about prefix-cache savings where repeated history is billed as cheap cache tokens"
+    ],
+    "gotchas": [
+      "The input for turn fifty contains the previous forty-nine turns",
+      "Without the prefix cache you re-pay the full history as input on every request"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "System prompt", "sub": "every request", "annotation": "The system prompt is part of the input on every request." },
+        { "label": "History", "sub": "re-sent", "annotation": "The full conversation is re-sent as input each turn." },
+        { "label": "Tool results", "sub": "appended", "annotation": "Each tool result is appended to the incoming context." },
+        { "label": "Read", "sub": "cheap but big", "annotation": "Inputs are processed at a lower rate, but they dominate the volume." },
+        { "label": "Cache", "sub": "prefix discount", "annotation": "The prefix cache turns exact-history matches into cheap cache tokens." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Trace how a session's re-sent input grows: given each turn's new token count, return the total input tokens carried by the requests across all turns (each request resends everything before it).",
+    "starter_code": "def cumulative_input(turn_tokens):\n    total = 0\n    sent = 0\n    for t in turn_tokens:\n        sent = ___________\n        total = total + sent\n    return total\n",
+    "solution": "sent + t",
+    "hints": [
+      "Each turn's request sends the already-sent history plus this turn's new tokens",
+      "Accumulate that running sent count into the grand total turn by turn"
+    ],
+    "test_code": "assert cumulative_input([10, 10, 10]) == 60\nassert cumulative_input([]) == 0\nassert cumulative_input([5]) == 5\nprint('PASS')"
+  },
+  "related": ["output-tokens", "cache-tokens", "prefix-cache", "model-provider-request", "context-window", "compaction"],
+  "tags": ["input-tokens", "prompt", "billing", "history", "context"]
+}

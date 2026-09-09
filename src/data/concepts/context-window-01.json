@@ -1,0 +1,48 @@
+{
+  "id": "context-window-01",
+  "slug": "context-window",
+  "title": "Context Window",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Everything the model sees on each request — a single finite sequence of tokens: the system prompt, the conversation so far, and every tool result fed back in. It's the only surface through which the model perceives anything; if a fact isn't in the sequence, the model doesn't know it exists.",
+    "analogy": "A whiteboard with a fixed number of dry-erase lines: each turn scribbles more onto it until it's full, and any new fact must erase or squeeze out something already written.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "The context window is a finite token budget; everything loaded competes for it, and overflow means truncation, compaction, or handoff.",
+    "when_to_use": [
+      "Choosing which files the task touches instead of pasting the whole repo into the prompt",
+      "Budgeting input: treat the window as a token budget and load only what the task needs",
+      "Bringing anything else in via a tool call rather than direct pasting"
+    ],
+    "gotchas": [
+      "It is finite — a long session eventually hits the limit, forcing compaction or clearing",
+      "It is not memory: the window is working state and does not persist across sessions, unlike a memory system layered on top"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Open window", "sub": "empty budget", "annotation": "A request begins with its finite token budget for this turn." },
+        { "label": "System prompt", "sub": "standing brief", "annotation": "The system prompt is prepended and consumes tokens on every request." },
+        { "label": "History + tools", "sub": "accumulating", "annotation": "Messages and tool results accumulate, each competing for the remaining budget." },
+        { "label": "Budget hits", "sub": "overflow", "annotation": "The window fills and something must go: truncation, compaction, or handoff." },
+        { "label": "Reset / handoff", "sub": "fresh session", "annotation": "Clearing or compacting starts a new bounded window for the next session." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Estimate whether a snippet fits in the remaining context-window token budget (rough rule: 4 characters per token).",
+    "starter_code": "def fits_in_window(snippet, remaining_tokens):\n    approx_tokens = len(snippet) // 4\n    return ___________",
+    "solution": "approx_tokens <= remaining_tokens",
+    "hints": [
+      "Compare your rough token estimate against the remaining budget.",
+      "The snippet fits if it consumes no more tokens than remain."
+    ],
+    "test_code": "assert fits_in_window(\"hello\", 3)\nassert not fits_in_window(\"this snippet is much longer than the room left\", 3)\nprint('PASS')"
+  },
+  "related": ["context", "session", "token", "system-prompt", "harness", "compaction", "tool-call"],
+  "tags": ["context-window", "tokens", "budget", "context", "model-input", "finite"]
+}

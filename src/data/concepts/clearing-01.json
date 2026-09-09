@@ -1,0 +1,69 @@
+{
+  "id": "clearing-01",
+  "slug": "clearing",
+  "title": "Clearing",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Clearing ends the current session and starts a fresh one, so the next message begins with an empty context window. The model is stateless, so none of the old session's working state carries over — a clean cure for a polluted context full of failed attempts and stale tool results. The transcript usually stays on disk to read or resume; only the agent's working state is gone.",
+    "analogy": "Rebooting a wedged server: instead of fighting through corrupted state, you kill the process and start clean, pointing the config at the same files on restart.",
+    "time_complexity": "The model is stateless, so each handoff forces the next session to re-read everything needed from context — carried material costs tokens on every request.",
+    "space_complexity": "The context window is finite, and clearing frees the entire budget at once by dropping everything; the new session starts with zero footprint.",
+    "when_to_use": [
+      "When a session is stuck looping on a failing test and prodding does not help",
+      "When the agent is ignoring instructions because accumulated noise has diluted them",
+      "Before starting new work, once important decisions have been written to a handoff artifact"
+    ],
+    "gotchas": [
+      "Nothing carries over, including real progress — write a handoff artifact first if the next session needs those decisions",
+      "The model is stateless, so the new session knows nothing the old one knew",
+      "Clearing is the blunter tool than compaction: it drops the junk, but it also drops everything worth keeping"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Bad context",
+          "sub": "noise: loops, stale tool results",
+          "annotation": "A long session accumulates failed attempts and wrong turns that the model re-reads on every turn."
+        },
+        {
+          "label": "Drop context",
+          "sub": "discard working state",
+          "annotation": "The user clears the session, ending its working state entirely."
+        },
+        {
+          "label": "Fresh session",
+          "sub": "empty context window",
+          "annotation": "The next message begins with an empty session and an empty context window."
+        },
+        {
+          "label": "Re-point at docs",
+          "sub": "load plan + test file",
+          "annotation": "The user starts the new session pointing at the plan doc and the test file."
+        },
+        {
+          "label": "Transcript kept",
+          "sub": "still on disk",
+          "annotation": "The harness usually keeps the history on disk, so it can be read or resumed even though the agent's working state is gone."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete clear_session so it drops the agent's working state and starts fresh, like a cleared context window.",
+    "starter_code": "def clear_session(polluted_context):\n    \"\"\"Return a fresh working state with zero memory.\"\"\"\n    working_state = ___________\n    return working_state",
+    "solution": "working_state = []",
+    "hints": [
+      "Clearing drops the agent's working state but not the on-disk transcript.",
+      "A fresh session has an empty context window, so return an empty container."
+    ],
+    "test_code": "assert clear_session([1, 2, 3]) == []\nassert clear_session([]) == []\nprint('PASS')"
+  },
+  "related": ["handoff", "compaction", "handoff-artifact", "session", "context-window", "model", "agent"],
+  "tags": ["context-management", "session", "clearing", "stateless-model", "workflow"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "inference-01",
+  "slug": "inference",
+  "title": "Inference",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Inference is running a trained model to generate output — what happens on every model provider request, with parameters held fixed. It is cheap relative to training but billed per token and is the dominant cost of using a model. Training already happened once, but inference costs accrue every time anyone runs the model.",
+    "analogy": "Running a packaged compiler on each file you give it: the compiler was authored once, but every invocation consumes machine time billed to you, and the compiler never incorporates your earlier files.",
+    "time_complexity": "Cost scales with input + output tokens per model provider request; an agent doing many tool calls pays for inference on each round trip, so a single turn can expand into many charged requests.",
+    "space_complexity": "The context window holds a fixed token budget — everything loaded competes for it and overflow means truncation, compaction, or handoff; continuity must come from outside the model.",
+    "when_to_use": [
+      "Explaining why the bill scales with usage instead of being a flat license",
+      "Accounting for tool-call loops that expand one turn into many requests",
+      "Choosing a context window or memory system for continuity, since the model can't learn from a session"
+    ],
+    "gotchas": [
+      "Nothing you do at inference writes back to parameters — a correction today won't stick tomorrow",
+      "A model that repeats a mistake after you explained the fix hasn't ignored you; it's incapable of learning from the exchange"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Request", "sub": "context sent", "annotation": "A model provider request sends the full context." },
+        { "label": "Predict", "sub": "frozen params", "annotation": "The model runs next-token prediction over the context." },
+        { "label": "Return", "sub": "tokens out", "annotation": "Generated output tokens come back to the harness." },
+        { "label": "Loop", "sub": "tool results", "annotation": "Tool results trigger another model provider request." },
+        { "label": "Bill", "sub": "per token", "annotation": "Each request bills input and output tokens." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "At inference time the parameters are read-only. Write infer() that returns a rounded score computed from fixed weights and records how many passes ran, but never mutates the weights.",
+    "starter_code": "calls = 0\n\ndef infer(weights, tokens):\n    global calls\n    calls += 1\n    total = sum(w * t for w, t in ___________)\n    return round(total, 1)\n",
+    "solution": "zip(weights, tokens)",
+    "hints": [
+      "Pair each weight with its matching token for the multiplication",
+      "The built-in zip combines two sequences element by element"
+    ],
+    "test_code": "assert infer([1, 2], [3, 4]) == 11.0\nassert calls == 1\nprint('PASS')"
+  },
+  "related": ["training", "parameters", "next-token-prediction", "input-tokens", "output-tokens", "tool", "memory-system"],
+  "tags": ["inference", "billing", "tokens", "runtime", "provider"]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "filesystem-01",
+  "slug": "filesystem",
+  "title": "Filesystem",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A filesystem is the default kind of environment for a coding agent - a tree of files and directories it reads from, writes to, and executes within. The agent touches it only through tool calls, so nothing on disk enters the context window until a tool loads it.",
+    "analogy": "A library where the shelves hold every book and your reading notes hold only the pages you opened: the filesystem keeps everything, the context window holds only what the current task has actually read.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - each read is a serial round trip, not free.",
+    "space_complexity": "Only files actually loaded through a tool call occupy the context window, so a repository far larger than the window stays workable; the context holds the current task's reads, not the whole tree.",
+    "when_to_use": [
+      "When the harness starts in your project and the agent must read, edit, and run code on disk",
+      "When debugging why AGENTS.md or skills aren't picked up - the agent may be pointed at a different filesystem",
+      "When the repository is larger than the context window - the filesystem holds everything, the context holds only what was read"
+    ],
+    "gotchas": [
+      "A mistyped path doesn't error gracefully - the harness executes what was written, so a call can edit the wrong file",
+      "Only filenames (not contents) may be pre-loaded as context pointers; the rest of the tree appears only when read",
+      "The filesystem is shared with you - what the agent edits is the same tree you diff in git"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Start", "sub": "harness points at tree", "annotation": "The harness starts in your project, pointing the agent at a filesystem." },
+        { "label": "List", "sub": "filenames as pointers", "annotation": "Some harnesses load the current directory's filenames into context as pointers, not contents." },
+        { "label": "Read", "sub": "tool call loads file", "annotation": "Nothing on disk enters the context window until a tool call reads it." },
+        { "label": "Edit", "sub": "Write tool modifies", "annotation": "Writes and edits happen through tool calls, on the same files you review in git." },
+        { "label": "Shared", "sub": "common workspace", "annotation": "The filesystem is the shared workspace where you review what the agent did." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate an agent lazily loading a file into its context window. Only the requested file should enter context, not the whole repository.",
+    "starter_code": "def load_into_context(repo, context, path):\n    if path not in context:\n        context[path] = ___________\n    return context[path]",
+    "solution": "repo[path]",
+    "hints": [
+      "Nothing on disk is in context until a tool call loads it",
+      "The context dict should be filled from the repository only for the requested path"
+    ],
+    "test_code": "repo = {'a.py': 'def f(): pass', 'b.py': '# comment'}\nctx = {}\nassert load_into_context(repo, ctx, 'a.py') == 'def f(): pass'\nassert 'b.py' not in ctx, 'only read files enter the context window'\nassert len(ctx) == 1\nprint('PASS')"
+  },
+  "related": ["environment", "tool", "tool-call", "sandbox", "context-window"],
+  "tags": ["filesystem", "files", "tool", "context", "agent"]
+}

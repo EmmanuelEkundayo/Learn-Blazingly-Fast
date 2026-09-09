@@ -1,0 +1,49 @@
+{
+  "id": "design-concept-01",
+  "slug": "design-concept",
+  "title": "Design Concept",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The shared understanding of what is being built, held in common between user and agent but separate from any asset: the conversation, handoff artifacts, and the code all try to capture it, but none of them are it. When the agent writes exactly what you asked and it is still wrong, you did not yet have a whole design concept to share, so it filled your silences with assumptions. You can tell it is shared when the agent answers questions you have not asked yet the way you would.",
+    "analogy": "Like two builders agreeing on a house: the sketches and the material list are assets that describe the plan, but the plan itself lives in their shared heads; if one builder was never told about the pantry, no sketch mentions it, so they fill in a closet where the pantry goes.",
+    "time_complexity": "Operational cost falls later once the concept is shared, but alignment itself costs conversation: each clarifying exchange adds human latency, and each agent answer adds inference cost per request until the silences close.",
+    "space_complexity": "Context footprint grows with the conversation that builds it: a long back-and-forth accumulates in the context window, and assets that lag the moving concept risk attention degradation or compaction.",
+    "when_to_use": [
+      "Before letting the agent write a spec, so the spec does not capture misalignment in a durable asset",
+      "When the agent writes exactly what you asked and it is still wrong",
+      "Through grilling, the deliberate version of the alignment conversation"
+    ],
+    "gotchas": [
+      "Writing a spec too early just captures the misalignment in a more durable asset",
+      "The design concept moves as you learn, and assets lag it, so a faithful spec can still mislead a later session",
+      "A prompt captures the parts you worked out and is silent on the parts you had not"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Unformed", "sub": "concept unfinished in your head", "annotation": "You have not fully worked out what you want." },
+        { "label": "Silences", "sub": "prompt omits the gaps", "annotation": "The prompt captures the worked-out parts and nothing else." },
+        { "label": "Assumptions", "sub": "agent fills the silences", "annotation": "The agent quietly fills the gaps with its own guesses." },
+        { "label": "Mismatch", "sub": "exactly asked, still wrong", "annotation": "The output is faithful to the prompt yet wrong on intent." },
+        { "label": "Align", "sub": "keep talking, then spec", "annotation": "Conversation raises the concept before any asset is written." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model a shared design concept: the plan is aligned only when the agent answers every settled decision the way you would.",
+    "starter_code": "def has_shared_design_concept(answers, questions):\n    \"\"\"Shared when the agent answers settled decisions the way you would.\"\"\"\n    for q in questions:\n        if q[\"asked\"] and ____________:\n            return False\n    return True",
+    "solution": "answers.get(q[\"key\"]) != q[\"expected\"]",
+    "hints": [
+      "Alignment means the agent's default fills the gaps the way you would.",
+      "Any mismatch on a settled decision means the concept is not yet shared."
+    ],
+    "test_code": "qs = [{\"asked\": True, \"key\": \"refund\", \"expected\": True}]\nassert has_shared_design_concept({\"refund\": True}, qs) is True\nassert has_shared_design_concept({\"refund\": False}, qs) is False\nqs2 = [{\"asked\": False, \"key\": \"refund\", \"expected\": False}]\nassert has_shared_design_concept({}, qs2) is True\nprint('PASS')"
+  },
+  "related": ["grilling", "prototyping", "spec", "handoff-artifact", "human-in-the-loop", "agent"],
+  "tags": ["design-concept", "shared-understanding", "spec", "alignment", "assumptions"]
+}

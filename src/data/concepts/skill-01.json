@@ -1,0 +1,64 @@
+{
+  "id": "skill-01",
+  "slug": "skill",
+  "title": "Skill",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A skill is a teachable capability bundled as a unit of instructions and resources kept in the environment until a context pointer pulls it into the context window for the task at hand. Only the name and description sit in context by default; the full body loads when triggered.",
+    "analogy": "A recipe card in a drawer: the index shows the one-line name, and you pull out the full card only when you actually cook that dish.",
+    "time_complexity": "O(description-only per turn): only the name and description sit in context, saving tokens until the matching task loads the rest.",
+    "space_complexity": "O(sentence or two by default): a skill takes up almost no room in the finite context window however large its full instructions are.",
+    "when_to_use": [
+      "When placing a deploy runbook so the agent loads it only when the task involves deploys",
+      "When scaffolding a new service or writing a migration that should be read only when that kind of work comes up",
+      "When you want an open standard format (a SKILL.md plus optional scripts and templates) that works across major harnesses"
+    ],
+    "gotchas": [
+      "Distinguish a skill from a tool — a tool is what the agent calls; a skill is instructions it reads",
+      "Do not put a skill's full body in AGENTS.md, where it would burn tokens every turn for something used weekly",
+      "A skill only helps if its description is specific enough for the agent to trigger it at the right time"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Pack",
+          "sub": "SKILL.md plus resources",
+          "annotation": "The skill folder holds a SKILL.md with a name and description, optionally scripts, templates, and reference material."
+        },
+        {
+          "label": "Register",
+          "sub": "name and description only",
+          "annotation": "Only the one-line name and description sit in context by default, taking near zero room."
+        },
+        {
+          "label": "Trigger",
+          "sub": "task matches description",
+          "annotation": "When the agent task matches the description, it pulls the full skill instructions into the context window."
+        },
+        {
+          "label": "Run",
+          "sub": "capability applied",
+          "annotation": "The agent runs the skill's scripts or follows its instructions for the task at hand."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that decides whether a skill should load based on its description matching a task. Return the body path when matched, else None.",
+    "starter_code": "def should_load(description, task, body_path):\n    if description in task:\n        return body_path\n    else:\n        return ___________",
+    "solution": "None",
+    "hints": [
+      "The skill body should stay out of context when the task does not match",
+      "A missing match should evaluate falsy, so None is the clean return"
+    ],
+    "test_code": "assert should_load('deploy', 'preparing a deploy', 'skills/deploy/SKILL.md') == 'skills/deploy/SKILL.md'\nassert should_load('deploy', 'writing a test', 'skills/deploy/SKILL.md') is None\nprint('PASS')"
+  },
+  "related": ["progressive-disclosure", "context-pointer", "agents-md", "harness", "agent"],
+  "tags": ["skill", "instruction", "progressive-disclosure", "capability", "harness"]
+}

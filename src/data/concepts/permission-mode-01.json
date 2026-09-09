@@ -1,0 +1,49 @@
+{
+  "id": "permission-mode-01",
+  "slug": "permission-mode",
+  "title": "Permission mode",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A permission mode is the permission-gating slice of an agent mode: which tool calls trigger a permission request and which run automatically. Harnesses ship a ladder - read-only (reads auto, writes blocked), default (reads auto, writes ask), auto-edit, and full-auto.",
+    "analogy": "A building's key hierarchy: pulling a public notice is free, editing a file needs a desk key, and only the facilities key opens the server room - you pick the rung that fits the job and the trust.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - a too-tight mode adds human interruptions on top.",
+    "space_complexity": "Approval and denial outcomes land in the context window as tool results and compete for the finite token budget, alongside everything else the session has read.",
+    "when_to_use": [
+      "When the agent pauses on every harmless read - loosen the mode for read-only tools and keep prompting on writes and shell",
+      "When you want a research or planning session - a read-only mode blocks edits entirely",
+      "When the loose end must stay contained - run full-auto only inside a sandbox"
+    ],
+    "gotchas": [
+      "Too tight, you become the bottleneck: the agent stops every few seconds and approvals become rubber-stamps that mean nothing",
+      "Too loose, the agent edits files and runs commands you'd have wanted to see first",
+      "Approving on autopilot is the worst of both worlds - all the interruption, none of the protection"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Ladder", "sub": "rungs of autonomy", "annotation": "The ladder runs from read-only, through default and auto-edit, to full-auto." },
+        { "label": "Reads", "sub": "auto at every rung", "annotation": "Reads are auto-approved in every mode; writes and shell are the variable part." },
+        { "label": "Block", "sub": "read-only mode", "annotation": "Read-only and plan modes block writes and shell entirely." },
+        { "label": "Ask", "sub": "default mode", "annotation": "Default mode runs reads automatically and asks before writes and shell commands." },
+        { "label": "Auto", "sub": "trusted or sandboxed", "annotation": "Auto-edit and bypass modes reduce prompting, most defensible inside a sandbox." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Implement a permission mode gate. Read-only mode auto-approves reads and blocks writes; bypass only goes fully auto inside a sandbox.",
+    "starter_code": "def may_run(mode, action, in_sandbox=False):\n    if mode == 'read-only':\n        return ___________\n    if mode == 'default':\n        return action == 'read'\n    if mode == 'auto-edit':\n        return action in ('read', 'write')\n    return in_sandbox",
+    "solution": "action == 'read'",
+    "hints": [
+      "Read-only mode approves only read actions",
+      "The bypass branch ends the ladder - but safety only comes from the sandbox flag"
+    ],
+    "test_code": "assert may_run('read-only', 'read') is True\nassert may_run('read-only', 'write') is False\nassert may_run('default', 'write') is False\nassert may_run('bypass', 'write') is False\nassert may_run('bypass', 'write', in_sandbox=True) is True\nprint('PASS')"
+  },
+  "related": ["permission-request", "agent-mode", "tool-call", "sandbox", "harness"],
+  "tags": ["permission-mode", "safety", "approvals", "harness", "modes"]
+}

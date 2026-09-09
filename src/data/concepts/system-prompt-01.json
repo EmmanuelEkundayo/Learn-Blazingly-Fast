@@ -1,0 +1,48 @@
+{
+  "id": "system-prompt-01",
+  "slug": "system-prompt",
+  "title": "System Prompt",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The instructions the harness prepends to every model provider request — the agent's standing brief: who it is, how to behave, which tools it can call, and what conventions to follow. Usually stable across a session, it forms the start of the prefix cache and is re-paid as input tokens on every turn.",
+    "analogy": "An employee handbook tucked on top of every memo a staffer writes: it defines the role and rules and is identical on every request, so it's cached rather than rewritten; your project's AGENTS.md rides along beside it.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "System prompts are often tens of thousands of tokens; they consume context-window budget on every request before user content begins.",
+    "when_to_use": [
+      "Investigating divergent behavior between harnesses sharing the same model",
+      "Reading or customizing the system prompt where a harness exposes it",
+      "Expecting your own standing instructions (AGENTS.md) to load alongside the vendor brief"
+    ],
+    "gotchas": [
+      "Models are trained to prioritize the system prompt over user messages — an unwanted convention may come from it and out-argue your message",
+      "It's paid as input tokens every turn, so a huge system prompt raises the cost of every single request"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Prepare", "sub": "vendor brief", "annotation": "The harness composes the standing system prompt describing role, tools, and rules." },
+        { "label": "Append yours", "sub": "AGENTS.md", "annotation": "Project instructions are loaded next to it before the user's message arrives." },
+        { "label": "Request", "sub": "prepend to input", "annotation": "The full system prompt is prepended to every model provider request." },
+        { "label": "Cache", "sub": "prefix cache", "annotation": "Being identical each turn, it anchors the prefix cache across requests." },
+        { "label": "Prioritize", "sub": "model reads first", "annotation": "The model reads and weights the system prompt above user messages." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Build the request the harness actually sends: system prompt plus the user message in a convention the model expects.",
+    "starter_code": "def build_request(system_prompt, user_message):\n    prompt = system_prompt + \"\\n\\nUSER:\\n\" + user_message\n    return ___________",
+    "solution": "prompt",
+    "hints": [
+      "The system prompt always comes first, before the user's message.",
+      "Return the fully assembled request string that gets sent to the provider."
+    ],
+    "test_code": "p = build_request(\"# You are a careful reviewer\", \"Summarize this PR\")\nassert p.startswith(\"# You are a careful reviewer\")\nassert \"USER:\" in p\nassert \"Summarize this PR\" in p\nprint('PASS')"
+  },
+  "related": ["harness", "agent", "context-window", "session", "model", "token"],
+  "tags": ["system-prompt", "harness", "instructions", "prompt", "agent", "tokens"]
+}

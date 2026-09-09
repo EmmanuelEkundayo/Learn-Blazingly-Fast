@@ -1,0 +1,64 @@
+{
+  "id": "memory-system-01",
+  "slug": "memory-system",
+  "title": "Memory System",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A memory system makes an agent stateful across sessions by persisting what it learns to the filesystem during a session and reloading it at the start of future ones. The model itself is stateless, so this memory layer fakes continuity.",
+    "analogy": "A consultant who writes a one-page brief after every client meeting and re-reads it before the next call, instead of starting from a blank slate each time.",
+    "time_complexity": "O(loaded tokens per turn): everything reloaded into the context window is billed as input on every request, so always-loaded memories must stay lean to keep operational cost flat.",
+    "space_complexity": "O(one-line index + pointers): the context window is finite, so keep a one-line index in context and leave the memory bodies behind context pointers rather than inlining everything.",
+    "when_to_use": [
+      "When you keep re-telling the agent the same project facts, like the database being Postgres not MySQL",
+      "When you want continuity to survive the user clearing the session",
+      "When using a harness that ships its own memory system, or building a directory of notes plus an AGENTS.md instruction"
+    ],
+    "gotchas": [
+      "Memories are secondary sources and drift — a fact recorded in March is loaded with equal confidence in June after the project moved on",
+      "Memories accumulate and bloat the context window if they are not pruned",
+      "The facade of continuity can mask staleness when the read path reloads outdated files"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Record",
+          "sub": "agent writes facts to files",
+          "annotation": "During the session the agent persists a learned preference or fact as a file in the environment."
+        },
+        {
+          "label": "Index",
+          "sub": "maintain a one-line summary",
+          "annotation": "A one-line index points at each memory body so that reloading stays cheap."
+        },
+        {
+          "label": "Reload",
+          "sub": "harness loads index at start",
+          "annotation": "At session start the harness loads the index, or the bodies, back into the context window."
+        },
+        {
+          "label": "Prune",
+          "sub": "drop stale or drifted entries",
+          "annotation": "Memories drift over time, so pruning removes entries the project has moved past."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that loads a memory index and returns the body path for a matching memory key. It must return None when the key is absent.",
+    "starter_code": "def load_index(path):\n    index = {}\n    with open(path) as f:\n        for line in f:\n            key, ref = line.strip().split(':')\n            index[key] = ref\n    return index\n\ndef lookup(index, key):\n    if key in index:\n        return index[key]\n    return ___________",
+    "solution": "None",
+    "hints": [
+      "The key may not be present, so guard the lookup before returning anything",
+      "A missing memory should evaluate falsy, so None keeps downstream checks clean"
+    ],
+    "test_code": "index = {'db': 'mysql:notes/db.md', 'oncall': 'notes/oncall.md'}\nassert lookup(index, 'db') == 'mysql:notes/db.md'\nassert lookup(index, 'missing') is None\nprint('PASS')"
+  },
+  "related": ["session", "context-window", "model", "harness", "context-pointer"],
+  "tags": ["memory", "state", "continuity", "session", "index"]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "ticket-01",
+  "slug": "ticket",
+  "title": "Ticket",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A ticket is a handoff artifact scoping one session of work, standing alone or hanging off a spec. Tickets can block or be blocked by siblings, so the order of work falls out of their dependency graph rather than a linear plan. Its defining constraint is size: a ticket must be completable before the session drifts out of the smart zone, and that constraint is testable by observing how sessions behave.",
+    "analogy": "A kanban card for a single work item: the card carries the goal and acceptance criteria, and the board orders cards by dependency rather than by who grabbed them first.",
+    "time_complexity": "The model is stateless, so each ticket's carried context costs tokens on every request — right-sized tickets keep per-session spend inside the smart zone.",
+    "space_complexity": "A ticket is sized to fit comfortably in one finite context window, leaving room for the actual work rather than setup overhead.",
+    "when_to_use": [
+      "Scoping one session of work that fits inside the smart zone",
+      "Ordering work by a dependency graph instead of a linear plan",
+      "Running independent leaf tickets in parallel sessions with multiple agents",
+      "Splitting tickets whose sessions routinely degrade before the work is done"
+    ],
+    "gotchas": [
+      "Too big: sessions degrade before the work is done — split the ticket",
+      "Too small: sessions spend most of the context on setup — merge the tickets",
+      "Write for a reader with no other context, or the session will re-derive what the last one knew"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Scope one session",
+          "sub": "goal + acceptance criteria",
+          "annotation": "A ticket scopes exactly one session, with the goal and acceptance criteria written for a reader with no other context."
+        },
+        {
+          "label": "Add context pointers",
+          "sub": "files + decisions needed",
+          "annotation": "The ticket carries pointers to the relevant files and decisions so the session can start working immediately."
+        },
+        {
+          "label": "Build dependency graph",
+          "sub": "blocks vs blocked",
+          "annotation": "Tickets that block or are blocked form a dependency graph, so the order of work falls out of it."
+        },
+        {
+          "label": "Run the leaves",
+          "sub": "independent in parallel",
+          "annotation": "Independent leaf tickets can each run in their own session at the same time."
+        },
+        {
+          "label": "Right-size tickets",
+          "sub": "split bigs, merge smalls",
+          "annotation": "If sessions degrade before finishing, split; if they spend most of context on setup, merge."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete can_run_in_parallel so it returns True only for a ticket that is a leaf of the dependency graph, with no blockers.",
+    "starter_code": "def can_run_in_parallel(ticket, dependencies):\n    has_deps = ___________\n    return not has_deps",
+    "solution": "has_deps = bool(dependencies.get(ticket))",
+    "hints": [
+      "Leaves of the dependency graph have no blockers and can run in parallel.",
+      "A ticket without dependencies is ready to run immediately in its own session."
+    ],
+    "test_code": "deps = {'A': ['B']}\nassert can_run_in_parallel('A', deps) is False\nassert can_run_in_parallel('B', deps) is True\nprint('PASS')"
+  },
+  "related": ["spec", "handoff-artifact", "smart-zone", "context-pointer", "subagent", "session", "clearing"],
+  "tags": ["ticket", "task-scoping", "dependency-graph", "parallelism", "smart-zone"]
+}

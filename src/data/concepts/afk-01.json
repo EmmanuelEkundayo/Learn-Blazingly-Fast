@@ -1,0 +1,49 @@
+{
+  "id": "afk-01",
+  "slug": "afk",
+  "title": "AFK",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A working pattern where the user kicks off a session and the agent runs unattended, letting many sessions run in parallel while they sleep, eat, or work on something else. Ambiguity left unstated becomes a silent default the agent commits to, and every later decision builds on that guess. Safe AFK needs a permissive permission mode, sandboxing, automated checks, and an end state that is reviewable, like a PR rather than merged changes.",
+    "analogy": "Like handing the night shift to a team of careful but literal interns: they execute exactly the instructions they have, and every gap in the instructions gets filled with their own guess while nobody is around to question it.",
+    "time_complexity": "Operational cost is throughput-bound: many AFK sessions run in parallel, but each agent call still adds inference cost, and deferring review to the end adds latency before a human can respond.",
+    "space_complexity": "Context footprint grows with run length: an agent working for hours accumulates the whole journey in the context window, risking attention degradation or compaction that drops early decisions.",
+    "when_to_use": [
+      "Well-specified, low-risk, easy-to-verify tasks",
+      "Many independent tasks that benefit from parallel unattended sessions",
+      "Runs that end in a reviewable PR or artifact rather than in merged changes"
+    ],
+    "gotchas": [
+      "The characteristic failure is hours of confident work built on a wrong call made in the first ten minutes",
+      "Without a permissive permission mode and sandboxing, unattended runs are unsafe",
+      "AFK defers human review to the end, so what arrives has to be worth reviewing"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Kick off", "sub": "session started, user leaves", "annotation": "The user starts the session and walks away." },
+        { "label": "Defaults", "sub": "ambiguity picked silently", "annotation": "Unanswered decisions turn into defaults the agent keeps building on." },
+        { "label": "Self-correct", "sub": "automated checks run", "annotation": "Deterministic checks catch mechanical failures while nobody watches." },
+        { "label": "Reviewable end", "sub": "PR, not yet merged", "annotation": "The run ends in a diff a human can review, never in merged changes." },
+        { "label": "Review", "sub": "human judges the PR", "annotation": "Deferred human review finally arrives, so the artifact must be worth it." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model an unattended run: items that did not pass automated checks go to a queue for deferred human review.",
+    "starter_code": "def flag_afk_for_review(results, auto_ok):\n    \"\"\"Unattended runs defer judgement: keep only items still needing a human.\"\"\"\n    review_queue = []\n    for name, checks_passed in results:\n        if not auto_ok(checks_passed):\n            ____________\n    return review_queue",
+    "solution": "review_queue.append(name)",
+    "hints": [
+      "Unattended work defers judgement to the end of the run.",
+      "Items that did not pass automatically still need a human reviewer."
+    ],
+    "test_code": "results = [('fast', True), ('migration', False), ('refactor', False)]\nassert flag_afk_for_review(results, lambda p: p) == ['migration', 'refactor']\nassert flag_afk_for_review([('lints', True), ('types', True)], lambda p: p) == []\nprint('PASS')"
+  },
+  "related": ["human-in-the-loop", "automated-check", "automated-review", "human-review", "ax", "sandbox", "permission-request"],
+  "tags": ["afk", "unattended", "automation", "parallelism", "human-review", "sandboxing"]
+}

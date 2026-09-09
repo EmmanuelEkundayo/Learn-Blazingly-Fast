@@ -1,0 +1,51 @@
+{
+  "id": "smart-zone-01",
+  "slug": "smart-zone",
+  "title": "Smart Zone",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "Early in a session an agent sits in a smart zone — sharp, focused, with good recall — and as the session grows it drifts into a dumb zone with more mistakes and faithfulness hallucinations. Same model and harness, just more context. The decline is gradual and commonly begins around 125K-150K tokens on frontier models, and the practical budget for a task is the tokens the agent works well within, not the window limit it can technically hold.",
+    "analogy": "A consultant who is freshest at the Monday-morning kickoff and progressively duller by Friday afternoon on the same engagement — same consultant, just accumulated context and fatigue. Unrelated work spends the budget, so book one engagement per sprint and hand off at natural boundaries rather than pushing through.",
+    "time_complexity": "O(C squared) per request over the full context window — the quadratic pairing arithmetic under the smart zone means deeper context costs more per request even as quality falls, so planning around the smart zone keeps both in a working band.",
+    "space_complexity": "Context/memory footprint: every token in the window spends the finite attention budget, and unrelated work spends the zone, so one task per session keeps the footprint small and the work sharp.",
+    "when_to_use": [
+      "Planning around the smart zone, not the window: size tasks to the tokens the agent works well within",
+      "Running one task per session so each starts in the sharpest part of the session",
+      "Splitting a task bigger than one smart zone: hand off or compact at a natural boundary and resume in a fresh session",
+      "Reading the signs: forgets an instruction from twenty turns ago, repeats a corrected mistake, or asserts something the context contradicts"
+    ],
+    "gotchas": [
+      "The zones do not track the context-window limit — quality falls off long before the harness refuses to continue",
+      "Pushing through and re-explaining adds more context and makes the slide worse",
+      "The decline is smooth and easy to miss: there is no error message and no visible boundary"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Fresh session", "sub": "smart zone", "annotation": "Early in a session recall is good, focus is high, and mistakes are rare." },
+        { "label": "Tokens accumulate", "sub": "every task spends budget", "annotation": "Each completed task burns tokens, so starting a second task in the same session starts it closer to the dumb zone." },
+        { "label": "Slide into the dumb zone", "sub": "around 125K-150K tokens", "annotation": "On frontier models quality commonly falls off around 125K-150K tokens, though the exact number is debated." },
+        { "label": "Signs of the slide", "sub": "repeats corrected mistakes", "annotation": "The agent forgets an instruction from twenty turns ago and confidently asserts things the context contradicts." },
+        { "label": "Window still has room", "sub": "limit is not the zone", "annotation": "The session can be deep in the dumb zone with most of the window free; quality falls off long before the limit." },
+        { "label": "Reset at a boundary", "sub": "clear, compact, or hand off", "annotation": "Compact or hand off at a natural boundary and let a fresh session start the next piece inside the smart zone." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Plan a task against the smart zone: return how many fresh sessions it needs when the practical budget is the zone size.",
+    "starter_code": "def sessions_needed(task_tokens, zone_budget):\n    # The practical budget for a task is the tokens the agent works\n    # well within. Returns how many fresh sessions the task needs.\n    return 1 + (task_tokens // ___________)",
+    "solution": "zone_budget",
+    "hints": [
+      "Each session runs inside the zone budget; bigger tasks need more sessions.",
+      "Divide the task size by the zone budget to count extra sessions beyond the first."
+    ],
+    "test_code": "assert sessions_needed(60_000, 130_000) == 1\nassert sessions_needed(160_000, 130_000) == 2\nassert sessions_needed(300_000, 130_000) == 3\nprint('PASS')"
+  },
+  "related": ["attention-degradation", "attention-budget", "compaction", "handoff-artifact", "context-window"],
+  "tags": ["smart-zone", "attention-degradation", "context-window", "session", "compaction"]
+}

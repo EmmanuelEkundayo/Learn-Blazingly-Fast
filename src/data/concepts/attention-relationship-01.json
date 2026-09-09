@@ -1,0 +1,50 @@
+{
+  "id": "attention-relationship-01",
+  "slug": "attention-relationship",
+  "title": "Attention Relationship",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "When predicting each token, the model factors in every other token in the context, some heavily and others barely at all; each per-pair influence is an attention relationship. A context of N tokens has on the order of N squared relationships, computed fresh on every request. Meaningful pairs — a pronoun with its antecedent, a call site with the definition it read — carry the model's apparent understanding, but they thin out as the pairing pool grows.",
+    "analogy": "A working group in a meeting that keeps growing until it is a stadium. The productive conversation is the handful of pairs who actually need each other, but everyone in the room still has the same hours in the day, and ten billion other pairings now compete for each person's attention. The substring conversation gets buried.",
+    "time_complexity": "O(C squared) per request because all pairings are recomputed fresh on every next-token step — doubling the context quadruples the pairing count, and deeper context costs more per request.",
+    "space_complexity": "Context/memory footprint: the pairing pool grows as roughly N squared while each token's influence stays finite, so meaningful relationships get a thinner share of attention as the context grows.",
+    "when_to_use": [
+      "Confusion between two same-named symbols in a diff: 'it keeps confusing the two user symbols across the diff'",
+      "Explaining pronoun resolution or correct function-call arguments: strong pairings are doing the resolution work",
+      "Deciding to rename colliding tokens: 'rename one and the pairings sharpen'",
+      "Understanding the arithmetic under attention budget and degradation: N squared pairs, only a handful matter"
+    ],
+    "gotchas": [
+      "The pairings are duplicated across the model's attention heads (tens to hundreds), so the real compute is N squared times heads",
+      "The relationships that matter stay roughly constant while the pool grows quadratically — at 100k tokens the pairing you care about is one in ten billion",
+      "None of this is looked up; it is computed fresh per request, so the pool cannot be cached away"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Token-by-token prediction", "sub": "attend to the whole window", "annotation": "For every predicted token the model factors in every other token in the context, not just the nearby ones." },
+        { "label": "Pairings computed fresh", "sub": "N squared relationships", "annotation": "A context of N tokens has on the order of N squared pairings, recomputed on every request." },
+        { "label": "Meaningful pairs stand out", "sub": "her resolves to Sarah", "annotation": "A pronoun resolves to its antecedent because that pairing carries strong influence, just as a call site binds to its definition." },
+        { "label": "Signal thins as context grows", "sub": "one in ten billion", "annotation": "At 100k tokens the pairing that matters is one in ten billion; the usable signal is a tiny fraction of the pool." },
+        { "label": "Rename to sharpen pairings", "sub": "reduce symbol collisions", "annotation": "When two same-shaped tokens collide across a diff, renaming one lets each pairing bind cleanly to its own definition." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Resolve a pronoun to its most likely antecedent using attention relationships between tokens.",
+    "starter_code": "PAIRINGS = {('Sarah', 'her'): 0.85, ('home', 'her'): 0.05, ('went', 'her'): 0.03}\n\ndef top_antecedent(pronoun, candidates):\n    # The candidate with the strongest attention relationship to the\n    # pronoun is the token it most likely resolves to.\n    def strength(cand):\n        return PAIRINGS.get((cand, pronoun), 0.0)\n    return max(candidates, key=___________)",
+    "solution": "strength",
+    "hints": [
+      "The max() function needs a key that ranks each candidate by its attention strength.",
+      "Pass the local strength function as the key argument to max()."
+    ],
+    "test_code": "assert top_antecedent('her', ['home', 'Sarah', 'went']) == 'Sarah'\nassert top_antecedent('home', ['Sarah', 'home', 'went']) == 'home'\nprint('PASS')"
+  },
+  "related": ["attention-budget", "attention-degradation", "smart-zone", "token", "context"],
+  "tags": ["attention-relationship", "attention", "context-window", "next-token-prediction", "attention-budget"]
+}

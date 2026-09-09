@@ -1,0 +1,70 @@
+{
+  "id": "handoff-artifact-01",
+  "slug": "handoff-artifact",
+  "title": "Handoff Artifact",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A handoff artifact is a document used as the carry mechanism for a handoff — written to the environment by one session to be read by another. It exists because the model is stateless: nothing in a session survives clearing, but the environment persists. As a secondary source it records the writing session's beliefs, so important claims should be verified against the primary source by the reader.",
+    "analogy": "A release handover ticket on call: the off-going engineer writes file paths, decisions, and residual risk into a doc because the next responder arrives with zero memory of the incident.",
+    "time_complexity": "The model is stateless, so reading an artifact into a new session costs tokens on every request, but far fewer than re-reading the whole transcript.",
+    "space_complexity": "The artifact lives on disk, taking context budget only when re-read, and it stays compact because it is an account, not the full transcript.",
+    "when_to_use": [
+      "Carrying decisions between a planning session and an implementing one",
+      "Splitting work across multiple agents that need a common brief",
+      "Keeping important state after the working context is cleared",
+      "When an in-memory compaction summary would be too lossy or too hard to inspect"
+    ],
+    "gotchas": [
+      "It records what the writing session believed — anything left out or wrong is invisible to the reader",
+      "Write it for a reader with zero context: concrete file paths, what was decided and why, what is done and what is left",
+      "Where a claim matters, the next session must verify it against the primary source rather than inherit it"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Stateless model",
+          "sub": "state dies with session",
+          "annotation": "Nothing in a session survives clearing because the model holds no memory of it."
+        },
+        {
+          "label": "Write artifact",
+          "sub": "paths, decisions, constraints",
+          "annotation": "The writing session records file paths, decisions and what is left into a file in the environment."
+        },
+        {
+          "label": "Clear and seed",
+          "sub": "open session, read doc",
+          "annotation": "The session is cleared and a fresh one opens with a pointer to the artifact as its brief."
+        },
+        {
+          "label": "Correct on disk",
+          "sub": "read and fix before use",
+          "annotation": "The artifact lives on disk, so a human can read and correct it before anything depends on it."
+        },
+        {
+          "label": "Reuse",
+          "sub": "same spec, many sessions",
+          "annotation": "The same artifact can brief five parallel sessions because it is a file, not in-memory state."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete write_handoff_artifact so it persists the session's decisions into the artifact and returns the brief the next session should read.",
+    "starter_code": "def write_handoff_artifact(session_state, artifact):\n    artifact.update(session_state)\n    next_brief = ___________\n    return next_brief",
+    "solution": "next_brief = artifact",
+    "hints": [
+      "The artifact persists in the environment while session memory does not.",
+      "It should carry concrete state so a reader with zero context can pick up the work."
+    ],
+    "test_code": "artifact = {}\nbrief = write_handoff_artifact({'schema': 'v2'}, artifact)\nassert brief == {'schema': 'v2'}\nprint('PASS')"
+  },
+  "related": ["handoff", "spec", "ticket", "secondary-source", "primary-source", "session", "clearing"],
+  "tags": ["handoff-artifact", "context-carry", "documentation", "persistence", "workflow"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "ai-01",
+  "slug": "ai",
+  "title": "AI",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "AI is a moving label, not a technology — it names whatever computers can newly, impressively do, and the pointer has shifted from symbolic reasoning to expert systems to today's large language models. Once a technique works reliably it gets renamed 'just statistics' and the label slides to the next unsolved problem. In technical discussion, swap 'AI' for the precise part you mean: the model, the harness, the agent, or the context it was given.",
+    "analogy": "A startup job title like 'lead visionary' that keeps migrating to whichever engineer just shipped a surprising demo — the title never refers to one fixed person, it follows the latest impressive trick.",
+    "time_complexity": "'AI' is a label, not a billable unit, so cost lands on whatever the word actually points at — the model provider request. Resolving the label to the concrete part (model, harness, agent) is what lets you estimate cost at all.",
+    "space_complexity": "The word 'AI' carries no context of its own — the memory footprint lives in the pieces it stands for: the model's frozen parameters plus the context window the harness fills on every request.",
+    "when_to_use": [
+      "Scoping a vague requirement like 'can AI handle the triage queue' into a model plus harness plus tools",
+      "Explaining that contradictory claims about 'AI' usually carry different timestamps",
+      "Keeping 'AI coding' as a practice label while naming the model, harness, or context underneath"
+    ],
+    "gotchas": [
+      "Avoid 'AI' in technical claims — name the part you mean, since a moving label makes diagnosis impossible",
+      "A claim like 'AI can't reason' may be about expert systems, image classifiers, or last month's LLM — the label hides the timestamp"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "1950s", "sub": "symbolic reasoning", "annotation": "The label pointed at theorem provers and checkers programs." },
+        { "label": "1960s-70s", "sub": "rule-based programs", "annotation": "ELIZA and SHRDLU typed the era of hand-written rules." },
+        { "label": "1980s", "sub": "expert systems", "annotation": "Thousands of if-then rules encoded human expertise." },
+        { "label": "2000s", "sub": "statistical ML", "annotation": "Spam filters and recommenders were sold as machine learning, not AI." },
+        { "label": "2020s", "sub": "large language models", "annotation": "ChatGPT made 'AI' mean chatbots and code assistants." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model the dictionary's era table: a function that maps a decade to what 'AI' meant at the time, falling back to 'unresolved' for unknown decades.",
+    "starter_code": "def ai_meaning(era):\n    meanings = {\n        \"1950s\": \"symbolic reasoning\",\n        \"1980s\": \"expert systems\",\n        \"2020s\": \"large language models\",\n    }\n    return meanings.___________(era, \"unresolved\")\n",
+    "solution": "get(era, \"unresolved\")",
+    "hints": [
+      "dict.get accepts a default value returned when the key is missing",
+      "The fallback string must exactly match the test's expectation"
+    ],
+    "test_code": "assert ai_meaning(\"1980s\") == \"expert systems\"\nassert ai_meaning(\"2000s\") == \"unresolved\"\nprint('PASS')"
+  },
+  "related": ["model", "token", "harness", "agent", "context", "next-token-prediction"],
+  "tags": ["ai", "llm", "terminology", "label", "ai-effect"]
+}

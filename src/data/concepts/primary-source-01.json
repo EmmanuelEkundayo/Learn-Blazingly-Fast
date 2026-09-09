@@ -1,0 +1,64 @@
+{
+  "id": "primary-source-01",
+  "slug": "primary-source",
+  "title": "Primary Source",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A primary source is the thing itself — the code, the transcript, the raw log, the actual API response — not an account of it. It is expensive to load into the context window because every token bills as input, but it is complete: nothing has been pre-filtered by someone else's judgement about what mattered. Reach for it when precision matters, like the exact signature or the line that throws.",
+    "analogy": "Auditing the ledger rather than the dashboard: the finance dashboard summarizes yesterday's numbers, but the ledger is the ground truth you pull when a specific figure matters.",
+    "time_complexity": "The model is stateless, so a primary source loaded into context is re-read and billed on every request that needs it.",
+    "space_complexity": "Loading a full primary source consumes the finite context window and competes with other material for attention budget.",
+    "when_to_use": [
+      "When precision matters — the exact signature, the actual error, the line that throws",
+      "When an agent asserts something about behaviour, such as how retry logic backs off",
+      "When a secondary source's staleness is suspected and behaviour needs verification"
+    ],
+    "gotchas": [
+      "Docs, architecture diagrams, and READMEs are descriptions that drift — an agent that reads one inherits its staleness",
+      "Loading full primary sources is expensive, with every token billed as input",
+      "Completeness costs: nothing has been pre-filtered, so the source can be large and noisy"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Claim made",
+          "sub": "agent cites the design doc",
+          "annotation": "An agent confidently states behaviour that it read out of a stale design doc."
+        },
+        {
+          "label": "Locate primary source",
+          "sub": "the actual retry module",
+          "annotation": "The user points the agent at the real code rather than the description of it."
+        },
+        {
+          "label": "Load original",
+          "sub": "tokens billed, window consumed",
+          "annotation": "The full file is loaded into context, costing tokens and competing for attention budget."
+        },
+        {
+          "label": "Verify behaviour",
+          "sub": "read the current truth",
+          "annotation": "The agent reads the code itself, which is the only account that stays current with the codebase."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete verify_from_primary so that when the code and the doc disagree, the primary source (the code) wins over the doc's claim.",
+    "starter_code": "def verify_from_primary(code, doc_says):\n    verdict = ___________ if code != doc_says else 'doc matches'\n    return verdict",
+    "solution": "verdict = 'trust the code' if code != doc_says else 'doc matches'",
+    "hints": [
+      "A doc describes the code; the code is the thing itself.",
+      "When they disagree, the primary source is the current truth."
+    ],
+    "test_code": "assert verify_from_primary('v3', 'v2') == 'trust the code'\nassert verify_from_primary('v2', 'v2') == 'doc matches'\nprint('PASS')"
+  },
+  "related": ["secondary-source", "context-window", "model", "agent", "context-pointer", "clearing"],
+  "tags": ["primary-source", "ground-truth", "context-window", "token-cost", "verification"]
+}

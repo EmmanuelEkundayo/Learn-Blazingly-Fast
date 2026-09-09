@@ -1,0 +1,48 @@
+{
+  "id": "token-01",
+  "slug": "token",
+  "title": "Token",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A token is the atomic unit a model reads and writes — roughly word-sized, but common words are one token while rare or long ones split into several via a fixed tokenizer vocabulary. Context window size, cost, and latency are all counted in tokens, roughly three-quarters of an English word each.",
+    "analogy": "Tokens are like metered postage measured in ounces rather than boxes: a dense all-caps printout is heavy even when it looks small, and both shipping cost and package-size limits are quoted in the same ounce unit.",
+    "time_complexity": "Latency and cost scale with token count: output is generated one token at a time (tokens per second), and you are billed separately for input and output tokens on every model provider request.",
+    "space_complexity": "The context window is a fixed number of tokens — a small file full of unusual strings (hashes, base64 blobs, minified code) can eat surprising amounts of it.",
+    "when_to_use": [
+      "Estimating prompt cost and context usage before sending large content into a session",
+      "Comparing model tiers by tokens-per-dollar and tokens-per-second",
+      "Reasoning about context-window filling and when to hand off or compact"
+    ],
+    "gotchas": [
+      "Token boundaries do not match word boundaries — never say 'word' when you mean 'token'",
+      "Code tokenizes unpredictably: keywords are cheap, hashes and generated identifiers are expensive"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Text", "sub": "raw input", "annotation": "Raw input text arrives at the tokenizer." },
+        { "label": "Split", "sub": "fixed vocabulary", "annotation": "The tokenizer cuts text into fragments from a fixed vocabulary." },
+        { "label": "Encode", "sub": "id sequence", "annotation": "The model sees only token ids, never characters or words." },
+        { "label": "Predict", "sub": "one at a time", "annotation": "The model predicts the next token, appends it, and repeats." },
+        { "label": "Count", "sub": "cost and window", "annotation": "Context, cost, and latency are all measured in tokens." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Token costs depend on content: unusual strings split into more tokens than plain words. Count tokens, adding a surcharge for every non-alphabetic fragment.",
+    "starter_code": "def count_tokens(text):\n    tokens = text.split()\n    extra = sum(1 for t in tokens if not t.isalpha())\n    return len(___________) + extra\n",
+    "solution": "tokens",
+    "hints": [
+      "Every whitespace-separated chunk is one base token",
+      "The extra surcharge counts fragments that contain digits or symbols"
+    ],
+    "test_code": "assert count_tokens(\"a3f9c2 e1\") == 4\nassert count_tokens(\"def print x\") == 3\nprint('PASS')"
+  },
+  "related": ["context-window", "input-tokens", "output-tokens", "next-token-prediction", "prefix-cache"],
+  "tags": ["token", "tokenizer", "context-window", "billing", "tokens-per-second"]
+}

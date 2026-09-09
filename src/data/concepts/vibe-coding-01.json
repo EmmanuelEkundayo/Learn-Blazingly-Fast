@@ -1,0 +1,49 @@
+{
+  "id": "vibe-coding-01",
+  "slug": "vibe-coding",
+  "title": "Vibe Coding",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A working pattern where the user accepts the agent's code without reviewing the diff, judging success by whether the program behaves instead of what is inside it. Reading diffs is usually the slowest step in agent-driven work, so dropping it removes the main bottleneck, a reasonable trade only when failures are cheap. Behaviour-only checking means anything behaviour does not surface ships unseen, and the first debug session is the first time anyone reads the code.",
+    "analogy": "Like ordering a dish you have never seen and trusting it is good because it tastes fine: fast and liberating for a quick lunch, terrifying if the kitchen feeds every future customer from the same unknowable recipe stash.",
+    "time_complexity": "Operational cost is low per unit: skipping the diff read removes the main latency from agent work, while whatever automated checks still run keep adding inference cost per call.",
+    "space_complexity": "Context footprint is deliberately small because nothing is read back: with no review history the agent's context stays task-only, but the codebase silently accumulates unread changes.",
+    "when_to_use": [
+      "Prototypes, one-off scripts, and internal tools whose failures are cheap",
+      "When behaviour is the property that matters and inspection is the bottleneck",
+      "When the automated checks and automated review still running are accepted as the whole gate"
+    ],
+    "gotchas": [
+      "The cost arrives later: a codebase nobody has read, with unseen issues like secrets written to logs",
+      "Risk scales with the code's lifespan and stakes",
+      "The first debug session is the first time anyone reads the code"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Describe", "sub": "say what you want", "annotation": "The user describes the desired behavior in plain terms." },
+        { "label": "Accept", "sub": "diff treated as opaque", "annotation": "The code is accepted without reading the diff." },
+        { "label": "Run", "sub": "judge by behavior", "annotation": "The program is judged by whether it behaves." },
+        { "label": "Residual gates", "sub": "checks and automated review", "annotation": "Whatever automated verification remains is the only gate." },
+        { "label": "Deferred cost", "sub": "code nobody has read", "annotation": "Anything behavior fails to surface is found at first debug." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model vibe coding: a change is accepted or rejected purely by its observable behavior.",
+    "starter_code": "def vibe_accept(change, run_behavior):\n    \"\"\"Accept code by behavior only; the diff stays opaque.\"\"\"\n    if ____________:\n        return \"accepted\"\n    return \"rejected\"",
+    "solution": "run_behavior(change)",
+    "hints": [
+      "The diff is opaque; what matters is how the program behaves.",
+      "Accept only when the behavior check passes."
+    ],
+    "test_code": "assert vibe_accept('refactor', lambda c: c == 'refactor') == 'accepted'\nassert vibe_accept('refactor', lambda c: c != 'refactor') == 'rejected'\nprint('PASS')"
+  },
+  "related": ["human-review", "automated-check", "automated-review", "prototyping", "design-concept"],
+  "tags": ["vibe-coding", "no-review", "behavior", "prototype", "diff-opaque"]
+}

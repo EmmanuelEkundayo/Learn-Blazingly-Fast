@@ -1,0 +1,49 @@
+{
+  "id": "prefix-cache-01",
+  "slug": "prefix-cache",
+  "title": "Prefix cache",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A prefix cache is a provider-side store that lets consecutive model provider requests skip re-processing a shared prefix. When the start of a request matches the start of a recent one, the provider reuses its prior work and bills those tokens as cache tokens at a much lower rate. The savings hold only while the prefix stays identical and the cache stays warm.",
+    "analogy": "Like incremental compilation: the compiler builds once and recompiles only the changed tail, but an edit to an early header invalidates the cache and forces a full rebuild — and after idle minutes the build cache is evicted.",
+    "time_complexity": "Sessions grow append-only, so each request is the previous one plus a few new messages; the provider processes the long shared prefix once and picks up where it ends — without the cache, a fifty-turn session re-processes turn one fifty times.",
+    "space_complexity": "The cache lives on the provider's hardware and holds the processed prefix across requests; idle minutes evict it, so a paused session's next request rebuilds the prefix at full price once.",
+    "when_to_use": [
+      "Explaining bill spikes: a system prompt that changes every turn breaks the prefix and re-bills full rate",
+      "Accounting for higher cost after a long pause, since cache entries expire in minutes",
+      "Reasoning about why long sessions stay affordable when the prefix is stable"
+    ],
+    "gotchas": [
+      "The cache matches exact prefixes — a change anywhere early in the context misses from that point onward",
+      "Cache expiry is typically minutes, not hours, so a resumed idle session re-pays the prefix once",
+      "A harness injecting a timestamp into the system prompt kills the cache silently every turn"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Request A", "sub": "no match", "annotation": "The first request processes everything at full rate." },
+        { "label": "Request B", "sub": "prefix reused", "annotation": "The matching prefix reuses stored work; only the tail is processed fresh." },
+        { "label": "Grow", "sub": "append-only", "annotation": "Sessions keep the prefix intact as they append." },
+        { "label": "Violation", "sub": "prefix break", "annotation": "Any edit near the start, such as a timestamp, stops the match." },
+        { "label": "Expiry", "sub": "idle eviction", "annotation": "After minutes idle, cache entries expire and rebuild at full price." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Compute the longest common prefix length of two consecutive requests, to find where the cache match still holds and where it breaks.",
+    "starter_code": "def cache_prefix_length(a, b):\n    n = min(___________, len(b))\n    for i in range(n):\n        if a[i] != b[i]:\n            return i\n    return n\n",
+    "solution": "len(a)",
+    "hints": [
+      "Compare the two sequences position by position from the start",
+      "Stop comparing at the shorter of the two lengths"
+    ],
+    "test_code": "assert cache_prefix_length(\"ABCD\", \"ABCD\") == 4\nassert cache_prefix_length(\"ABCD\", \"ABCX\") == 3\nassert cache_prefix_length(\"ABCD\", \"AXCD\") == 1\nprint('PASS')"
+  },
+  "related": ["cache-tokens", "input-tokens", "model-provider-request", "model-provider", "compaction"],
+  "tags": ["prefix-cache", "caching", "billing", "latency", "requests"]
+}

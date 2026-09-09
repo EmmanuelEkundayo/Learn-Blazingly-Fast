@@ -1,0 +1,50 @@
+{
+  "id": "attention-budget-01",
+  "slug": "attention-budget",
+  "title": "Attention Budget",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "Each token has a finite amount of influence to distribute across the rest of the context, so heavy influence on one relationship leaves less for the others. The budget is per token and does not grow when the context does — your instruction stays the same strength while every other token competes, so the signal-to-noise ratio drops as the context grows.",
+    "analogy": "A speaker with a fixed-volume microphone in a room that keeps filling up. The speaker never gets quieter — the words are character for character identical — but as the crowd grows the signal drowns. A louder mic (re-pasting) helps only briefly; the real fix is clearing people out of the room.",
+    "time_complexity": "O(C squared) per request over the full context window — attention pairs every token with every other, so the per-request cost grows superlinearly with deeper context.",
+    "space_complexity": "Context/memory footprint: the attention budget is per token and finite, so long or heavily loaded contexts dilute attention to earlier content as more tokens compete for the fixed influence.",
+    "when_to_use": [
+      "Diagnosing 'why does it keep ignoring the schema I pasted at the top?' as a competing-signal problem, not plain disobedience",
+      "Keeping the window small: content that does not serve the task is noise over everything that does",
+      "Clearing when the accumulated context stops paying for itself, and restating the constraints that matter instead of trusting their early mention to hold",
+      "Choosing what enters context: you control the window, so prioritize signal over volume"
+    ],
+    "gotchas": [
+      "The symptom reads as disobedience — the agent agreed early then drifted; re-pasting the constraint adds another competitor and helps only briefly",
+      "The instruction never gets quieter; the room gets louder around it, which is the same mechanism as attention degradation",
+      "The budget cannot be extended — only the contents of the window are within your control"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Per-token fixed influence", "sub": "finite budget", "annotation": "Each token has a finite amount of influence to distribute, and it does not grow when the context does." },
+        { "label": "Signal at fixed volume", "sub": "instruction unchanged", "annotation": "Your instruction stays exactly as strong, character for character, no matter how large the context gets." },
+        { "label": "Room gets louder", "sub": "signal-to-noise drops", "annotation": "Every extra token competes, so an instruction that was the loudest thing at 10k tokens is background hum at 150k." },
+        { "label": "Reads as disobedience", "sub": "extra context wins", "annotation": "The agent agreed to a constraint early then drifts from it; the cause is the rest of the window, not the instruction." },
+        { "label": "Keep the window small", "sub": "clear and restate", "annotation": "Control what enters context: clear when it stops paying for itself and restate the constraints that matter." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Compute the signal-to-noise ratio of an instruction when every token in context competes for the fixed attention budget.",
+    "starter_code": "def signal_share(signal, context_tokens):\n    # Each token's attention budget is fixed; every token in context\n    # competes for it. Returns the instruction's share of influence.\n    return signal / (signal + ___________)",
+    "solution": "len(context_tokens)",
+    "hints": [
+      "The noise is the number of competing tokens currently in the window.",
+      "Use the length of the context_tokens list as the competition term."
+    ],
+    "test_code": "assert signal_share(1.0, ['noise'] * 9) == 0.1\nassert signal_share(1.0, []) == 1.0\nassert signal_share(2.0, ['noise']) == 2.0 / 3.0\nprint('PASS')"
+  },
+  "related": ["attention-relationship", "attention-degradation", "context-window", "compaction"],
+  "tags": ["attention-budget", "attention-degradation", "context-window", "signal-to-noise", "attention-relationship"]
+}

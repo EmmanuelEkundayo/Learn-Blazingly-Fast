@@ -1,0 +1,50 @@
+{
+  "id": "training-01",
+  "slug": "training",
+  "title": "Training",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Training is the one-time, expensive process by which a model provider sets a model's parameters, exposing the model to trillions of tokens and nudging weights toward better next-token prediction. Everything the model 'knows' is a side effect of getting better at prediction, compressed into the parameters. Training ends at a point in time, which is why the model ships with a knowledge cutoff.",
+    "analogy": "A months-long apprenticeship the employer pays for: the operator ships with everything baked into habit as of day one, and days of field corrections change none of it — refreshing the habits means another apprenticeship.",
+    "time_complexity": "Training is the highest-cost phase — one massive provider-side compute run over trillions of tokens — which is why you pay per inference request instead; retraining is effectively out of reach per project.",
+    "space_complexity": "Training consumes the provider's hardware and the raw corpus, not your context window, so its footprint on your side is zero — the product 'lives' only in the parameters it delivers.",
+    "when_to_use": [
+      "Explaining why the model's built-in knowledge stops at its knowledge cutoff",
+      "Choosing context injection over training when a model doesn't know your internal APIs",
+      "Understanding why per-request inference pricing exists at all",
+      "Distinguishing pre-training from post-training refinements like instruction-following and safety"
+    ],
+    "gotchas": [
+      "Training is not something you can do: when the model doesn't know your codebase, the fix is context, not teaching",
+      "The model's facts are side effects of prediction, not a stored database it consults"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Corpus", "sub": "trillions of tokens", "annotation": "Vast amounts of text are exposed to the model." },
+        { "label": "Predict", "sub": "next token", "annotation": "The model predicts the next token for each stretch of text." },
+        { "label": "Adjust", "sub": "nudge weights", "annotation": "Parameters are nudged toward whatever the actual next token was." },
+        { "label": "Repeat", "sub": "at scale", "annotation": "The loop repeats across the corpus until the parameters converge." },
+        { "label": "Ship", "sub": "frozen model", "annotation": "Training ends, parameters freeze, and the model carries a knowledge cutoff." },
+        { "label": "Post-train", "sub": "optional refinements", "annotation": "Later post-training shapes instruction-following and safety behavior." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate the raw training signal: build a next-token frequency table from a corpus, then predict the most common follower of a word.",
+    "starter_code": "corpus = [\"parse tree\", \"parse stack\", \"parse tree\", \"parse socket\"]\n\ndef build_table(corpus):\n    table = {}\n    for text in corpus:\n        parts = text.split()\n        for i in range(len(parts) - 1):\n            key = parts[i]\n            nxt = parts[i + 1]\n            if key not in table:\n                table[key] = {}\n            table[key][nxt] = table[key].get(nxt, 0) + 1\n    return table\n\ndef predict_next(table, word):\n    return max(___________, key=table[word].get)\n",
+    "solution": "table[word]",
+    "hints": [
+      "The most likely follower is the key with the largest count",
+      "max needs the dict of candidates passed as its first argument"
+    ],
+    "test_code": "table = build_table(corpus)\nassert predict_next(table, \"parse\") == \"tree\"\nassert build_table([]) == {}\nprint('PASS')"
+  },
+  "related": ["parameters", "inference", "model", "next-token-prediction", "context", "model-provider"],
+  "tags": ["training", "pretraining", "knowledge-cutoff", "parameters", "next-token-prediction"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "output-tokens-01",
+  "slug": "output-tokens",
+  "title": "Output tokens",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Output tokens are what the model generates back — the prose you read, the code it emits, tool calls, and any extended thinking done before answering. They are billed at a higher rate than input tokens, commonly around five times, because they cost more compute to produce. Output also sets the pace of a session, since it is generated one token at a time.",
+    "analogy": "A luxury print shop that charges per printed page at five times the rate it charges to re-read your source file, and prints one character at a time — long custom prints are both slow and expensive.",
+    "time_complexity": "The model reads input quickly but writes output one token at a time, so a slow turn usually means a long answer is coming; higher effort spends more output tokens before you see anything.",
+    "space_complexity": "Output occupies its own side of the token budget — reasoning tokens are billed even when the harness hides them, so an unseen thinking phase still eats the window and the bill.",
+    "when_to_use": [
+      "Explaining why hidden reasoning tokens still appear on the bill",
+      "Cutting costs by getting an agent to emit small edits instead of rewriting whole files",
+      "Diagnosing a slow turn — the long wait usually means long output being written"
+    ],
+    "gotchas": [
+      "Reasoning tokens count as output even when the harness never shows them to you",
+      "Rewriting whole files instead of patching burns credit, since output costs about five times the input rate"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Prose", "sub": "visible text", "annotation": "The answer text you read is output tokens." },
+        { "label": "Code", "sub": "emitted edits", "annotation": "Generated code and file edits count as output." },
+        { "label": "Tool calls", "sub": "structured strings", "annotation": "Tool calls are output tokens the harness parses." },
+        { "label": "Reasoning", "sub": "hidden thinking", "annotation": "Extended thinking is billed as output even when hidden." },
+        { "label": "Pace", "sub": "one at a time", "annotation": "One-token-at-a-time generation sets how slow the turn feels." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Output tokens are billed at five times the input rate. Write request_cost that returns a single request's total given its input and output token counts.",
+    "starter_code": "INPUT_RATE = 1\nOUTPUT_RATE = 5\n\ndef request_cost(in_tokens, out_tokens):\n    return in_tokens * INPUT_RATE + out_tokens * ___________\n",
+    "solution": "OUTPUT_RATE",
+    "hints": [
+      "Multiply the output count by its premium rate constant",
+      "The total is the input charge plus the output charge"
+    ],
+    "test_code": "assert request_cost(1000, 100) == 1500\nassert request_cost(0, 20) == 100\nprint('PASS')"
+  },
+  "related": ["input-tokens", "effort", "next-token-prediction", "model-provider-request", "harness"],
+  "tags": ["output-tokens", "generation", "billing", "latency", "effort"]
+}

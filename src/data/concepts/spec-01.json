@@ -1,0 +1,70 @@
+{
+  "id": "spec-01",
+  "slug": "spec",
+  "title": "Spec",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A spec is a handoff artifact describing multi-session work — what is being built, not how each session does its share — and it mutates as work progresses. It is made of tickets and exists because sessions are disposable while big work is not: any fresh session reads the spec to know where the work stands without inheriting the previous session's noise. It comes in styles like PRD, design doc, or a plain plan.md, which matter less than the role it plays.",
+    "analogy": "A construction bluebook: the charter states the building's intent and the milestone list, and each day's fresh crew reads it instead of inheriting yesterday's confusion.",
+    "time_complexity": "The model is stateless, so re-reading the spec into a new session costs tokens on every request, but much less than inheriting a full noisy session.",
+    "space_complexity": "The spec lives outside the context window in the environment, so it survives clearing and a fresh session loads only what it needs.",
+    "when_to_use": [
+      "For work spanning more than one context window of effort",
+      "Enumerating work as tickets so each one can run in its own session",
+      "Keeping a durable statement of intent that each session reads at its start",
+      "Avoiding the dumb zone by splitting work before a single context overloads"
+    ],
+    "gotchas": [
+      "Sessions are disposable — without a spec, multi-session work has no home and dies on clearing",
+      "A spec describes what and why, not per-session how — keep session-specific steps out of it",
+      "Style matters less than role: a fresh session must be able to read it cold at the start"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Big work",
+          "sub": "spans many context windows",
+          "annotation": "Work bigger than one context window needs a home outside the context."
+        },
+        {
+          "label": "Write spec",
+          "sub": "goal, constraints, decisions",
+          "annotation": "The spec records the goal, the constraints, and the decisions made so far along with the ticket list and status."
+        },
+        {
+          "label": "Break into tickets",
+          "sub": "each scoped to one session",
+          "annotation": "Work is broken into tickets, each small enough to be completed within a single session."
+        },
+        {
+          "label": "Seed each session",
+          "sub": "fresh session reads spec",
+          "annotation": "Every fresh session starts by reading the durable statement of intent held in the spec."
+        },
+        {
+          "label": "Mutates as work progresses",
+          "sub": "ticket statuses update",
+          "annotation": "The spec is updated as work moves, so any session entering later knows exactly where things stand."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete seed_session so it adds a freshly opened ticket to the spec and returns that ticket as the brief for the next session.",
+    "starter_code": "def seed_session(spec, ticket_id):\n    ticket = {'id': ticket_id, 'status': 'open'}\n    spec['tickets'] = ___________\n    return ticket",
+    "solution": "spec['tickets'] = [ticket]",
+    "hints": [
+      "A spec is the durable statement of intent that a fresh session reads first.",
+      "Each ticket in the spec is scoped to one session of work."
+    ],
+    "test_code": "spec = {'tickets': []}\nt = seed_session(spec, 'A')\nassert spec['tickets'] == [{'id': 'A', 'status': 'open'}]\nassert t['status'] == 'open'\nprint('PASS')"
+  },
+  "related": ["ticket", "handoff-artifact", "session", "context-window", "smart-zone", "skill", "clearing"],
+  "tags": ["spec", "planning", "tickets", "multi-session", "roadmap"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "next-token-prediction-01",
+  "slug": "next-token-prediction",
+  "title": "Next-token prediction",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Next-token prediction is the model's only mode of operation: given a context it samples one next token, appends it, and runs again — every sentence, tool call, or thousand-line file is built one token at a time. The sampling step is why the same prompt can produce different output on different runs.",
+    "analogy": "An autocomplete that types a whole essay one word at a time by always asking 'what likely follows?' — it never checks truth, only likelihood, and it commits to each word as it goes.",
+    "time_complexity": "Generation is strictly sequential — one token per step — so total output time is output_tokens times tokens-per-second, which puts a floor on how fast any agent can work.",
+    "space_complexity": "Each step re-runs the growing context window, so the loop's working set is the tokens accumulated so far, competing for the fixed context budget.",
+    "when_to_use": [
+      "Explaining how a tool-call 'decision' is just a structured string the harness parses out of the output stream",
+      "Reasoning about why generation speed caps agent throughput",
+      "Explaining hallucination as emitting likely tokens rather than true ones"
+    ],
+    "gotchas": [
+      "The model never checks whether a token is true, only whether it's likely — the root of hallucination",
+      "A confident-sounding opening can steer the rest of the answer wrong because it commits one token at a time"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Context", "sub": "tokens in window", "annotation": "The tokens in the context window run through the parameters." },
+        { "label": "Score", "sub": "probabilities", "annotation": "The model assigns a probability to every token in the vocabulary." },
+        { "label": "Sample", "sub": "pick one", "annotation": "One token is sampled from those probabilities." },
+        { "label": "Append", "sub": "longer context", "annotation": "The sampled token is appended and the loop runs again." },
+        { "label": "Emit", "sub": "output stream", "annotation": "The output stream accumulates until the whole answer is built." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Show that output is built one token at a time: autocomplete() walks a chain of next-token lookups and joins the accumulated tokens into a sentence.",
+    "starter_code": "def autocomplete(first, nexts, length):\n    out = [first]\n    for _ in range(length - 1):\n        out.append(nexts.___________(out[-1], \"?\"))\n    return \" \".join(out)\n",
+    "solution": "get(out[-1], \"?\")",
+    "hints": [
+      "Each step looks up the most recent emitted token in the chain table",
+      "Use a dictionary lookup with '?' as the stop token when the chain ends"
+    ],
+    "test_code": "chain = {\"cat\": \"sat\", \"sat\": \"down\"}\nassert autocomplete(\"cat\", chain, 3) == \"cat sat down\"\nassert autocomplete(\"cat\", chain, 1) == \"cat\"\nprint('PASS')"
+  },
+  "related": ["token", "context-window", "parameters", "non-determinism", "tool-call", "hallucination", "harness"],
+  "tags": ["next-token-prediction", "autoregressive", "sampling", "hallucination", "generation"]
+}

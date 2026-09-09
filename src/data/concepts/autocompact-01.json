@@ -1,0 +1,70 @@
+{
+  "id": "autocompact-01",
+  "slug": "autocompact",
+  "title": "Autocompact",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "Autocompact is compaction triggered automatically by the harness when the context window approaches full, often around 80 percent. Work continues as if nothing happened, but compaction is lossy at a moment you did not choose — it fires mid-task and the summary decides for itself which decisions were worth keeping. The defence is to not let it fire: compact manually at a natural boundary or write decisions to a plan doc on disk.",
+    "analogy": "An auto-rebooting workstation mid-unsaved-work: the reboot keeps the machine usable, but the unsaved decisions are gone, chosen by the default rather than by you.",
+    "time_complexity": "The model is stateless, so the carried summary is re-read and billed on every request, though far cheaper than the full pre-threshold context.",
+    "space_complexity": "It fires when the finite context window approaches full (often around 80 percent), trading detail for headroom at a moment the user did not choose.",
+    "when_to_use": [
+      "Diagnosing why an agent forgot a constraint established earlier in the session",
+      "Deciding to compact manually instead of letting autocompact fire mid-task",
+      "Configuring the harness threshold or buffer to control how much headroom is kept",
+      "Writing decisions into a handoff artifact so no summary can lose them"
+    ],
+    "gotchas": [
+      "Lossy at a moment you did not choose — it fires mid-task rather than at a phase boundary",
+      "The summary decides for itself which of your decisions were worth keeping",
+      "The defence is to not let it fire: compact manually, persist decisions to disk, or tune the threshold"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Window approaches full",
+          "sub": "threshold around 80%",
+          "annotation": "The harness watches context fullness and fires when it crosses a threshold, often around 80 percent."
+        },
+        {
+          "label": "Pause and summarise",
+          "sub": "model condenses silently",
+          "annotation": "The harness pauses and asks the model to summarise the session so far, in the middle of the task."
+        },
+        {
+          "label": "Seed fresh session",
+          "sub": "continue as if nothing happened",
+          "annotation": "Work continues in a fresh session seeded with the summary as if nothing had happened."
+        },
+        {
+          "label": "Silent loss",
+          "sub": "forgotten constraint",
+          "annotation": "Decisions established an hour ago may have been dropped, and the agent forgets them confidently."
+        },
+        {
+          "label": "Defend",
+          "sub": "manual compact + plan doc",
+          "annotation": "Watch the context indicator, compact at natural boundaries, and keep decisions in a plan doc on disk."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete autocompact_should_fire so it returns True exactly when the context window fullness crosses the harness threshold.",
+    "starter_code": "def autocompact_should_fire(fullness, threshold):\n    fired = ___________\n    return fired",
+    "solution": "fired = fullness >= threshold",
+    "hints": [
+      "Autocompact fires when the context window crosses the harness threshold.",
+      "A nearly full window, for example 80 percent, trips the automatic summary."
+    ],
+    "test_code": "assert autocompact_should_fire(0.9, 0.8) is True\nassert autocompact_should_fire(0.5, 0.8) is False\nprint('PASS')"
+  },
+  "related": ["compaction", "clearing", "handoff-artifact", "session", "context-window", "model", "secondary-source"],
+  "tags": ["autocompact", "context-window", "summarization", "threshold", "context-management"]
+}

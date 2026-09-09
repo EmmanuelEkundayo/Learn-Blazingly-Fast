@@ -1,0 +1,70 @@
+{
+  "id": "secondary-source-01",
+  "slug": "secondary-source",
+  "title": "Secondary Source",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A secondary source is an account of a primary source, one step removed — a doc describing code, a summary of a transcript, a report of search results. It loads cheaply but is lossy by construction, because whoever wrote it decided what mattered and whatever they dropped is invisible to the reader. It fails two ways, loss of detail and drift from the primary, and the fix is sending the agent back to the primary source.",
+    "analogy": "Meeting minutes versus the recording: minutes are cheap to skim and capture what the minute-taker judged important, while the recording is the only place a dropped aside still lives.",
+    "time_complexity": "The model is stateless, so a secondary source is cheaper because it carries fewer tokens on every request, but the summary still bills what it contains.",
+    "space_complexity": "The context window is finite, and summaries trade fidelity for headroom so more material can fit in the same budget.",
+    "when_to_use": [
+      "Manufacturing headroom by compacting a session into a summary that seeds the next one",
+      "Having a subagent burn its own context on a noisy search and return a short report",
+      "Condensing a session's decisions into a handoff artifact the next session reads",
+      "When fidelity is expendable but the account keeps a context pointer back to the original"
+    ],
+    "gotchas": [
+      "Lossy by construction — whatever the writer dropped is invisible to a reader who has only the summary",
+      "Drift — the primary source changes and the account does not follow, so docs describe last quarter's architecture",
+      "An agent acting on a failed secondary source works confidently from wrong information; verify against the primary source"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Account created",
+          "sub": "summary, report, or doc",
+          "annotation": "Someone distils a primary source into a cheaper account that is one step removed from the thing itself."
+        },
+        {
+          "label": "Load cheap",
+          "sub": "fewer tokens than original",
+          "annotation": "The secondary source loads into the context window for a fraction of the token cost of the original."
+        },
+        {
+          "label": "Faithful to writer",
+          "sub": "matches the writer's judgement",
+          "annotation": "It captures what the writer decided mattered, and any dropped details stay dropped."
+        },
+        {
+          "label": "Drift check",
+          "sub": "does account match source?",
+          "annotation": "A maintained summary stays current, while an abandoned one describes last quarter's truth."
+        },
+        {
+          "label": "Follow the pointer",
+          "sub": "back to the original",
+          "annotation": "When the account is not enough, the reader follows the context pointer back to the primary source."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete build_secondary_source so it returns the condensed account along with a context pointer back to the primary source it came from.",
+    "starter_code": "def build_secondary_source(primary, dropped_keys):\n    account = {k: v for k, v in primary.items() if k not in dropped_keys}\n    result = ___________\n    return result",
+    "solution": "result = {'account': account, 'pointer': 'primary_source'}",
+    "hints": [
+      "A secondary source is one step removed — an account, not the thing.",
+      "Keep a context pointer so the reader can return to the primary source when the account is not enough."
+    ],
+    "test_code": "out = build_secondary_source({'schema': 'v2', 'notes': 'x'}, {'notes'})\nassert out['account'] == {'schema': 'v2'}\nassert out['pointer'] == 'primary_source'\nprint('PASS')"
+  },
+  "related": ["primary-source", "compaction", "handoff-artifact", "subagent", "memory-system", "context-pointer", "clearing"],
+  "tags": ["secondary-source", "summarization", "context-management", "drift", "context-pointer"]
+}

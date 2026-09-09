@@ -1,0 +1,49 @@
+{
+  "id": "human-review-01",
+  "slug": "human-review",
+  "title": "Human Review",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "Human review means reading the code the agent produced and judging it, which means reading the diff or the changed files. Reading the agent's description of what it did does not count, because narration is a secondary source written by the party being reviewed. Since agents raise the volume of code, review becomes the bottleneck, so it is reserved for what only you can judge and layered on top of automated checks and automated review.",
+    "analogy": "Like auditing a contract: the lawyer's summary of the changes is not the deliverable; you read the redline of the actual agreement, because that is where the substance lives.",
+    "time_complexity": "Operational cost rises the later review happens: a plan or a small mid-flight diff takes minutes, while excavating a finished branch after an AFK run takes far longer.",
+    "space_complexity": "Context footprint is the reviewer's own: rebuilding the shape of a whole feature from a finished branch consumes far more working memory than following it step by step as it was built.",
+    "when_to_use": [
+      "Deciding whether a change is the right change and whether it should exist at all",
+      "Checking whether an approach fits the codebase, not just whether it passes",
+      "As an early, cheap checkpoint: reviewing a plan or a small mid-flight diff rather than only end-of-branch excavation"
+    ],
+    "gotchas": [
+      "Reading the agent's summary is not review; the diff is the primary source",
+      "Agents raise code volume until review is the bottleneck, so it must be layered with automated checks and review",
+      "Treated as an afterthought, human review lands late at the most expensive point"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Place the gate", "sub": "decide when review happens", "annotation": "Where you review is a human-in-the-loop decision." },
+        { "label": "Early and cheap", "sub": "review the plan, not the branch", "annotation": "Reading a plan or a small diff takes minutes." },
+        { "label": "Read the diff", "sub": "not the summary", "annotation": "The summary is narration; the diff is the primary source." },
+        { "label": "Judge", "sub": "right change? fits codebase?", "annotation": "Humans judge what only they can judge about intent and fit." },
+        { "label": "Late and costly", "sub": "excavate the finished branch", "annotation": "A finished branch after an AFK run takes much longer to review." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model human review: only reading the diff counts, and new lines that introduce debt get flagged.",
+    "starter_code": "def human_review(diff_lines, read_primary):\n    \"\"\"Review means reading the artifact, not the author's narration of it.\"\"\"\n    caught = []\n    if not read_primary:\n        return ____________\n    for diff_line in diff_lines:\n        if diff_line.startswith('+') and 'TODO' in diff_line:\n            ____________\n    return caught",
+    "solution": "'unreviewed'\ncaught.append(diff_line)",
+    "hints": [
+      "Reading the diff is the review; a summary alone returns nothing.",
+      "Flag new lines that introduce debt into the codebase."
+    ],
+    "test_code": "diff = ['-old()', '+  new();  # TODO handle edge', '+  deadline = 1']\nassert human_review(diff, True) == ['+  new();  # TODO handle edge']\nassert human_review(diff, False) == 'unreviewed'\nprint('PASS')"
+  },
+  "related": ["automated-check", "automated-review", "human-in-the-loop", "afk", "vibe-coding"],
+  "tags": ["human-review", "code-review", "diff", "primary-source", "bottleneck"]
+}

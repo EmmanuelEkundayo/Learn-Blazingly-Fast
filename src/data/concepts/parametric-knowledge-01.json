@@ -1,0 +1,50 @@
+{
+  "id": "parametric-knowledge-01",
+  "slug": "parametric-knowledge",
+  "title": "Parametric Knowledge",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Parametric knowledge is what a model knows from training, stored in its parameters and frozen at training time. Reliability tracks how often a topic appeared in the data: dense topics reproduce accurately, rare topics blur into plausible guesses, and because reproducing and guessing are the same process to the model, it cannot tell which it is doing.",
+    "analogy": "An engineer who ships a framework hundreds of times but has only a blurred impression of a vendor SDK encountered twice. For the familiar framework they recall precisely; for the rare SDK they extrapolate what it would look like and present the guess with the same confidence as real recall. The cure is the same either way: read the vendor's real docs into context.",
+    "time_complexity": "O(C) per generated token over the full context window — parametric recall runs at inference speed, and supplying missing knowledge as context grows the per-request cost linearly with C.",
+    "space_complexity": "Context/memory footprint: the parameters are fixed at training time, and the fix for a rare or stale topic must live in the window instead, where every loaded doc competes for the finite attention budget.",
+    "when_to_use": [
+      "'It writes flawless React but invents methods on our internal SDK' — React is dense in the training data, the SDK is not",
+      "Judging trust: how often a topic appeared in training predicts how accurately the model reproduces it, so rare topics deserve verification",
+      "Supplying knowledge the parameters lack: an internal SDK, a library released after the cutoff, or a decision made yesterday",
+      "Explaining why the model is fluent on common topics yet fabricates on uncommon ones"
+    ],
+    "gotchas": [
+      "No self-signal: the model cannot distinguish reproducing from guessing, so a fabricated answer sounds identical to a correct one",
+      "Parametric knowledge ages — parameters stop changing at the cutoff, and a library released after it does not exist in them",
+      "The parameters cannot be updated or read; the only fix for a rare or stale topic is to supply it as contextual knowledge"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Training squeezes facts", "sub": "billions into fixed weights", "annotation": "Training adjusts parameters until the model predicts text well, and this squeezes billions of facts into a fixed parameter count." },
+        { "label": "Common topics reproduce", "sub": "dense in the data", "annotation": "A topic with millions of examples is reproduced accurately because it is densely encoded in the parameters." },
+        { "label": "Rare topics blur", "sub": "guessed shapes", "annotation": "For a topic seen only a handful of times, the model guesses based on what similar topics look like." },
+        { "label": "Guess sounds identical", "sub": "same fluent register", "annotation": "Reproducing and guessing are the same process to the model, so it cannot tell which one it is doing." },
+        { "label": "Fix with context", "sub": "load the docs", "annotation": "The parameters are frozen, so the missing knowledge has to be supplied as contextual knowledge in the window." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Decide whether parametric knowledge on a topic is reliable enough to trust, based on how often it appeared in training.",
+    "starter_code": "RELIABLE_THRESHOLD = 100_000\n\ndef reliably_recalled(examples):\n    # Returns True when a topic appeared often enough in training data\n    # for the model's parametric knowledge to reproduce it faithfully.\n    return examples > ___________",
+    "solution": "RELIABLE_THRESHOLD",
+    "hints": [
+      "Frequent topics reproduce accurately; very rare ones turn into guesses.",
+      "Compare the example count against the reliability threshold constant."
+    ],
+    "test_code": "assert reliably_recalled(5_000_000) is True\nassert reliably_recalled(12) is False\nassert reliably_recalled(100_000) is False\nprint('PASS')"
+  },
+  "related": ["contextual-knowledge", "hallucination", "knowledge-cutoff", "training"],
+  "tags": ["parametric-knowledge", "training", "parameters", "hallucination", "knowledge-cutoff"]
+}

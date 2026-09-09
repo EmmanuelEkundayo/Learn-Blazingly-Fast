@@ -1,0 +1,48 @@
+{
+  "id": "agent-01",
+  "slug": "agent",
+  "title": "Agent",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A model harnessed with tools, a system prompt, and a context window that takes turns with a user. The agent is the unit you actually speak to — the anthropomorphized combination of model plus harness you delegate goals to and hold accountable for results.",
+    "analogy": "A hired consultant: you give a goal, and the consultant (agent) decides how to research, call on resources, and act. Beneath the single person you address is an agency (the harness) and a set of staffers (the model) — but you delegate to the unit as one whole.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "The agent's working state is its context window plus any files it loads; everything competes for the finite token budget each turn.",
+    "when_to_use": [
+      "Delegating a goal to a model configured as an agent with tools and instructions",
+      "Choosing between harnesses that shape a model into different agents",
+      "Addressing the model-plus-harness combination as the actor in conversation"
+    ],
+    "gotchas": [
+      "Agent is not a mechanical part — prefer precise terms like the model or the harness when a process question arises",
+      "Avoid vague labels like the AI or the bot, which hide whether you mean the frozen parameters or the harnessed, tooled system"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Configure", "sub": "prompt + tools", "annotation": "A harness binds a system prompt and tools around a model." },
+        { "label": "Delegate", "sub": "user message", "annotation": "The user hands the agent one message with a goal." },
+        { "label": "Act", "sub": "tool calls", "annotation": "The agent chains tool calls, reading files and running checks." },
+        { "label": "Report", "sub": "yield back", "annotation": "The agent yields its result to the user, ending the turn." },
+        { "label": "Re-delegate", "sub": "next turn", "annotation": "You redirect and steer between turns, keeping the agent on target." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Wrap a model call into a tiny agent turn: run the model on a system prompt plus the user message, and return the trimmed reply.",
+    "starter_code": "def agent_turn(model, system_prompt, user_message):\n    reply = model.run(system_prompt + \"\\n\\n\" + user_message)\n    return ___________",
+    "solution": "reply.strip()",
+    "hints": [
+      "The harness passes both the standing brief and the user's message to the model.",
+      "The final reply should be cleaned of leading and trailing whitespace."
+    ],
+    "test_code": "class FakeModel:\n    def run(self, p):\n        return \"  did the work  \"\nassert agent_turn(FakeModel(), \"You are a coding agent\", \"fix the bug\") == \"did the work\"\nprint('PASS')"
+  },
+  "related": ["model", "harness", "system-prompt", "tool", "turn", "context-window"],
+  "tags": ["agent", "harness", "model", "delegation", "tools", "system-prompt"]
+}

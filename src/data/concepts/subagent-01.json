@@ -1,0 +1,64 @@
+{
+  "id": "subagent-01",
+  "slug": "subagent",
+  "title": "Subagent",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A subagent is an agent spawned by another agent via a tool call that runs in its own session with its own context window and reports a single tool result back. Subagents exist to isolate context, not to compose hierarchies — they cannot spawn further subagents.",
+    "analogy": "A specialist you dispatch on a scouting trip: they burn their own fuel exploring, then come back with a two-line summary, leaving your own fuel tanks untouched.",
+    "time_complexity": "O(noise in a disposable window): noisy work like a broad search or long file-reading runs in the subagent's window, so only the final report lands in the parent, reducing per-turn parent cost.",
+    "space_complexity": "O(disposable window + compact report): the finite parent context holds just the summarized result instead of pages of raw tool output.",
+    "when_to_use": [
+      "When grep results are blowing out the parent context",
+      "When a broad search or long file-reading expedition produces pages of tool results that matter only long enough to find the answer",
+      "When several independent pieces of work can fanned out concurrently across subagents"
+    ],
+    "gotchas": [
+      "The report is a secondary source — the parent gets the subagent's account, so anything the report leaves out is invisible to the parent",
+      "A subagent cannot spawn further subagents; the tree is one level deep",
+      "Distinct from a handoff — the parent expects a return, while a handoff has no return path"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Spawn",
+          "sub": "parent issues tool call",
+          "annotation": "The parent agent spawns a subagent via a tool call to run work in its own context window."
+        },
+        {
+          "label": "Run",
+          "sub": "noise fills disposable window",
+          "annotation": "The subagent burns its own context window on noisy search and file-reading output."
+        },
+        {
+          "label": "Report",
+          "sub": "single tool result returned",
+          "annotation": "The subagent reports a single compact tool result back to the parent."
+        },
+        {
+          "label": "Return",
+          "sub": "only summary lands in parent",
+          "annotation": "Only the final report stays in the parent's context while the noise remains in the disposable window."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that compresses a noisy result into a compact report for the parent agent, keeping only the matching lines.",
+    "starter_code": "def summarize(lines, keep_needle):\n    keep = []\n    for line in lines:\n        if keep_needle in line:\n            keep.append(line)\n    return ___________",
+    "solution": "keep",
+    "hints": [
+      "Return the filtered list that holds the lines the parent actually needs",
+      "The report should be small, since it will land in the parent's ready-only context"
+    ],
+    "test_code": "lines = ['src/app.py matches', 'node_modules log', 'src/main.py matches']\nassert summarize(lines, 'matches') == ['src/app.py matches', 'src/main.py matches']\nassert len(summarize(lines, 'zzz')) == 0\nprint('PASS')"
+  },
+  "related": ["agent", "context-window", "handoff-artifact", "secondary-source", "session"],
+  "tags": ["subagent", "agent", "context", "isolation", "concurrency"]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "effort-01",
+  "slug": "effort",
+  "title": "Effort",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "Effort is a per-request dial controlling how much reasoning a model does before answering, from low (mechanical edits) to max (problems where a wrong answer is expensive). That thinking is generated at inference time like everything else and billed as output tokens even when the harness hides it. Set the dial to fit the task, not the session.",
+    "analogy": "A code-review depth setting: skim for a formatting change, give a concurrency fix a full design review — you pay the reviewers for every minute either way, whether or not you see their notes.",
+    "time_complexity": "Reasoning tokens are produced one at a time, so higher effort lengthens latency and raises the output-token bill even when the hidden thinking is never shown to you.",
+    "space_complexity": "Thinking tokens occupy the same output side of the context as the visible answer, consuming token budget and time before the response you see even starts.",
+    "when_to_use": [
+      "Turning effort up for tricky bugs, design decisions, and multi-step plans",
+      "Turning it low for mechanical edits, lookups, and well-specified changes with one clear path",
+      "Matching the dial to the task rather than the whole session",
+      "Dialing to max only for the hardest problems where a wrong answer is expensive to unwind"
+    ],
+    "gotchas": [
+      "Too-low effort on a hard problem yields a confident, shallow answer that reads fine and costs you later",
+      "Max effort on a one-line rename produces a long think the lowest setting would have skipped",
+      "Hidden reasoning is real work you're billed for, even though you never see it"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Low", "sub": "mechanical", "annotation": "Mechanical edits and lookups get a one-clear-path answer." },
+        { "label": "Medium", "sub": "everyday", "annotation": "Everyday coding is the usual default." },
+        { "label": "High", "sub": "hard problems", "annotation": "Tricky bugs and design decisions get longer deliberation." },
+        { "label": "Max", "sub": "worst-case cost", "annotation": "The hardest problems, where a wrong answer is expensive, get maximum thinking." },
+        { "label": "Bill", "sub": "hidden tokens", "annotation": "All of that reasoning is billed as output tokens even when hidden." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model the effort ladder: given an effort level and the visible output, compute total billed output tokens as hidden thinking seconds plus shown output.",
+    "starter_code": "effort_seconds = {\"low\": 1, \"medium\": 5, \"high\": 20, \"max\": 60}\n\ndef billed_output(level, shown):\n    hidden = effort_seconds.___________(level, 0)\n    return hidden + shown\n",
+    "solution": "get(level, 0)",
+    "hints": [
+      "Unknown levels should add zero hidden thinking",
+      "Use a dictionary lookup that defaults gracefully for missing keys"
+    ],
+    "test_code": "assert billed_output(\"high\", 3) == 23\nassert billed_output(\"max\", 1) == 61\nassert billed_output(\"unknown\", 5) == 5\nprint('PASS')"
+  },
+  "related": ["output-tokens", "inference", "model", "session", "harness"],
+  "tags": ["effort", "reasoning", "output-tokens", "thinking", "latency"]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "knowledge-cutoff-01",
+  "slug": "knowledge-cutoff",
+  "title": "Knowledge Cutoff",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The knowledge cutoff is the date past which a model has no parametric knowledge. The model does not know its knowledge has an edge, so asked about post-cutoff events it extrapolates from the nearest thing it does know instead of refusing. The fix is always the same: get current information into context, where anything in context outranks nothing-in-parameters.",
+    "analogy": "An employee who left a company on a fixed date has a frozen memory of its internal systems. Newer versions do not exist in their head, and asked about them they improvise a version that looks close. You cannot retrain them; you hand them the changelog and let them read from the page.",
+    "time_complexity": "O(C) per generated token over the full context window — working past the cutoff means loading current docs into context, and the per-request cost grows with that loaded C.",
+    "space_complexity": "Context/memory footprint: nothing past the cutoff exists in the parameters, so correctness must be carried in the window, where each loaded doc competes for the model's finite attention budget.",
+    "when_to_use": [
+      "Code written against an old library version: 'It keeps writing the v3 SDK syntax — we're on v5'",
+      "Loading the v5 changelog or the installed version's type definitions as contextual knowledge",
+      "Suspicion heuristic: anything released after the cutoff is a fabrication trap until its docs are loaded",
+      "Choosing a model: each release ships with its own cutoff, so pick one whose cutoff covers the libraries in your stack"
+    ],
+    "gotchas": [
+      "The quiet trap: code against the old version looks plausible, often compiles, and fails on the parts that changed",
+      "The model does not refuse on post-cutoff topics — it extrapolates silently, so no error signals the edge",
+      "The fix is context, not prompting: anything in context outranks nothing-in-parameters"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Training freezes a snapshot", "sub": "parameters stop changing", "annotation": "Training bakes a snapshot of text into the parameters, and after the cutoff date they are frozen." },
+        { "label": "Library v6 ships", "sub": "post-cutoff release", "annotation": "A version released after the cutoff does not exist in the parameters at all." },
+        { "label": "Model extrapolates", "sub": "nearest known version", "annotation": "Asked about the newer syntax, the model extrapolates from the closest version it does know." },
+        { "label": "Plausible but wrong", "sub": "compiles, fails at runtime", "annotation": "Code against the old API looks fine and often compiles, then fails on the parts that changed." },
+        { "label": "Load current info", "sub": "context outranks parameters", "annotation": "Load the changelog or installed type definitions; anything in context outranks nothing-in-parameters." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Flag a library version that shipped after the model's knowledge cutoff, so it is a fabrication trap until its docs are loaded.",
+    "starter_code": "CUTOFF = '2024-01-01'\n\ndef shipped_after_cutoff(release_date):\n    # Returns True when a library version shipped after the model's\n    # knowledge cutoff and is a fabrication trap until docs are loaded.\n    return release_date > ___________",
+    "solution": "CUTOFF",
+    "hints": [
+      "Versions released after the cutoff are not present in the frozen parameters.",
+      "Compare the release date against the CUTOFF constant; ISO dates compare lexicographically."
+    ],
+    "test_code": "assert shipped_after_cutoff('2025-06-01') is True\nassert shipped_after_cutoff('2023-03-15') is False\nassert shipped_after_cutoff('2024-01-01') is False\nprint('PASS')"
+  },
+  "related": ["parametric-knowledge", "contextual-knowledge", "hallucination"],
+  "tags": ["knowledge-cutoff", "parametric-knowledge", "training", "contextual-knowledge", "hallucination"]
+}

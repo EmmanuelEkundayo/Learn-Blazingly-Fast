@@ -1,0 +1,48 @@
+{
+  "id": "mcp-01",
+  "slug": "mcp",
+  "title": "MCP (Model Context Protocol)",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "MCP is a standard protocol for plugging external tool servers into a harness, giving an agent tools beyond what the harness ships with. The agent never calls MCP directly - it calls a tool, and the harness happens to have gotten that tool from an MCP server.",
+    "analogy": "A standard USB port for tooling: instead of building a custom cable for every device, one protocol lets any MCP-compatible harness use whatever server implements it.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - MCP changes where tools come from, not the round-trip structure.",
+    "space_complexity": "Every advertised tool arrives as a full definition - name, description, parameter schema - so a few generous servers can burn thousands of tokens on schemas before anything is typed.",
+    "when_to_use": [
+      "When the agent needs tools from an external system like Linear or Slack without hand-writing custom wrappers",
+      "When you want one integration written once and usable by any MCP-compatible harness",
+      "When enabling servers, enable only the ones a project actually needs to control the up-front token cost"
+    ],
+    "gotchas": [
+      "The naive approach loads every tool definition into the context window up front, spending attention budget on tools the task never uses",
+      "The model can only call tools it knows about - if a definition never arrives, the tool is invisible to it",
+      "If your harness doesn't offer tool search, the up-front cost applies and grows with each server you install"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Expose", "sub": "server advertises tools", "annotation": "An MCP server advertises the tools it offers, following the standard protocol." },
+        { "label": "Connect", "sub": "harness plugs in", "annotation": "The harness connects to the server and its tools become available to the agent." },
+        { "label": "Load", "sub": "definitions to context", "annotation": "Each tool arrives as its definition, and the model can only call tools it knows about." },
+        { "label": "Call", "sub": "agent uses the tool", "annotation": "The agent never calls MCP; it calls a tool the harness happened to get from the server." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate a harness caching a tool definition from an MCP server the first time it is needed. Once known, the definition stays available even if the server drops it.",
+    "starter_code": "def fetch_tool(server, name, known):\n    if name not in known:\n        ___________\n    return known.get(name)",
+    "solution": "known[name] = server[name]",
+    "hints": [
+      "The first request pulls the definition from the server into the harness's cache",
+      "Definitions are loaded lazily - only the tools the agent actually reaches for"
+    ],
+    "test_code": "server = {'list_tickets': {'method': 'GET'}}\nknown = {}\nfirst = fetch_tool(server, 'list_tickets', known)\nassert first == {'method': 'GET'}\ndel server['list_tickets']\nassert fetch_tool(server, 'list_tickets', known) == {'method': 'GET'}\nprint('PASS')"
+  },
+  "related": ["tool", "harness", "context-window", "agent", "token"],
+  "tags": ["mcp", "protocol", "tools", "integration", "context"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "session-01",
+  "slug": "session",
+  "title": "Session",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "One bounded run of interaction with an agent. It starts empty, accumulates messages, tool results, and files read, and ends when cleared, closed, or compacted into a fresh session. The session is what fills the context window — if the window is the box, the session is the stuff slowly filling it.",
+    "analogy": "A single shift's work log on a shared project: it fills as the day goes, records what the tests said and what was decided, and is handed off or archived once the shift (context budget) ends.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "Everything in session history competes for the context-window budget; bloated sessions hit the limit and must be compacted or cleared.",
+    "when_to_use": [
+      "Keeping one task per session so context stays relevant and residue doesn't color later answers",
+      "Finishing a task as the natural point to clear the session",
+      "Handing off or compacting once the session bloats instead of pushing through"
+    ],
+    "gotchas": [
+      "Session memory ends with the session — the agent that knew your codebase yesterday knows none of it this morning",
+      "Everything in a session influences every later turn, so unrelated tasks done in one session leave residue that biases the next answer"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Open", "sub": "empty history", "annotation": "A session starts empty, with no trace of prior sessions." },
+        { "label": "Accumulate", "sub": "messages + tools", "annotation": "User messages, tool results, and files read are appended turn by turn." },
+        { "label": "Fill window", "sub": "context budget", "annotation": "History consumes the context window until it approaches the limit." },
+        { "label": "Compact / clear", "sub": "bounded run", "annotation": "The session is cleared or compacted into a fresh session to keep working." },
+        { "label": "Hand off", "sub": "persist via files", "annotation": "What survives across sessions lives in the filesystem, not the session." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Create a fresh session object structured like the harness's running transcript: a message list plus a tool-results list.",
+    "starter_code": "def new_session():\n    session = {\n        \"messages\": [],\n        \"tool_results\": [],\n    }\n    return ___________",
+    "solution": "session",
+    "hints": [
+      "A new session starts from nothing, so both lists begin empty.",
+      "Return the dict you just built."
+    ],
+    "test_code": "s = new_session()\nassert isinstance(s, dict)\nassert s[\"messages\"] == []\nassert s[\"tool_results\"] == []\nprint('PASS')"
+  },
+  "related": ["turn", "context-window", "stateless", "stateful", "context", "compaction", "harness"],
+  "tags": ["session", "history", "context", "turn", "agent", "working-memory"]
+}

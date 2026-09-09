@@ -1,0 +1,58 @@
+{
+  "id": "stateful-01",
+  "slug": "stateful",
+  "title": "Stateful",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Carries information forward. A session is stateful across turns — context accumulates as it runs, which is why long sessions drift into the dumb zone. An agent can be made stateful across sessions by adding a memory system that persists information into the environment and reloads it at the start of future sessions. The model itself is never stateful; any apparent continuity is the harness re-feeding context.",
+    "analogy": "A project notebook your assistant reloads every morning: yesterday's decisions get written down and re-read, so it picks up where it left off even though its recollection is just re-reading the notebook, not memory.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "State is stored by re-reading something at a lower layer: files and transcripts consume context-window budget or disk, and each reload re-competes for window space.",
+    "when_to_use": [
+      "Adding a memory system so an agent remembers preferences or decisions across sessions",
+      "Relying on handoff artifacts and AGENTS.md to carry state between sessions",
+      "Accepting that within a session, accumulated context is what keeps the agent coherent"
+    ],
+    "gotchas": [
+      "A wrong assumption made early is carried forward and influences every later turn — clearing is the deliberate reset",
+      "The model saw nothing of yesterday; apparent continuity is the harness reloading storage, never the model remembering"
+    ]
+  },
+  "visualization": {
+    "type": "state-diagram",
+    "config": {
+      "states": [
+        { "id": "empty", "label": "Empty", "sub": "new session" },
+        { "id": "store", "label": "Store", "sub": "memory files / AGENTS.md" },
+        { "id": "running", "label": "Running", "sub": "session accumulates" }
+      ],
+      "transitions": [
+        { "from": "running", "to": "store", "label": "write down" },
+        { "from": "store", "to": "running", "label": "reload at start" },
+        { "from": "running", "to": "empty", "label": "cleared" },
+        { "from": "empty", "to": "running", "label": "start fresh" }
+      ],
+      "steps": [
+        { "active_state": "empty", "active_transition": { "from": "empty", "to": "running" }, "annotation": "A new session starts from nothing before building state turn by turn." },
+        { "active_state": "running", "active_transition": { "from": "running", "to": "store" }, "annotation": "Key decisions are written down to files rather than trusted to the session." },
+        { "active_state": "store", "active_transition": { "from": "store", "to": "running" }, "annotation": "The next session reloads those files, making the agent appear to remember." },
+        { "active_state": "running", "active_transition": { "from": "running", "to": "empty" }, "annotation": "Clearing throws the session state away and starts again from what was written down." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate a memory system: append a note for the session and return a snapshot that a future session could reload.",
+    "starter_code": "def reload_memory(memory_file, session_note):\n    memory_file.append(session_note)\n    return ___________",
+    "solution": "memory_file[:]",
+    "hints": [
+      "Each session should get its own snapshot copy, not the live list.",
+      "Slice the whole list to return a fresh copy."
+    ],
+    "test_code": "mem = [\"known: repo is a monorepo\"]\nout = reload_memory(mem, \"note: use pnpm\")\nassert out == [\"known: repo is a monorepo\", \"note: use pnpm\"]\nassert len(out) == 2\nassert out is not mem\nprint('PASS')"
+  },
+  "related": ["stateless", "session", "context", "memory-system", "harness", "handoff"],
+  "tags": ["stateful", "memory", "session", "state", "persistence", "handoff"]
+}

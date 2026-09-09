@@ -1,0 +1,48 @@
+{
+  "id": "model-provider-request-01",
+  "slug": "model-provider-request",
+  "title": "Model provider request",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A model provider request is one round-trip from the harness to the provider: the harness sends the current context and the provider returns one response — a tool call or a final answer. A single user turn can spawn many requests because each tool result triggers another. Requests, not turns, are the unit of billing.",
+    "analogy": "Each request is a fresh drive-thru order: no matter how many you've placed before, you hand over your full order list every time, and the kitchen keeps nothing between visits.",
+    "time_complexity": "Cost is proportional to the number of requests times the size of the context each one carries — an innocuous question can cost more than your message because forty turns of history re-send on every request.",
+    "space_complexity": "Each request re-sends the whole session — system prompt, conversation, tool results — so the context window is re-occupied every round-trip; the prefix cache is what makes the repetition affordable.",
+    "when_to_use": [
+      "Explaining where the tokens went: count the requests, not the turns",
+      "Predicting bill spikes from tool-heavy turns — twelve greps, eight reads, four edits",
+      "Reasoning about dual billing of input plus output on every request"
+    ],
+    "gotchas": [
+      "A turn is not a request — one 'fix the failing test' plays out as a chain of six requests",
+      "The provider keeps nothing between requests; request forty resends what thirty-nine sent plus one tool result"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "User turn", "sub": "one exchange", "annotation": "You give a single instruction such as fix the failing test." },
+        { "label": "Request 1", "sub": "tool: run tests", "annotation": "The harness sends context; the model returns a tool call to run the tests." },
+        { "label": "Harness acts", "sub": "executes tool", "annotation": "Tests run and the output is appended to the context." },
+        { "label": "Requests 2-5", "sub": "read, edit, re-test", "annotation": "Each new request re-sends the whole growing context." },
+        { "label": "Final answer", "sub": "request 6", "annotation": "The chain ends with a final answer; every request is billed separately." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Count how many model provider requests a turn will spawn: one for the original instruction, plus one for every tool result that must be fed back in.",
+    "starter_code": "def requests_for_tools(tool_results):\n    return 1 + len(___________)\n",
+    "solution": "tool_results",
+    "hints": [
+      "Start with the single request that started the turn",
+      "Each tool result in the list triggers exactly one follow-up request"
+    ],
+    "test_code": "assert requests_for_tools([]) == 1\nassert requests_for_tools([\"run\", \"read\"]) == 3\nassert requests_for_tools([\"grep\"] * 12) == 13\nprint('PASS')"
+  },
+  "related": ["model-provider", "harness", "input-tokens", "output-tokens", "prefix-cache", "tool"],
+  "tags": ["request", "round-trip", "billing", "tool-call", "turn"]
+}

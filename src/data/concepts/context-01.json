@@ -1,0 +1,48 @@
+{
+  "id": "context-01",
+  "slug": "context",
+  "title": "Context",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The task-relevant information the agent has access to right now. It is not the raw token input the model sees (that's the context window), nor the running history (that's the session), but what the agent knows that pertains to the task at hand.",
+    "analogy": "A surgeon's prep table: at any moment only what's pertinent to the current operation is laid out. A table crowded with stale test results is worse than the single relevant fact placed front and center.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "Context competes for space in the finite context window; task-relevant information must be loaded in while irrelevant content stays out.",
+    "when_to_use": [
+      "Before judging an agent's output, ask what facts were in context when it acted",
+      "Loading the type definition or file a task turns on rather than letting the agent guess from call sites",
+      "Curating the context actively as part of an agent workflow"
+    ],
+    "gotchas": [
+      "Context is a measure of quality, not quantity — a nearly full window can still be poor context if it's full of stale tool output",
+      "Most day-to-day agent failures trace back to context: the relevant fact was never loaded, or was buried under attention degradation"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Task starts", "sub": "narrow scope", "annotation": "A new task begins; only known facts are in context." },
+        { "label": "Load files", "sub": "tool calls", "annotation": "The agent reads the definitions and files the task actually turns on." },
+        { "label": "Curate", "sub": "drop noise", "annotation": "Irrelevant or stale output is kept out so it cannot steer the agent." },
+        { "label": "Act", "sub": "informed turns", "annotation": "Each decision is made against the loaded, task-relevant facts." },
+        { "label": "Reconcile", "sub": "check gaps", "annotation": "When output misses, the first question is what was in context when it acted." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Check whether a required fact is present in the agent's loaded context files.",
+    "starter_code": "def fact_in_context(context_files, fact):\n    for doc in context_files:\n        if fact in doc:\n            return ___________\n    return False",
+    "solution": "True",
+    "hints": [
+      "Return as soon as any loaded document contains the fact.",
+      "The loop already returns False after the last document if nothing matched."
+    ],
+    "test_code": "files = [\"the user id is 42\", \"password reset uses email tokens\"]\nassert fact_in_context(files, \"user id is 42\")\nassert not fact_in_context(files, \"credit card number\")\nprint('PASS')"
+  },
+  "related": ["context-window", "session", "stateless", "stateful", "attention-budget", "harness"],
+  "tags": ["context", "context-engineering", "agent", "task-relevant", "curation"]
+}

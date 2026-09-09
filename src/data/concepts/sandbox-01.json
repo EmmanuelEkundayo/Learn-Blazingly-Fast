@@ -1,0 +1,48 @@
+{
+  "id": "sandbox-01",
+  "slug": "sandbox",
+  "title": "Sandbox",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A sandbox is an isolated environment the agent runs inside - a container, VM, ephemeral filesystem, or restricted-permission shell - that limits the blast radius of its actions. Stronger isolation means fewer permission questions need asking, which is what makes AFK runs practical.",
+    "analogy": "Learning to dive in a training tank instead of open water: you can make every mistake inside, and afterwards the tank gets drained and refilled for the next learner.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - sandboxes spend infrastructure instead of user attention.",
+    "space_complexity": "A sandbox constrains what the agent can reach, but results still land back in the context window and compete for the finite token budget like any other session.",
+    "when_to_use": [
+      "When you want to let the agent run bypass-permissions AFK - fresh container, no credentials mounted, no network out",
+      "When destructive commands or malicious fetches are possible - contain the damage instead of pre-approving every step",
+      "When balancing permissions and autonomy - the sandbox handles the risk so you can widen the free-tool set"
+    ],
+    "gotchas": [
+      "Actions that leave the sandbox legitimately are not contained - an agent with git credentials can push, one with network can call production APIs",
+      "Decide what may cross the boundary before you decide how thick to make the walls",
+      "Containers are often discarded after use - anything not written out externally is lost with them"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Isolate", "sub": "container, VM, shell", "annotation": "The agent runs inside a container, VM, ephemeral filesystem, or restricted shell." },
+        { "label": "Contain", "sub": "limit blast radius", "annotation": "Even destructive commands and malicious fetches are contained by the isolation." },
+        { "label": "Trust", "sub": "widen permissions", "annotation": "Stronger isolation means fewer permission questions, making AFK runs practical." },
+        { "label": "Discard", "sub": "throw away the box", "annotation": "Containers are discarded after use, taking whatever damage happened inside with them." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Implement a sandbox network policy: local commands run freely, but outbound fetches only run when the sandbox allows network access.",
+    "starter_code": "def sandbox_ok(command, allowed_network):\n    if 'curl' in command or 'wget' in command:\n        return ___________\n    return True",
+    "solution": "allowed_network",
+    "hints": [
+      "Network calls are the leaky action - they let the agent reach beyond the sandbox",
+      "Local commands stay inside the blast radius, so they need no extra gate"
+    ],
+    "test_code": "assert sandbox_ok('python tests.py', False) is True\nassert sandbox_ok('curl http://evil', False) is False\nassert sandbox_ok('wget http://mirror', True) is True\nprint('PASS')"
+  },
+  "related": ["environment", "permission-mode", "agent-mode", "agent", "filesystem"],
+  "tags": ["sandbox", "isolation", "safety", "container", "afk"]
+}

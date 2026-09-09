@@ -1,0 +1,65 @@
+{
+  "id": "progressive-disclosure-01",
+  "slug": "progressive-disclosure",
+  "title": "Progressive Disclosure",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Progressive disclosure means loading only the context an agent needs right now, with context pointers to the rest. It inverts the always-loaded AGENTS.md mindset because every token loaded up front is billed and spends attention on every turn.",
+    "analogy": "An IDE that shows only the toolbar relevant to the file you are editing and hides the rest behind a click, instead of dumping every menu onto the screen at once.",
+    "time_complexity": "O(context actually needed per turn): by keeping the always-loaded layer small, a sentence per topic plus a pointer, most tokens are never loaded, reducing per-turn input cost.",
+    "space_complexity": "O(one-line pointers): the always-loaded layer holds pointers, not bodies, so the finite context window stays small and the detail loads only when triggered.",
+    "when_to_use": [
+      "When an AGENTS.md stuffed with a full style guide, deploy runbook, and database conventions is making the model worse at all of them",
+      "When the tell is an agent that ignores rules you know are in its context because they are buried",
+      "When you want the agent to read the style guide only while writing a component, or the runbook only while deploying",
+      "When using skills, the pattern built into the harness, whose full instructions load only when triggered"
+    ],
+    "gotchas": [
+      "Context is a cost twice over — every token is billed as input and spends attention budget even when unneeded",
+      "A pointer that is too vague gives the agent no reason to follow it and the detail never loads",
+      "Instructions that genuinely apply to every task should stay inline, not be hidden behind disclosure"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Pointer",
+          "sub": "one-line description in context",
+          "annotation": "The always-loaded layer holds a short sentence per topic plus a context pointer to where the detail lives."
+        },
+        {
+          "label": "Match",
+          "sub": "task matches the pointer",
+          "annotation": "When the current task matches, the agent recognizes the description and decides the detail is worth loading."
+        },
+        {
+          "label": "Load",
+          "sub": "pull detail on demand",
+          "annotation": "The agent follows the pointer and pulls the full instructions into the context window."
+        },
+        {
+          "label": "Drop",
+          "sub": "detail gone after task",
+          "annotation": "Once the task is done the detail leaves context and stops spending tokens or attention."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that stores a topic inline when it applies every turn and as a pointer otherwise. Both branches return a label prefixed to the topic.",
+    "starter_code": "def plan(topic, applies_every_turn):\n    if applies_every_turn:\n        return ___________ + topic\n    else:\n        return ___________ + topic",
+    "solution": "'inline:'\n'pointer:'",
+    "hints": [
+      "The always-loaded layer inlines only rules that apply every turn",
+      "Anything else should be a pointer so it loads on demand"
+    ],
+    "test_code": "assert plan('test command', True) == 'inline:test command'\nassert plan('style guide', False) == 'pointer:style guide'\nprint('PASS')"
+  },
+  "related": ["context-pointer", "skill", "agents-md", "context-window", "harness"],
+  "tags": ["context", "pointer", "skill", "token", "attention"]
+}

@@ -1,0 +1,64 @@
+{
+  "id": "agents-md-01",
+  "slug": "agents-md",
+  "title": "AGENTS.md",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "AGENTS.md is a file in the environment that the harness loads into the context window at session start — the project's standing brief to the agent. It is one way to avoid repeating the same corrections across every fresh session.",
+    "analogy": "A shared onboarding checklist that every new hire reads on day one, so you do not re-explain the build commands, conventions, and do-not-touch directories to each person individually.",
+    "time_complexity": "O(tokens in file per turn): everything in AGENTS.md is loaded on every turn of every session, so a bloated file burns tokens continuously regardless of task.",
+    "space_complexity": "O(full inline content): instructions accumulate and dilute the context window, so the file must stay short and declarative to conserve finite space.",
+    "when_to_use": [
+      "For content the agent cannot derive from the code, like build and test commands and hidden conventions",
+      "For hard constraints such as never editing a generated client",
+      "When you have corrected the agent for the same thing twice — that correction is a candidate line"
+    ],
+    "gotchas": [
+      "A long AGENTS.md both costs tokens and dilutes itself — the more instructions in context, the less reliably the model follows any one of them",
+      "Do not use it for content that should be progressively disclosed; a style guide belongs behind a skill or context pointer",
+      "Corrections only matter if the file is actually kept up to date and pruned"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Write",
+          "sub": "author standing brief",
+          "annotation": "The developer records build commands, conventions, and hard constraints in the AGENTS.md file."
+        },
+        {
+          "label": "Load",
+          "sub": "harness reads at session start",
+          "annotation": "The harness automatically loads the file into the context window when a session begins."
+        },
+        {
+          "label": "Act",
+          "sub": "agent follows the instructins",
+          "annotation": "The agent applies the standing rules so corrections do not need to be repeated each session."
+        },
+        {
+          "label": "Prune",
+          "sub": "drop stale or detailed rules",
+          "annotation": "Long or rarely-needed content is moved behind a skill or context pointer to stop token burn."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that reports the token cost of loading an AGENTS.md file as directives. It must return the number of lines that start with a '-' bullet.",
+    "starter_code": "def count_directives(content):\n    count = 0\n    for line in content.splitlines():\n        if line.startswith('-'):\n            count = ___________\n    return count",
+    "solution": "count + 1",
+    "hints": [
+      "Directives are marked by a leading dash",
+      "Increment the running counter inside the branch that detects a directive"
+    ],
+    "test_code": "md = '- run npm test prefixed\\n- never edit generated\\nbuild notes live in TODO\\n- deploy via vercel'\nassert count_directives(md) == 3\nassert count_directives('no directives here') == 0\nprint('PASS')"
+  },
+  "related": ["skill", "progressive-disclosure", "context-pointer", "session", "model"],
+  "tags": ["instructions", "harness", "context", "brief", "stateless"]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "environment-01",
+  "slug": "environment",
+  "title": "Environment",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The environment is everything outside the agent harness that the agent perceives through tool results and changes through tool calls. The agent never sees it directly - every fact it knows arrived as a snapshot taken at a tool-call moment.",
+    "analogy": "A contractor who works from photographs of a site instead of standing on it: each photo is a snapshot, and if the site changes, the contractor keeps planning from the stale picture until something forces a new photo.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next.",
+    "space_complexity": "Tool results land back in the context window and compete for the finite token budget, so the agent's picture of the environment consumes memory proportional to how much of it the agent has looked at.",
+    "when_to_use": [
+      "When the agent needs to perceive or change anything outside the harness, wire it into the environment with a tool",
+      "When deciding how large the environment should be - expand it with tools or shrink it with a sandbox",
+      "When the agent confidently describes a file that no longer matches reality: the environment moved, the snapshot didn't"
+    ],
+    "gotchas": [
+      "The agent reasons from stale snapshots until something prompts a re-read, so it can confidently describe files that no longer look like that",
+      "Don't confuse the environment with the harness or the runtime - the harness is the wrapper, the environment is the workspace",
+      "Anything outside the environment boundary doesn't exist for the agent at all"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Observe", "sub": "tool call + result", "annotation": "The agent perceives the environment only through tool results, each a snapshot." },
+        { "label": "Snapshot", "sub": "captured moment", "annotation": "Everything the agent knows arrived through a tool result, accurate at the moment it was taken." },
+        { "label": "Drift", "sub": "file changes", "annotation": "If the environment changes after the read, the agent keeps reasoning from the stale copy." },
+        { "label": "Re-read", "sub": "fresh tool call", "annotation": "The agent sees the new state only when something prompts another tool call." },
+        { "label": "Persist", "sub": "stateful layer", "annotation": "Files written to the environment survive the session, so anything the agent should remember tomorrow must land here." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate an agent reading a file into a snapshot cache. The agent must keep returning the stale snapshot until it explicitly refreshes.",
+    "starter_code": "def snapshot(files, path, seen):\n    if path not in seen:\n        seen[path] = files[path]\n    return ___________\n\n\ndef refresh(files, path, seen):\n    ___________\n    return seen[path]",
+    "solution": "seen[path]\nseen[path] = files[path]",
+    "hints": [
+      "The snapshot function returns whatever the agent already saw, without looking at the live file",
+      "The refresh function is where the agent re-reads the environment and overwrites the cached copy"
+    ],
+    "test_code": "files = {'config.yaml': 'v1'}\nseen = {}\nassert snapshot(files, 'config.yaml', seen) == 'v1'\nfiles['config.yaml'] = 'v2'\nassert snapshot(files, 'config.yaml', seen) == 'v1'\nrefresh(files, 'config.yaml', seen)\nassert snapshot(files, 'config.yaml', seen) == 'v2'\nprint('PASS')"
+  },
+  "related": ["tool", "tool-result", "filesystem", "sandbox", "harness", "agent"],
+  "tags": ["environment", "snapshot", "tool", "agent", "harness"]
+}

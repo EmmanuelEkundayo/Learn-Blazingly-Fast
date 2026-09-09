@@ -1,0 +1,50 @@
+{
+  "id": "model-01",
+  "slug": "model",
+  "title": "Model",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A model is a bundle of parameters that does exactly one thing: next-token prediction — it takes tokens in and produces tokens out, once per model provider request, and nothing else. It is stateless, so on its own it cannot read files, run commands, or remember yesterday. Everything that feels like an agent working is the harness orchestrating many of those predictions in a row.",
+    "analogy": "A chess engine that only answers 'what is the single best next move' — it never plays a game by itself; the wrapper app handles openings, logging, and when to stop.",
+    "time_complexity": "A model run costs input + output tokens per model provider request; bigger tiers are slower and pricier, so heavyweight planning is expensive operator time while mechanical edits use a cheaper tier.",
+    "space_complexity": "The model contributes no memory of its own — everything it isn't is supplied by the harness: context assembled from session history, tools, and permissions, all living in the context window.",
+    "when_to_use": [
+      "Choosing per-task tiers: heavyweight for planning and hard debugging, lightweight for mechanical changes",
+      "Isolating a failure to the model versus the harness or context before blaming 'the model is bad at this'",
+      "Switching models mid-session when the harness permits tier changes",
+      "Speaking precisely about which model runs instead of saying 'the AI'"
+    ],
+    "gotchas": [
+      "A model can't read files, run commands, or remember yesterday on its own — if it 'does', the harness is doing it",
+      "Most disappointing output traces back to context or harness, not parameters — check what it was given first",
+      "Swapping to a smarter model won't fix a broken system prompt or missing tools"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Tokens in", "sub": "context arrives", "annotation": "The harness sends the current context as tokens." },
+        { "label": "Predict", "sub": "frozen parameters", "annotation": "The model runs the tokens through its parameters." },
+        { "label": "Token out", "sub": "one at a time", "annotation": "One next token is sampled and returned to the harness." },
+        { "label": "Harness acts", "sub": "tools and loop", "annotation": "The harness executes the tool call and loops for another prediction." },
+        { "label": "Repeat", "sub": "per request", "annotation": "Every model provider request is one more read of the context." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "A model is stateless — a pure function from context to next token. Implement next_token so it consults only the vocabulary and ignores any 'memory' the caller passes.",
+    "starter_code": "vocab = {\"fix\": \"the test\", \"run\": \"the build\"}\n\ndef next_token(memory, context):\n    # stateless: memory is ignored, context alone decides\n    return vocab.___________(context, \"unknown\")\n",
+    "solution": "get(context, \"unknown\")",
+    "hints": [
+      "The model should mirror vocab[context] with a safe default",
+      "Use a dictionary method that supplies a fallback when the key is missing"
+    ],
+    "test_code": "assert next_token({}, \"fix\") == \"the test\"\nassert next_token({\"yesterday\": \"stored\"}, \"run\") == \"the build\"\nprint('PASS')"
+  },
+  "related": ["parameters", "inference", "harness", "next-token-prediction", "model-provider", "context", "tool"],
+  "tags": ["model", "llm", "stateless", "next-token-prediction", "tier"]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "context-pointer-01",
+  "slug": "context-pointer",
+  "title": "Context Pointer",
+  "domain": "AI",
+  "category": "Memory & Steering",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "A context pointer is a mention in one document that points to another, so the agent can pull it into the context window only when the task calls for it. A bare path is useless; a pointer needs a stable path and enough description for the agent to know when following it is worth it.",
+    "analogy": "A book's table of contents entry: one line that says where to find the appendix, saving you from reading all two thousand pages up front.",
+    "time_complexity": "O(1 line per pointer in context): a pointer is one line in the context window, while the document behind it might be thousands of tokens that cost nothing until followed.",
+    "space_complexity": "O(pointer + lazily loaded body): leave the body behind the pointer and only load it on demand, keeping the finite context window for the always-on rules.",
+    "when_to_use": [
+      "When AGENTS.md is getting huge and most of it should be context pointers instead of content",
+      "When a task can be described concretely so the pointer matches how tasks present, like release, deploy, or rollback",
+      "When tying a secondary source back to the primary source it was derived from so lossiness is recoverable",
+      "When writing skill descriptions where the harness loads the description but the body waits behind the pointer"
+    ],
+    "gotchas": [
+      "A pointer needs a stable path and a description — a bare path gives the agent no reason to follow it and gets skipped",
+      "Keep always-on rules inline; only turn the deploy runbook and style guide into pointed-to skills",
+      "Avoid the word reference (too dry) and portal (too florid) when naming the concept"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Describe",
+          "sub": "line names path and when",
+          "annotation": "The pointer line states the stable path and enough description for the agent to know when following it is worth it."
+        },
+        {
+          "label": "Match",
+          "sub": "task aligns with pointer",
+          "annotation": "The agent sees the pointer text align with the current task and decides to follow it."
+        },
+        {
+          "label": "Follow",
+          "sub": "tool call reads the document",
+          "annotation": "The agent makes a tool call to load the pointed-to document into the context window."
+        },
+        {
+          "label": "Use",
+          "sub": "body now in context",
+          "annotation": "Only the sessions or tasks that need the document ever pay for its tokens."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Write a function that builds a context pointer line: inline the topic when always loaded, otherwise point at the path with a task description.",
+    "starter_code": "def make_pointer(path, desc, always_load):\n    if always_load:\n        return 'inline:' + desc\n    return 'pointer:see ' + path + ___________ + desc",
+    "solution": "' when '",
+    "hints": [
+      "The pointer needs a stable path and a description of when to follow it",
+      "Join the path and description with a connector that reads like a task trigger"
+    ],
+    "test_code": "assert make_pointer('internal/deploy.md', 'deploying', False) == 'pointer:see internal/deploy.md when deploying'\nassert make_pointer('internal/deploy.md', 'deploying', True) == 'inline:deploying'\nprint('PASS')"
+  },
+  "related": ["progressive-disclosure", "skill", "agents-md", "secondary-source", "context-window"],
+  "tags": ["pointer", "context", "disclosure", "reference", "lazy-load"]
+}

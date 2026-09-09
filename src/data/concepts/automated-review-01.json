@@ -1,0 +1,49 @@
+{
+  "id": "automated-review-01",
+  "slug": "automated-review",
+  "title": "Automated Review",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "An agent reviews another agent's work, often with a different model or system prompt, forming a non-deterministic judgement instead of a mechanical pass/fail. Separation from the working agent is what makes it work: a reviewer with a fresh context sees the diff the way a stranger would. Treat it as a filter that raises the floor before a human looks, not a gate that replaces one.",
+    "analogy": "Like a fresh-eyed senior reviewing a patch written by a junior who loves their own code: a reader with no attachment to the reasoning behind the change catches what the author's confirmation bias hides.",
+    "time_complexity": "Operational cost is machine-scale but real: each review run adds extra agent calls and inference cost, cheap compared with human review yet still a per-request cost per diff.",
+    "space_complexity": "Context footprint is bounded by design: a fresh reviewer context sees only the diff and refuses to carry the working session's history, which keeps judgement honest but limits reuse of earlier context.",
+    "when_to_use": [
+      "Before merge, to filter bad PRs arriving from AFK runs",
+      "Where judgement-shaped problems like misleading names or missed edge cases need catching at machine cost",
+      "With a different model or a review-scoped system prompt targeting security, API contracts, or performance"
+    ],
+    "gotchas": [
+      "It is non-deterministic: it can miss things and flag non-issues",
+      "Asking the writing agent to review its own work just reads its reasoning back as confirmation",
+      "It is a filter, not a gate: it raises the floor but human review still has to happen"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Work done", "sub": "agent finishes a diff", "annotation": "The working agent produces a PR or patch." },
+        { "label": "Fresh reviewer", "sub": "different model or prompt", "annotation": "A separate agent with a clean context reviews the diff." },
+        { "label": "Scoped focus", "sub": "security, contract, perf", "annotation": "The review prompt targets the problems you actually care about." },
+        { "label": "Judge", "sub": "flag or approve", "annotation": "Judgement-shaped issues are raised at machine cost." },
+        { "label": "Human gate", "sub": "review still happens", "annotation": "Automated review raises the floor; a human keeps the final word." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model an automated reviewer that judges a diff from a fresh context, ignoring the author's own opinion of the work.",
+    "starter_code": "def automated_review(diff, reviewer, author_opinion):\n    \"\"\"A reviewer apart from the author sees the diff the way a stranger would.\"\"\"\n    verdict = ____________\n    if verdict[\"action\"] == \"approve\":\n        return \"approved\"\n    return ____________",
+    "solution": "reviewer(diff)\n(\"rework\", verdict[\"note\"])",
+    "hints": [
+      "The verdict comes from the fresh reviewer, not the author's opinion.",
+      "Return both the follow-up action and the reason from the verdict."
+    ],
+    "test_code": "rev = lambda d: {\"action\": \"request_changes\", \"note\": \"name is misleading\"}\nassert automated_review(\"rename func\", rev, \"fine\") == (\"rework\", \"name is misleading\")\nassert automated_review(\"add tests\", lambda d: {\"action\": \"approve\", \"note\": \"\"}, \"fine\") == \"approved\"\nprint('PASS')"
+  },
+  "related": ["automated-check", "human-review", "subagent", "session", "afk", "agent"],
+  "tags": ["automated-review", "llm-as-judge", "code-review", "non-deterministic", "fresh-context"]
+}

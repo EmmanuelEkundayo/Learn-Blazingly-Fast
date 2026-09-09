@@ -1,0 +1,50 @@
+{
+  "id": "contextual-knowledge-01",
+  "slug": "contextual-knowledge",
+  "title": "Contextual Knowledge",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Contextual knowledge is facts the agent can read directly from the context window right now — the user's task, files read in, tool results, and AGENTS.md loaded at session start. It is the counterpart to parametric knowledge: parametric is recalled from frozen parameters, contextual is read from the window, and hallucinations are much less common when the answer is in front of the model.",
+    "analogy": "A memo pinned to your monitor instead of something you memorized. Recalling is unreliable for things you rarely saw (parametric); reading the memo is reliable — provided it is in the room. But every memo costs desk space, so pin only the relevant ones, not the whole filing cabinet.",
+    "time_complexity": "O(C) per decoded token over the full context window — contextual knowledge is read from the window, so loading more facts costs linearly more per request.",
+    "space_complexity": "Context/memory footprint: contextual knowledge lives in the window and spends tokens, and everything loaded competes for the model's finite attention budget, so loading more is not automatically better.",
+    "when_to_use": [
+      "Supplying knowledge the parameters lack: an internal SDK, a library released after the cutoff, or a decision made yesterday",
+      "Pasting current API docs so the model follows them rather than its stale memory of the old API",
+      "Explaining API behavior: with the docs in it is contextual knowledge, without them it is parametric and the rare endpoints blur",
+      "Restating a correction or moving it closer to the work when stale parametric patterns leak through"
+    ],
+    "gotchas": [
+      "Contextual knowledge costs tokens and competes for attention budget — the aim is the relevant facts in the window, not all the facts",
+      "Do not call it 'working memory': contextual knowledge is what is in the window now, while a memory system is what moves cross-session content into it",
+      "The old parametric version can still bleed through in a long session even with docs loaded; restating the correction helps"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Read from the window", "sub": "recall versus read", "annotation": "Parametric knowledge is recalled from frozen parameters; contextual knowledge is read from the window right now." },
+        { "label": "Agent loads the docs", "sub": "task, files, AGENTS.md", "annotation": "The user's task, files read in, tool results, and AGENTS.md are typical sources loaded into context." },
+        { "label": "Answers track the facts", "sub": "far fewer hallucinations", "annotation": "Hallucinations drop sharply when the answer is in front of the model instead of dredged up from memory." },
+        { "label": "Contextual wins conflicts", "sub": "docs beat stale memory", "annotation": "Paste current API docs and the model follows them, though the old version can still bleed through late in a session." },
+        { "label": "Costs tokens and attention", "sub": "finite budget", "annotation": "Everything loaded spends tokens and competes for attention, so load the relevant facts, not all the facts." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Classify which knowledge source answers a fact: contextual when it is read from the loaded window, otherwise parametric.",
+    "starter_code": "def knowledge_source(fact, loaded_window, parameters):\n    # Returns 'contextual' when the fact is read from the window,\n    # otherwise 'parametric' (recalled from frozen parameters).\n    if ___________:\n        return 'contextual'\n    return 'parametric'",
+    "solution": "fact in loaded_window",
+    "hints": [
+      "Contextual knowledge is whatever is present in the window at the moment it is needed.",
+      "Check membership of the fact in the loaded_window list to decide the source."
+    ],
+    "test_code": "assert knowledge_source('parseAsync', ['parseAsync docs'], {}) == 'contextual'\nassert knowledge_source('parseAsync', [], {'parseAsync': 'old'}) == 'parametric'\nassert knowledge_source('parseAsync', ['other docs'], {'parseAsync': 'old'}) == 'parametric'\nprint('PASS')"
+  },
+  "related": ["parametric-knowledge", "hallucination", "attention-budget", "token", "context"],
+  "tags": ["contextual-knowledge", "context-window", "attention-budget", "hallucination", "agent"]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "non-determinism-01",
+  "slug": "non-determinism",
+  "title": "Non-determinism",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The same input can produce different output because the model samples from a probability distribution over next tokens — and since one differently-sampled token changes every token after it, a single word difference can become a completely different approach. Provider-side batching and tiny floating-point differences add more spread, and there is no setting that makes it stop.",
+    "analogy": "A roulette wheel that feeds a long chain reaction: the same starting state can end in very different places, and there is no switch for the wheel's tendency to bounce.",
+    "time_complexity": "Retrying is a legitimate strategy on hard tasks — each attempt is one draw from the distribution, so cost is attempts times request tokens, and verification must be re-run against every draw.",
+    "space_complexity": "The input is identical context; what varies is which sampled tokens enter the context on the next request, so the divergence lives on the output side of the token budget.",
+    "when_to_use": [
+      "Retrying a failed attempt, which is one draw that may simply land better",
+      "Running automated checks that catch the bad draws, since one passing test can't be trusted to repeat",
+      "Staying calm through a string of bad runs instead of narrativizing a model downgrade"
+    ],
+    "gotchas": [
+      "There's no setting you can flip to make non-determinism go away",
+      "A bad week is usually the distribution, not proof that 'the model got worse'"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Context", "sub": "identical input", "annotation": "The same context is fed to the model twice." },
+        { "label": "Score", "sub": "probabilities", "annotation": "The model produces a distribution over next tokens." },
+        { "label": "Sample", "sub": "randomness on purpose", "annotation": "One token is sampled, often with deliberate randomness to avoid repetition." },
+        { "label": "Diverge", "sub": "chain reaction", "annotation": "One different token changes every later token, so approaches diverge." },
+        { "label": "Retry", "sub": "another draw", "annotation": "A fresh attempt may land within the bell curve of acceptable quality." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate sampling without a random module: pick the token whose probability is closest to a given draw value, so the same list can yield different picks.",
+    "starter_code": "def pick(scored_tokens, draw):\n    return min(scored_tokens, key=lambda tp: ___________)[0]\n",
+    "solution": "abs(draw - tp[1])",
+    "hints": [
+      "Distance from the draw decides which token wins",
+      "Each element is a (token, probability) pair; subtract the draw from the probability"
+    ],
+    "test_code": "assert pick([(\"a\", 0.2), (\"b\", 0.8), (\"c\", 0.9)], 0.95) == \"c\"\nassert pick([(\"a\", 0.2), (\"b\", 0.8)], 0.3) == \"a\"\nprint('PASS')"
+  },
+  "related": ["next-token-prediction", "model-provider", "inference", "agent", "context"],
+  "tags": ["non-determinism", "sampling", "randomness", "retry", "verification"]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "hallucination-01",
+  "slug": "hallucination",
+  "title": "Hallucination",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Hallucination is confidently wrong model output with two flavors: factuality errors come from missing parametric knowledge (invented facts, wrong signatures, fake citations), while faithfulness errors come from output drifting away from context that is actually loaded. Next-token prediction produces fluent output whether or not the underlying fact is real, so an invented method arrives in the same assured register as a correct one and fails only when run.",
+    "analogy": "A developer so fluent in the codebase that they 'remember' an API the codebase never shipped. They produce what the API would look like if it existed — plausible in a skim-level review, broken in production. Plausibility is not verification, so the only reliable check is running the code or reading the primary source.",
+    "time_complexity": "O(C) per generated token over the full context window — hallucinated output is produced by the same next-token prediction as correct output, so deeper or doc-loaded contexts raise the per-request cost without raising correctness.",
+    "space_complexity": "Context/memory footprint: the fix for factuality loads docs into the window, spending tokens and competing for the finite attention budget, which is exactly the mechanism that can trigger the faithfulness flavor.",
+    "when_to_use": [
+      "Diagnosing wrong code: name the flavor — factuality (missing knowledge) or faithfulness (knowledge present but ignored)",
+      "Suspect fabrication: 'It hallucinated a parseAsync method on the schema' — check whether that method exists in context",
+      "Choosing a fix: add docs for factuality; clear or compact for faithfulness — the wrong fix makes it worse",
+      "Code review: treat plausible-by-construction code with suspicion until it is run or checked against a primary source"
+    ],
+    "gotchas": [
+      "Misdiagnosing faithfulness as factuality: pasting more docs grows the context and makes the drift worse",
+      "Do not use 'hallucination' as a bare synonym for 'wrong' — without naming the flavor the term has no diagnostic value",
+      "Check whether the correct information was already in context before deciding which problem you have"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Next-token prediction", "sub": "fluent by design", "annotation": "The generator produces fluent output whether or not the underlying fact is real." },
+        { "label": "Invented method", "sub": "parseAsync", "annotation": "The model emits what the API would look like if it existed — plausible by construction." },
+        { "label": "Confident register", "sub": "no uncertainty signal", "annotation": "The model has no internal signal that it does not know something, so the guess sounds assured." },
+        { "label": "Name the flavor", "sub": "factuality or faithfulness", "annotation": "If the correct info was never loaded it is factuality; if loaded but ignored it is faithfulness." },
+        { "label": "Fix by flavor", "sub": "add or remove context", "annotation": "Factuality: load the docs. Faithfulness: clear or compact — adding more docs makes it worse." },
+        { "label": "Check primary source", "sub": "run or read the API", "annotation": "Run the code or read the type definitions; a plausible signature only fails when executed." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Flag a fabricated API method: it is invented when it is absent from the real API surface.",
+    "starter_code": "KNOWN_METHODS = {'parse', 'stringify', 'validate'}\n\ndef is_fabricated(method_name):\n    # Returns True when the confidently offered method is invented,\n    # i.e. absent from the real API surface in KNOWN_METHODS.\n    return ___________",
+    "solution": "method_name not in KNOWN_METHODS",
+    "hints": [
+      "A method that exists in the real API is not a hallucination.",
+      "Compare the method name against the known set and return True when it is missing."
+    ],
+    "test_code": "assert is_fabricated('stringify') is False\nassert is_fabricated('parseAsync') is True\nassert is_fabricated('validate') is False\nprint('PASS')"
+  },
+  "related": ["parametric-knowledge", "contextual-knowledge", "knowledge-cutoff", "attention-degradation", "smart-zone"],
+  "tags": ["hallucination", "factuality", "faithfulness", "next-token-prediction", "attention-degradation"]
+}

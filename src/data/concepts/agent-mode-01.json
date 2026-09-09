@@ -1,0 +1,49 @@
+{
+  "id": "agent-mode-01",
+  "slug": "agent-mode",
+  "title": "Agent mode",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "An agent mode is a preset bundling a permission mode with behavioral instructions injected into the system prompt - plan mode blocks edits and steers the agent toward research, bypass permissions (YOLO) auto-approves everything. The gate decides what runs; the instructions decide what the agent wants to run.",
+    "analogy": "A kitchen with roles: the rule that salads plate before desserts stops the line from skipping ahead, and the station note telling the garde manger to prep first steers the work - together they shape the whole shift.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - modes change how calls get gated, not the round-trip structure.",
+    "space_complexity": "Injected behavioral instructions live in the system prompt, and modes can flip mid-session, so the instructions and accumulated tool results all share the finite token budget.",
+    "when_to_use": [
+      "When you want a plan, not edits - switch to plan mode so it reads, asks, and proposes instead of straining against a gate",
+      "When trust grows over a task - escalate from plan to default to accept-edits to bypass as the agent proves it understands the change",
+      "When running AFK - use bypass mode, but only inside a sandbox"
+    ],
+    "gotchas": [
+      "A gate alone produces an agent that wants to edit but can't; the injected instructions are what remove the want",
+      "If you approve every prompt without reading it, the mode is set tighter than your actual trust",
+      "Changing mode mid-session is free - the conversation continues exactly where it was"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Preset", "sub": "mode + instructions", "annotation": "An agent mode bundles a permission mode with behavioral instructions injected into the system prompt." },
+        { "label": "Gate", "sub": "which calls pass", "annotation": "The permission part decides which tool calls are blocked, asked about, or run freely." },
+        { "label": "Steer", "sub": "instructions shape intent", "annotation": "The injected instructions remove the want - plan mode never reaches for the write tool." },
+        { "label": "Flip", "sub": "mid-session switch", "annotation": "You change mode as trust changes; the conversation continues exactly where it was." },
+        { "label": "Match", "sub": "trust to mode", "annotation": "If you accept every prompt without reading, the mode is tighter than your actual trust." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Build an agent mode preset that bundles a permission gate with behavioral instructions for the system prompt.",
+    "starter_code": "def build_mode(name):\n    if name == 'plan':\n        return {'gate': 'read_only', 'instructions': 'You are planning. Do not edit files.'}\n    if name == 'accept-edits':\n        return {'gate': 'auto_edit', 'instructions': ___________}\n    return {'gate': 'bypass', 'instructions': 'Run freely.'}",
+    "solution": "'You may edit files freely.'",
+    "hints": [
+      "The instructions in the system prompt steer behavior so the agent doesn't strain against the gate",
+      "accept-edits mode auto-approves edits, so the instruction should allow editing"
+    ],
+    "test_code": "assert build_mode('plan')['gate'] == 'read_only'\nassert 'planning' in build_mode('plan')['instructions']\nassert build_mode('accept-edits')['instructions'] == 'You may edit files freely.'\nassert build_mode('bypass')['gate'] == 'bypass'\nprint('PASS')"
+  },
+  "related": ["permission-mode", "permission-request", "sandbox", "harness", "agent"],
+  "tags": ["agent-mode", "permissions", "plan-mode", "system-prompt", "yolo"]
+}

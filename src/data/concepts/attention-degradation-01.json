@@ -1,0 +1,51 @@
+{
+  "id": "attention-degradation-01",
+  "slug": "attention-degradation",
+  "title": "Attention Degradation",
+  "domain": "AI",
+  "category": "Failure Modes",
+  "difficulty": "intermediate",
+  "card": {
+    "intuition": "As a session grows, each token's attention budget is spread across more competitors, shrinking the signal on any meaningful relationship. Same model, same parameters — just more context to attend over. It presents as the model getting worse mid-session: constraints start slipping, it re-asks things it was told, and it writes code that ignores a file it read earlier.",
+    "analogy": "A developer with a fixed daily energy budget who keeps stacking tasks into the same workday. The first hours are sharp; by hour six they forget the constraint from the morning briefing despite being the same person. More coffee (re-pasting) helps briefly; the real fix is resetting — clear the board, or start a fresh cycle.",
+    "time_complexity": "O(C squared) per request because attention pairs all tokens in the window — degradation is not free: a bigger context costs more per request while attending worse.",
+    "space_complexity": "Context/memory footprint: finite per-token attention is spread across a growing window, so long contexts bury earlier content; recovery comes from removing context, not adding it.",
+    "when_to_use": [
+      "Declining instruction-following mid-session: treat it as a signal about context length, not about the model",
+      "Recovery by removing context: clear and reload only what the task needs, or compact",
+      "Handing off to a fresh session when the window is crowded instead of pushing through",
+      "Explaining the smart zone / dumb zone effect: faithfulness hallucinations rise as signal on dismissed relationships shrinks"
+    ],
+    "gotchas": [
+      "It is gradual — no error and no threshold, so by the time the slips are obvious you are already deep in the dumb zone",
+      "Re-pasting the ignored instruction adds another competitor to the same crowded window and helps only briefly",
+      "The fix and the cause point the same direction: remove context, do not add more"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Turns accumulate", "sub": "more tokens in the window", "annotation": "Every turn adds tokens to the window, and each token's attention budget is spread across more competitors." },
+        { "label": "Signal shrinks", "sub": "buried type definitions", "annotation": "The pairing between a call site and the definition it read earlier loses influence as noise crowds in." },
+        { "label": "Same model, worse output", "sub": "no model change", "annotation": "Only the context length changed; the model and its parameters are identical." },
+        { "label": "Gradual slide", "sub": "no error, no threshold", "annotation": "Each turn is only slightly worse than the last, which is why the decline is hard to catch from inside the session." },
+        { "label": "Re-paste fails", "sub": "another competitor", "annotation": "Re-adding the ignored instruction just adds a contender to the same crowded window and buys only brief relief." },
+        { "label": "Remove context", "sub": "clear, compact, or hand off", "annotation": "Recovery comes from removing context: clear and reload only what the task needs, compact, or hand off to a fresh session." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model attention degradation: the fixed attention budget must be split among a growing number of competing tokens.",
+    "starter_code": "def remaining_signal(signal, competitors):\n    # Attention degradation spreads a fixed budget across more\n    # competitors; returns the signal left for any one relationship.\n    return signal / (1 + ___________)",
+    "solution": "competitors",
+    "hints": [
+      "The signal splits evenly across the original plus each new competitor.",
+      "Add the competitor count to the baseline of 1 in the denominator."
+    ],
+    "test_code": "assert remaining_signal(1.0, 9) == 0.1\nassert remaining_signal(1.0, 0) == 1.0\nassert remaining_signal(2.0, 1) == 1.0\nprint('PASS')"
+  },
+  "related": ["attention-budget", "smart-zone", "compaction", "handoff-artifact"],
+  "tags": ["attention-degradation", "attention-budget", "smart-zone", "context-window", "compaction"]
+}

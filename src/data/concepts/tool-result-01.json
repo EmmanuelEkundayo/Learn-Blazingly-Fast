@@ -1,0 +1,50 @@
+{
+  "id": "tool-result-01",
+  "slug": "tool-result",
+  "title": "Tool result",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A tool result is what the harness sends back after executing a tool call - file contents, command output, or an error - and the agent's only view of the environment. It travels to the model in the next provider request, where the model decides what to do with it.",
+    "analogy": "Sensor readings streaming back to a control room: the operator reacts to what the gauge shows on screen, and that reading, not the machine itself, is all the operator can ever see.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next.",
+    "space_complexity": "Results land in the context window in full and stay for the rest of the session, so a few large results - a verbose test log, a generated file read whole - can push the window toward its edge faster than the conversation.",
+    "when_to_use": [
+      "When the agent's picture of your system seems wrong - the tool results in the transcript are where to look",
+      "When a large output would flood the context - consider truncation to protect the token budget",
+      "When verifying what the model actually saw - the model has no other way to see the environment",
+      "When a result says something different from what you know to be true - that is the source of the wrong reasoning"
+    ],
+    "gotchas": [
+      "The model cannot check the environment behind the result - if output was truncated, silently failed, or denied, it reasons from the error string",
+      "Tool results usually form the bulk of a session's context and keep occupying tokens long after they stop being useful",
+      "A permission denial arrives as a tool result, so the agent may think it saw a file when it only saw a denial"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Execute", "sub": "harness runs call", "annotation": "The harness runs the command or reads the file named by the tool call." },
+        { "label": "Capture", "sub": "output, contents, error", "annotation": "The harness captures the outcome: output, file contents, or an error." },
+        { "label": "Append", "sub": "message in context", "annotation": "The outcome is appended to the conversation context as a message." },
+        { "label": "Send", "sub": "next provider request", "annotation": "The whole context goes to the provider in the next model provider request." },
+        { "label": "Decide", "sub": "another call or answer", "annotation": "The model reads the result and decides: another tool call, or a final answer." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate the model consuming a tool result: record it in the session context and decide the next action based on the output.",
+    "starter_code": "def decide(session, result):\n    session['context'].___________(result)\n    if 'PASS' in result['output']:\n        return 'done'\n    return ___________",
+    "solution": "append\n'retry'",
+    "hints": [
+      "Every tool result stays in the context for the rest of the session",
+      "A failing test output is not a final answer - the model tries again"
+    ],
+    "test_code": "session = {'context': []}\nassert decide(session, {'output': 'PASS'}) == 'done'\nassert decide(session, {'output': 'FAIL'}) == 'retry'\nassert session['context'] == [{'output': 'PASS'}, {'output': 'FAIL'}]\nprint('PASS')"
+  },
+  "related": ["tool-call", "context-window", "environment", "model", "token"],
+  "tags": ["tool-result", "context", "output", "agent", "transcript"]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "permission-request-01",
+  "slug": "permission-request",
+  "title": "Permission request",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A permission request is what the harness shows the user before executing a tool call that isn't pre-approved. Approve and it runs; deny and the harness reports the denial back to the model as a tool result - the mechanism for keeping a human in the loop on risky or sensitive actions.",
+    "analogy": "A junior dev at deploy time: the change can't ship without a senior sign-off. Deny with a note and the dev reworks the approach; approve and the change goes out.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next - and an unapproved call adds a synchronous human wait on top.",
+    "space_complexity": "The approval or denial arrives as a tool result and stays in the context window, competing for the finite token budget like any other result.",
+    "when_to_use": [
+      "When a tool call is risky or sensitive and not pre-approved - pause and ask",
+      "When you want to steer the agent mid-decision - attach a message to the denial",
+      "When the agent sits blocked too long - pre-approve the safe tools so requests only fire on actually-risky calls"
+    ],
+    "gotchas": [
+      "Every request is a synchronous wait on you - an agent that asks constantly can't be left to work AFK",
+      "A denial arrives as a tool result, so the model reacts to it and changes approach or asks what you'd prefer",
+      "Approve on autopilot and approvals stop meaning anything - rubber-stamping protects nothing"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Produce", "sub": "model emits call", "annotation": "The model produces a tool call that is not pre-approved." },
+        { "label": "Check", "sub": "permission mode", "annotation": "The harness checks the call against the permission mode and any saved approvals." },
+        { "label": "Pause", "sub": "show the request", "annotation": "Pre-approved calls run immediately; otherwise the harness pauses and shows the request." },
+        { "label": "Decide", "sub": "approve or deny", "annotation": "The user approves once, approves for the session, or denies - optionally with a message." },
+        { "label": "Act", "sub": "run or report denial", "annotation": "Approve and it runs; deny and the denial comes back as a tool result the model reacts to." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate the harness gating a tool call. Calls for tools not on the approved list must be denied instead of executed.",
+    "starter_code": "def execute(tools, call, approved):\n    if call['tool'] not in approved:\n        return ___________\n    fn = tools[call['tool']]\n    return {'result': fn(**call.get('args', {}))}",
+    "solution": "{'error': 'permission_denied'}",
+    "hints": [
+      "Denied calls never reach the function - the harness reports the denial back instead",
+      "Adding a tool to the approved set lets it run with no question asked"
+    ],
+    "test_code": "tools = {'read': lambda path: path, 'rm': lambda path: 'removed'}\napproved = {'read'}\nassert execute(tools, {'tool': 'rm', 'args': {'path': 'x'}}, approved)['error'] == 'permission_denied'\nassert execute(tools, {'tool': 'read', 'args': {'path': 'a'}}, approved)['result'] == 'a'\napproved.add('rm')\nassert execute(tools, {'tool': 'rm', 'args': {'path': 'x'}}, approved)['result'] == 'removed'\nprint('PASS')"
+  },
+  "related": ["permission-mode", "agent-mode", "tool-call", "sandbox", "harness"],
+  "tags": ["permission", "approval", "harness", "human-in-the-loop", "safety"]
+}

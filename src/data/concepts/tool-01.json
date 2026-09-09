@@ -1,0 +1,49 @@
+{
+  "id": "tool-01",
+  "slug": "tool",
+  "title": "Tool",
+  "domain": "AI",
+  "category": "Tools & Environment",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A tool is a function the harness exposes for the agent to call - Read, Write, Bash, Search - and the only way an agent perceives and acts on its environment. The model never executes anything itself; it writes a structured call and the harness runs the function and returns the result.",
+    "analogy": "A bank teller and a customer: the customer (model) fills out a withdrawal slip (tool call), but only the teller (harness) can open the vault - the slip itself moves no money.",
+    "time_complexity": "Every tool call costs an extra model provider request, because the tool result must go back to the model before it can decide what to do next.",
+    "space_complexity": "Tool definitions occupy context on every single request, so a large tool set has a standing token cost before any tool is ever called.",
+    "when_to_use": [
+      "When the agent needs a capability, add a tool for it rather than routing everything through Bash",
+      "When you need to reach beyond the filesystem - a staging database or an external API",
+      "When a capable model is underperforming, remember that a narrow tool set makes a narrow agent"
+    ],
+    "gotchas": [
+      "Tool definitions load into context on every request, and many similar tools make the model worse at picking the right one",
+      "The model executes nothing itself - if the harness didn't run the call, nothing happened",
+      "Without a tool for something, the agent is completely blind to it; it can't reach past its tool list"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Define", "sub": "name, description, schema", "annotation": "A tool is defined by a name, a description, and a parameter schema the harness sends to the model." },
+        { "label": "Announce", "sub": "tool list in request", "annotation": "Tool definitions are sent with every model request, so the model knows what it may call." },
+        { "label": "Choose", "sub": "model writes call", "annotation": "The model picks a tool the same way it produces anything else, by writing tokens." },
+        { "label": "Execute", "sub": "harness runs function", "annotation": "The model never executes; the harness reads the call, runs the function, and captures the result." },
+        { "label": "Return", "sub": "tool result to model", "annotation": "The outcome goes back to the model in the next request before it decides what to do next." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Simulate the harness executing a tool call on behalf of the model. Unknown tools must raise, and arguments must be unpacked into the function.",
+    "starter_code": "def run_tool(tools, name, args):\n    if name not in tools:\n        ___________\n    return tools[name](___________)",
+    "solution": "raise ValueError('unknown tool: ' + name)\n**args",
+    "hints": [
+      "The harness rejects calls for tools the model doesn't know about",
+      "The model supplied arguments as a dict - spread them into the call"
+    ],
+    "test_code": "tools = {'add': lambda a, b: a + b}\nassert run_tool(tools, 'add', {'a': 2, 'b': 3}) == 5\ntry:\n    run_tool(tools, 'rm', {})\nexcept ValueError as e:\n    assert 'rm' in str(e)\nelse:\n    raise AssertionError('unknown tool must raise')\nprint('PASS')"
+  },
+  "related": ["tool-call", "tool-result", "harness", "agent", "environment", "mcp"],
+  "tags": ["tool", "harness", "function", "agent", "mcp"]
+}

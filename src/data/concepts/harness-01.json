@@ -1,0 +1,48 @@
+{
+  "id": "harness-01",
+  "slug": "harness",
+  "title": "Harness",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "The harness is everything around the model that turns it into an agent: tools, system prompt, context-window management, permissions, hooks, and session history. In the agent loop the model proposes and the harness executes, feeding tool results back in. When the same model behaves differently in two products, the harness is usually the variable.",
+    "analogy": "A kitchen line around a great line chef: the chef only produces plates, so the line takes orders, gathers ingredients, taste-checks, and checks permissions before anything ships — swap the line and the same chef makes a different restaurant's food.",
+    "time_complexity": "Each harness iteration is a model provider request: assemble context, get a tool call, execute it, feed the result back — so one turn's cost is requests times context size, and sloppy context assembly breaks the prefix cache.",
+    "space_complexity": "The harness owns context-window management — it assembles context, stores session history, and decides when to compact, so overflow is a harness decision more than a model one.",
+    "when_to_use": [
+      "Diagnosing behavior differences between products, or between yesterday and today — the harness is likely the variable",
+      "Finding where configuration lives: AGENTS.md, permissions, and hooks are instructions to the harness, not the model",
+      "Explaining how one model both edits files (Claude Code) and only answers chat (Claude.ai)"
+    ],
+    "gotchas": [
+      "The model alone can't read files, run commands, or remember turns — the harness supplies all of it",
+      "A different system prompt, tool set, or context strategy changes behavior with no model change at all"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "System prompt", "sub": "identity", "annotation": "The harness installs the system prompt." },
+        { "label": "Assemble", "sub": "context", "annotation": "It assembles the context for each model provider request." },
+        { "label": "Model proposes", "sub": "tool call", "annotation": "The model proposes a tool call as its output." },
+        { "label": "Harness executes", "sub": "tool runs", "annotation": "The harness runs the tool, asks permission if needed, and feeds results back." },
+        { "label": "Loop", "sub": "context-window mgmt", "annotation": "It stores the session, compacts when needed, and repeats the loop." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "The harness assembles context from parts. Write build_context that concatenates the system prompt, the session history, and the latest tool result.",
+    "starter_code": "def build_context(system_prompt, history, tool_result):\n    context = system_prompt\n    context += \"\\n\" + \"\\n\".join(history)\n    context = context + \"\\n\" + \"tool: \" + ___________\n    return context\n",
+    "solution": "tool_result",
+    "hints": [
+      "The tool result is the last part appended to the assembled context",
+      "Append it after the 'tool: ' prefix so the model can see it"
+    ],
+    "test_code": "assert build_context(\"you are a helper\", [\"hi\"], \"passed\") == \"you are a helper\\nhi\\ntool: passed\"\nprint('PASS')"
+  },
+  "related": ["agent", "tool", "model", "context-window", "system-prompt", "compaction", "session", "model-provider-request"],
+  "tags": ["harness", "agent", "tools", "system-prompt", "context-management"]
+}

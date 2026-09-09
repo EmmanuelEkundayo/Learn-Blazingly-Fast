@@ -1,0 +1,49 @@
+{
+  "id": "human-in-the-loop-01",
+  "slug": "human-in-the-loop",
+  "title": "Human-in-the-loop",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A human works alongside the agent in real time, reviewing, redirecting, and collaborating instead of merely gating individual actions after the fact. Catching a wrong turn while it is still cheap beats discovering twenty minutes of confident work built on a misread requirement. Ambiguous, irreversible, or hard-to-review tasks suit staying in the loop.",
+    "analogy": "Like pairing with a junior engineer on a risky migration: you watch each step as it happens and steer in the moment, rather than letting them merge a large change and then excavating the damage later.",
+    "time_complexity": "Operational cost scales with checkpoints: each human approval adds latency to the loop, and every agent call made between approvals carries extra inference cost per request.",
+    "space_complexity": "Context footprint grows with session length: long interactive runs accumulate history in the context window, risking attention degradation or compaction that trims earlier decisions.",
+    "when_to_use": [
+      "Tasks that are ambiguous, irreversible, or hard to verify, such as a schema migration",
+      "Work where a wrong turn is expensive but still cheap to catch early",
+      "Work that is in-the-loop by nature, like grilling and prototyping, where your reactions are the input"
+    ],
+    "gotchas": [
+      "Staying in the loop burns attention, which is the scarce resource",
+      "Agents left alone tend to push forward on a wrong path instead of stopping and asking",
+      "Moving work out of the loop requires plans, automated checks, and human review to replace supervision"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Propose", "sub": "agent surfaces an action", "annotation": "The agent proposes an action and waits for a decision." },
+        { "label": "Gate", "sub": "human approves or redirects", "annotation": "The human reviews while the mistake is still cheap to fix." },
+        { "label": "Execute", "sub": "agent runs edited step", "annotation": "The agent executes only what was approved, incorporating the redirect." },
+        { "label": "Verify", "sub": "human checks the result", "annotation": "The human confirms the outcome before the loop continues." },
+        { "label": "Redirect", "sub": "one-sentence steer", "annotation": "A wrong file or a dead end is corrected with a single sentence." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model an in-the-loop session where the agent only runs actions the human approves, stopping at the first rejection.",
+    "starter_code": "def run_with_human(agent_actions, approve):\n    \"\"\"Execute actions only while the human approves each one.\"\"\"\n    approved_actions = []\n    for action in agent_actions:\n        if ____________:\n            approved_actions.append(action)\n        else:\n            break\n    return ____________",
+    "solution": "approve(action)\napproved_actions",
+    "hints": [
+      "Gate every action behind the approve callback.",
+      "Return only the work the human signed off on."
+    ],
+    "test_code": "assert run_with_human(['read a', 'write b', 'merge'], lambda a: a != 'merge') == ['read a', 'write b']\nassert run_with_human(['rm -rf x'], lambda a: False) == []\nprint('PASS')"
+  },
+  "related": ["afk", "human-review", "grilling", "prototyping", "design-concept", "automated-check", "session", "agent"],
+  "tags": ["human-in-the-loop", "supervision", "real-time", "review", "agent-workflow", "redirect"]
+}

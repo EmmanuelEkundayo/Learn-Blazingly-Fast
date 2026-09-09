@@ -1,0 +1,48 @@
+{
+  "id": "turn-01",
+  "slug": "turn",
+  "title": "Turn",
+  "domain": "AI",
+  "category": "Context & Sessions",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "One user message plus everything the agent does in response, up until it yields back to the user. A turn contains one or more model provider requests — many if the agent calls tools. The hierarchy is session > turn > model provider request, and turn length is the agent's decision, not yours.",
+    "analogy": "Delegating one item to a teammate who then makes several follow-up calls and checks before reporting back: you handed over a single request, but the teammate decided how much internal work to chain before yielding.",
+    "time_complexity": "The model re-reads the entire context on every turn, so cost and latency grow with context size per request.",
+    "space_complexity": "Each turn appends its messages and tool results to the session, consuming context-window budget until compaction or clearing.",
+    "when_to_use": [
+      "Steering between turns, where the agent yields back and you can redirect",
+      "Asking for smaller turns — a plan first, one step at a time — to trade autonomy for control",
+      "Interrupting a long turn in a harness that supports mid-turn steering"
+    ],
+    "gotchas": [
+      "Long turns are where things go wrong unsupervised — by the time the agent yields it may have drifted far from what you meant",
+      "A turn with many tool calls is many model provider requests, so latency stacks before the agent ever yields"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "You message", "sub": "one user input", "annotation": "You hand over one message; the turn opens." },
+        { "label": "Plan", "sub": "agent decides", "annotation": "The agent decides how many steps to chain before yielding back." },
+        { "label": "Tool calls", "sub": "request chain", "annotation": "Each tool call is a separate model provider request within the turn." },
+        { "label": "Yield", "sub": "turn closes", "annotation": "The agent yields back to you; your reply opens the next turn." },
+        { "label": "Redirect", "sub": "steer between", "annotation": "Gaps between turns are where you steer and correct direction." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Count how many model provider requests happened inside one agent turn, given a transcript of labeled steps.",
+    "starter_code": "def count_requests(turn_steps):\n    total = 0\n    for step in turn_steps:\n        if step.startswith(\"model_request:\"):\n            total += 1\n    return ___________",
+    "solution": "total",
+    "hints": [
+      "Every tool call inside a turn is its own model provider request.",
+      "Count only the steps whose label begins with model_request:."
+    ],
+    "test_code": "steps = [\"user: check tests\", \"model_request:1\", \"tool: run_tests\", \"model_request:2\", \"yield\"]\nassert count_requests(steps) == 2\nassert count_requests([\"user: hi\", \"yield\"]) == 0\nprint('PASS')"
+  },
+  "related": ["session", "agent", "tool-call", "context-window", "system-prompt"],
+  "tags": ["turn", "session", "tool-call", "latency", "agent", "model-request"]
+}

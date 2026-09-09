@@ -1,0 +1,48 @@
+{
+  "id": "model-provider-01",
+  "slug": "model-provider",
+  "title": "Model provider",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A model provider is whatever serves a model for inference — usually a remote service like Anthropic or OpenAI, but it can be local via Ollama or llama.cpp. The provider owns the machinery: parameters live on its hardware, which makes it the source of rate limits, degraded capacity, and outages. It also sets the commercial terms: per-token pricing and prefix-cache discounts.",
+    "analogy": "A rented GPU cluster with a service contract: you don't own the compute, the vendor's status page is your first stop when things stall, and the meter is the vendor's own.",
+    "time_complexity": "Every model provider request is a network round-trip plus inference on the provider's hardware; rate limits and degraded capacity surface as stalls in the agent loop, while local providers trade capability for zero marginal cost.",
+    "space_complexity": "Parameters live on provider hardware, so the session's context footprint still travels over the network as tokens on each request — only a local provider keeps it on your machine.",
+    "when_to_use": [
+      "Swapping providers (remote to local) for an air-gapped client — the harness just hits a different endpoint",
+      "Checking the provider status page before anything else when an agent stalls or errors on every turn",
+      "Comparing per-token pricing, prefix-cache discounts, and model availability across providers"
+    ],
+    "gotchas": [
+      "Rate limits, capacity, and outages are provider problems that get misattributed to the model or harness",
+      "The provider and the model's maker can differ — Bedrock, Vertex, and OpenRouter serve other companies' models"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Harness asks", "sub": "request sent", "annotation": "The harness sends tokens over the network to the provider." },
+        { "label": "Provider runs", "sub": "frozen params", "annotation": "The provider runs the model on its own hardware." },
+        { "label": "Returns", "sub": "predicted tokens", "annotation": "Predictions come back to the harness." },
+        { "label": "Bills", "sub": "per token", "annotation": "The provider bills input and output tokens plus cache discounts." },
+        { "label": "Status", "sub": "outages and limits", "annotation": "Provider failures surface as stalls and errors in the agent loop." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model provider routing: a function that maps a provider name to its API endpoint, falling back to a local llama.cpp endpoint for anything unknown.",
+    "starter_code": "def endpoint(provider):\n    urls = {\n        \"anthropic\": \"https://api.anthropic.com/v1\",\n        \"openai\": \"https://api.openai.com/v1\",\n    }\n    return urls.___________(provider, \"http://localhost:11434\")\n",
+    "solution": "get(provider, \"http://localhost:11434\")",
+    "hints": [
+      "Unknown providers should default to a local endpoint, not raise",
+      "dict.get returns the second argument when the key is absent"
+    ],
+    "test_code": "assert endpoint(\"anthropic\") == \"https://api.anthropic.com/v1\"\nassert endpoint(\"ollama\") == \"http://localhost:11434\"\nprint('PASS')"
+  },
+  "related": ["model", "inference", "harness", "prefix-cache", "input-tokens", "output-tokens", "model-provider-request"],
+  "tags": ["model-provider", "api", "anthropic", "ollama", "pricing"]
+}

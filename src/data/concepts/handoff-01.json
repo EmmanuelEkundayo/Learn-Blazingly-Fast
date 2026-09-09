@@ -1,0 +1,70 @@
+{
+  "id": "handoff-01",
+  "slug": "handoff",
+  "title": "Handoff",
+  "domain": "AI",
+  "category": "Handoffs",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A handoff transfers agent context from one session to another, via a written artifact or an in-memory summary — the opposite of clearing, which transfers nothing. The receiving session starts with zero context because the model is stateless, so whatever the next session needs must be carried explicitly. The visible failure of a bad handoff is relitigation: the new session re-opens decisions the old one had settled.",
+    "analogy": "A shift-change report in a hospital: the on-coming nurse has no memory of the ward, so the off-going nurse must hand over decisions and constraints in writing that stand alone.",
+    "time_complexity": "The model is stateless, so each handoff forces the next session to re-read everything needed from context — carried material costs tokens on every request.",
+    "space_complexity": "The context window is finite, and handoffs exist to free budget by deciding what gets carried into the next session.",
+    "when_to_use": [
+      "When switching roles, such as from planner to implementer",
+      "When kicking off an AFK run that must continue where the last session stopped",
+      "When fanning out to parallel sessions that all need the same decisions",
+      "When a planning session is getting heavy and needs context window room"
+    ],
+    "gotchas": [
+      "Nothing from the old session is visible to the new one — the carry must be explicit",
+      "No return path: the new session cannot ask the old one what it meant, so the carried material must stand on its own",
+      "A bad handoff causes relitigation because the carry records what was decided but not why"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        {
+          "label": "Settled session",
+          "sub": "decisions made, window heavy",
+          "annotation": "A long planning session accumulates decisions and constraints but the context window is nearly full."
+        },
+        {
+          "label": "Write carry",
+          "sub": "decisions + why to a doc",
+          "annotation": "The agent writes the decisions and the reasoning behind them into a handoff artifact."
+        },
+        {
+          "label": "Clear session",
+          "sub": "drop working state",
+          "annotation": "The old session is ended so its full context can be freed."
+        },
+        {
+          "label": "Seed fresh session",
+          "sub": "read artifact, zero context",
+          "annotation": "A new session starts with zero context and reads the artifact as its only memory."
+        },
+        {
+          "label": "No return path",
+          "sub": "carry must stand alone",
+          "annotation": "The new session cannot ask the old one what it meant, so the carried material has to stand on its own."
+        }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Complete handoff so the decisions are carried into an artifact and the old session's state is cleared, returning both to the next session.",
+    "starter_code": "def handoff(session_state, artifact):\n    artifact.update(session_state)\n    cleared = ___________\n    return artifact, cleared",
+    "solution": "cleared = {}",
+    "hints": [
+      "The receiving session starts with zero context, so carry the decisions explicitly.",
+      "Clearing ends the working state, so the old session returns to an empty slate."
+    ],
+    "test_code": "artifact = {}\nassert handoff({'schema': 'v2'}, artifact) == ({'schema': 'v2'}, {})\nassert artifact == {'schema': 'v2'}\nprint('PASS')"
+  },
+  "related": ["clearing", "compaction", "handoff-artifact", "session", "context-window", "model", "agent"],
+  "tags": ["handoff", "session", "context-carry", "stateless-model", "workflow"]
+}

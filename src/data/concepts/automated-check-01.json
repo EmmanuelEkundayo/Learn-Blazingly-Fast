@@ -1,0 +1,49 @@
+{
+  "id": "automated-check-01",
+  "slug": "automated-check",
+  "title": "Automated Check",
+  "domain": "AI",
+  "category": "Patterns of Work",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "A deterministic pass/fail verification that runs in the environment: tests, type checks, lints, builds, and pre-commit hooks. Because the verdict is repeatable, the agent can self-correct from the failure output without involving any human. Determinism is exactly what makes the loop trustworthy: the same code always produces the same verdict.",
+    "analogy": "Like a smoke detector: it does not judge the fire, it just alarms when the condition holds, and it always alarms for the same condition, which is why you can trust its silence.",
+    "time_complexity": "Operational cost per check is small and mechanical, but every fix-and-rerun cycle adds one more tool call and its latency, so a slow suite turns a cheap check into an expensive inner loop.",
+    "space_complexity": "Context footprint is bounded but real: each failure output lands in the context window, and a long fix-and-rerun loop can bloat it, risking attention degradation or compaction.",
+    "when_to_use": [
+      "As the signal an agent can self-correct from without a human in the loop",
+      "Adding typecheck and lint to a sandbox so AFK agents stop shipping broken code",
+      "Pre-merge, pre-commit, and CI gates where a deterministic pass/fail is available"
+    ],
+    "gotchas": [
+      "A flaky test is a broken check, not a non-check, and it poisons the fix loop",
+      "A check only catches what it asserts; green checks do not mean the code is right",
+      "Judgement-shaped gaps are left to automated review and human review, not checks"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Change", "sub": "agent edits code", "annotation": "The agent makes a change it wants to verify." },
+        { "label": "Run", "sub": "check as a tool call", "annotation": "The agent runs the test, typecheck, or lint in the environment." },
+        { "label": "Verdict", "sub": "fail with file and line", "annotation": "The failure output lands directly in the context window." },
+        { "label": "Self-correct", "sub": "fix and rerun", "annotation": "The agent repairs the error and runs the check again." },
+        { "label": "Green", "sub": "deterministic pass", "annotation": "The repeatable verdict makes the final pass a trustworthy signal." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Model the self-correction loop: a deterministic check lets an agent fix and retry until it passes or attempts run out.",
+    "starter_code": "def self_correcting_loop(code, check, fix, attempts):\n    \"\"\"A deterministic check lets an agent fix and retry without a human.\"\"\"\n    for _ in range(attempts):\n        if check(code):\n            return code\n        code = ____________\n    return ____________",
+    "solution": "fix(code)\nunverifiable",
+    "hints": [
+      "A failing check is feedback the agent can act on mechanically.",
+      "When attempts run out, mark the result as unverifiable instead of guessing."
+    ],
+    "test_code": "called = []\ndef check(c): return c >= 5\ndef fix(c): called.append(c); return c + 1\nassert self_correcting_loop(0, check, fix, 10) == 5 and called == [0, 1, 2, 3, 4]\nassert self_correcting_loop(0, check, fix, 2) == 'unverifiable'\nprint('PASS')"
+  },
+  "related": ["automated-review", "human-review", "ax", "tool-call", "afk", "sandbox"],
+  "tags": ["automated-check", "deterministic", "tests", "typecheck", "lint", "self-correction"]
+}

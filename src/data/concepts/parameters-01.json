@@ -1,0 +1,49 @@
+{
+  "id": "parameters-01",
+  "slug": "parameters",
+  "title": "Parameters",
+  "domain": "AI",
+  "category": "The Model",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Parameters are the numbers inside a model — often billions — tuned during training and frozen afterward. Everything a model 'knows' lives in them, and inference uses them unchanged. Nothing you do in a session changes them; only more training produces new parameters and thus a different model.",
+    "analogy": "Parameters are like a compiled binary's machine code: the compiler (training) wrote them once, every run just executes them, and a runtime patch does nothing — you need a new build.",
+    "time_complexity": "Inference cost scales with parameter count — a trillion-parameter model multiplies every input token through far more weights than a small one, which is why bigger tiers are slower and pricier per request.",
+    "space_complexity": "Parameter memory is fixed and lives on the provider's hardware; nothing in the context window changes it, so your whole session budget goes to the tokens the harness assembles, never to the weights.",
+    "when_to_use": [
+      "Deciding between fine-tuning and loading material into context — retraining yields a different model",
+      "Explaining why a model's built-in knowledge stops at its knowledge cutoff",
+      "Accounting for tier cost differences driven by parameter count",
+      "Diagnosing a behavior change as parameters versus harness or context"
+    ],
+    "gotchas": [
+      "No correction or codebase you show in a session changes the parameters — the model stays stateless",
+      "Fine-tuning updates the parameters and produces a different model, usually far costlier than context for one project"
+    ]
+  },
+  "visualization": {
+    "type": "timeline-step",
+    "config": {
+      "steps": [
+        { "label": "Train", "sub": "corpus in", "annotation": "Training exposes the model to vast text and tunes the parameters." },
+        { "label": "Freeze", "sub": "weights fixed", "annotation": "After training the parameters are locked in." },
+        { "label": "Serve", "sub": "provider hardware", "annotation": "The parameters live on the provider's machines." },
+        { "label": "Infer", "sub": "read-only", "annotation": "Inference runs the frozen weights over your context." },
+        { "label": "Retrain", "sub": "new model", "annotation": "Only more training changes the numbers — producing a different model." }
+      ]
+    }
+  },
+  "exercise": {
+    "type": "fill-in-the-blank",
+    "prompt": "Parameters are frozen after training. Write a function that multiplies input tokens through a fixed weight list and rounds the score, treating the weights as read-only.",
+    "starter_code": "def score(weights, tokens):\n    total = 0.0\n    for i in range(___________):\n        total += tokens[i] * weights[i]\n    return round(total, 2)\n",
+    "solution": "len(tokens)",
+    "hints": [
+      "Iterate position by position over the token list",
+      "The loop must stop at the length of the tokens argument"
+    ],
+    "test_code": "assert score([1.0, 2.0], [5, 3]) == 11.0\nassert score([0.5], [4]) == 2.0\nprint('PASS')"
+  },
+  "related": ["training", "inference", "model", "context", "context-window", "session"],
+  "tags": ["parameters", "weights", "frozen", "inference", "training"]
+}
