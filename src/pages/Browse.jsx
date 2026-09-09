@@ -111,19 +111,20 @@ export default function Browse() {
         {/* Row 2: domain + difficulty pills (scrollable on mobile) */}
         <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
           <PillGroup
-            options={['All', 'DSA', 'ML', 'AI', 'Frontend', 'Backend', 'Software Engineering']}
+            options={['All', 'DSA', 'ML', 'AI', 'Frontend', 'Backend', 'Software Engineering', 'Business Logic']}
             labels={{ 'Software Engineering': 'SE' }}
             value={domain}
             onChange={setDomain}
             concepts={concepts}
-            colorFn={v =>
-              v === 'DSA'                  ? 'dsa'      :
-              v === 'ML'                   ? 'ml'       :
-              v === 'AI'                   ? 'ai'       :
-              v === 'Frontend'             ? 'frontend' :
-              v === 'Backend'              ? 'backend'  :
-              v === 'Software Engineering' ? 'se'       : null
-            }
+colorFn={v =>
+  v === 'DSA'                  ? 'dsa'      :
+  v === 'ML'                   ? 'ml'       :
+  v === 'AI'                   ? 'ai'       :
+  v === 'Frontend'             ? 'frontend' :
+  v === 'Backend'              ? 'backend'  :
+  v === 'Software Engineering' ? 'se'       :
+  v === 'Business Logic'       ? 'bl'       : null
+}
           />
           <PillGroup
             options={['All', 'beginner', 'intermediate', 'advanced']}
@@ -204,6 +205,7 @@ const DOMAIN_BADGE_STYLE = {
   Frontend:             'bg-frontend-500/20 text-frontend-400',
   Backend:              'bg-backend-500/20 text-backend-400',
   'Software Engineering': 'bg-se-500/20 text-se-400',
+  'Business Logic':     'bg-blue-600/20 text-blue-400',
 }
 
 function DomainBadge({ domain }) {
@@ -244,6 +246,7 @@ function PillGroup({ options, labels = {}, value, onChange, colorFn, concepts = 
                 : color === 'frontend' ? 'bg-frontend-600 text-white'
                 : color === 'backend'  ? 'bg-backend-600 text-white'
                 : color === 'se'       ? 'bg-se-600 text-white'
+                : color === 'bl'       ? 'bg-blue-600 text-white'
                 : color === 'green'    ? 'bg-green-800 text-green-300'
                 : color === 'yellow'   ? 'bg-yellow-900 text-yellow-300'
                 : color === 'red'      ? 'bg-red-900 text-red-300'

@@ -22,6 +22,7 @@ const DOMAIN_CHIP = {
   Frontend:             'bg-frontend-500/20 text-frontend-400',
   Backend:              'bg-backend-500/20 text-backend-400',
   'Software Engineering': 'bg-se-500/20 text-se-400',
+  'Business Logic':     'bg-blue-600/20 text-blue-400',
 }
 
 // ─── Home ───────────────────────────────────────────────────────────────────

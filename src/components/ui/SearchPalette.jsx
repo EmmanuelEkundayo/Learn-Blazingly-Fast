@@ -215,7 +215,8 @@ function ResultRow({ item, type, query, isSelected, onSelect }) {
     AI: 'bg-ai-500/20 text-ai-400',
     Frontend: 'bg-frontend-500/20 text-frontend-400',
     Backend: 'bg-backend-500/20 text-backend-400',
-    'Software Engineering': 'bg-se-500/20 text-se-400'
+    'Software Engineering': 'bg-se-500/20 text-se-400',
+    'Business Logic': 'bg-blue-600/20 text-blue-400'
   }
 
   const CAT_COLORS = {
@@ -245,7 +246,7 @@ function ResultRow({ item, type, query, isSelected, onSelect }) {
           {type !== 'cheatsheet' && (
             <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter
               ${type === 'concept' ? (DOMAIN_COLORS[item.domain] || 'bg-gray-500/20 text-gray-400') : (CAT_COLORS[item.category] || 'bg-gray-500/20 text-gray-400')}`}>
-              {type === 'concept' ? (item.domain === 'Software Engineering' ? 'SE' : item.domain) : item.category}
+              {type === 'concept' ? (item.domain === 'Software Engineering' ? 'SE' : item.domain === 'Business Logic' ? 'BL' : item.domain) : item.category}
             </span>
           )}
         </div>

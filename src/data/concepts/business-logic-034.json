@@ -1,0 +1,51 @@
+{
+  "id": "bl-db6b20ea",
+  "slug": "business-logic-997",
+  "title": "Backpressure",
+  "domain": "Business Logic",
+  "category": "Performance Optimization",
+  "difficulty": "beginner",
+  "card": {
+    "intuition": "Business logic focuses on core rules driving application behavior, separate from infrastructure concerns.",
+    "analogy": "Business logic is the engine of your application \u2014 like a car transmission, it takes input and delivers output without the driver needing internal details.",
+    "time_complexity": "O",
+    "space_complexity": "(",
+    "when_to_use": [
+      "When implementing business rules in a new feature",
+      "During code reviews to ensure separation of concerns",
+      "When designing new modules to avoid circular dependencies"
+    ],
+    "gotchas": [
+      "Mixing business logic with database queries makes testing difficult",
+      "Over-engineering simple rules prematurely",
+      "Changing business rules often requires cascading updates across the codebase"
+    ]
+  },
+  "visualization": {
+    "type": "state-diagram",
+    "config": {
+      "mode": "beginner",
+      "show_transitions": true
+    }
+  },
+  "exercise": {
+    "type": "code-completion",
+    "prompt": "Identify the business rule violation: hardcoded values.",
+    "starter_code": "// business logic implementation starter // diff: beginner",
+    "solution": "// solution for business logic // diff: beginner",
+    "hints": [
+      "Consider edge cases",
+      "Apply SOLID principles",
+      "Write unit tests to verify correctness"
+    ],
+    "test_code": "// test case for business logic // diff: beginner\nassert true; // placeholder test"
+  },
+  "related": [
+    "bl-related-1"
+  ],
+  "tags": [
+    "actor",
+    "beginner",
+    "business"
+  ]
+}
