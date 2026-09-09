@@ -95,13 +95,29 @@ function sanitizeInt(value, max) {
   return Math.min(n, max);
 }
 
+const REVIEWS_ADMIN_TOKEN = process.env.REVIEWS_ADMIN_TOKEN || 'lbf-admin-dev-token';
+
+function requireReviewAdmin(req, res, next) {
+  const token = req.headers['x-admin-token'] || req.query.adminToken;
+  if (typeof token !== 'string' || token !== REVIEWS_ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Invalid admin token' });
+  }
+  next();
+}
+
+function reviewId(review) {
+  return typeof review.id === 'string' ? review.id : review.submitted_at;
+}
+
 app.use('/api/v1/auth', authRoutes);
 
 app.use('/api/v1', apiLimiter);
 
 app.get('/api/v1/reviews', (req, res) => {
   const reviews = readJSON(REVIEWS_FILE);
-  const anon = reviews.map(r => ({
+  const approved = reviews.filter(r => r.approved !== false);
+  const anon = approved.map(r => ({
+    id: reviewId(r),
     first_name: r.name ? String(r.name).split(' ')[0] : 'Anonymous',
     occupation: r.occupation || 'Learner',
     review_text: r.review_text,
@@ -135,11 +151,55 @@ app.post('/api/v1/reviews', writeLimiter, requireAuth, (req, res) => {
   }
 
   const reviews = readJSON(REVIEWS_FILE);
-  reviews.push({ ...cleaned, submitted_at: new Date().toISOString() });
+  const submitted_at = new Date().toISOString();
+  const id = `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  reviews.push({ ...cleaned, id, submitted_at, approved: false });
   if (writeJSON(REVIEWS_FILE, reviews)) {
-    res.status(201).json({ message: 'Review saved' });
+    res.status(201).json({ message: 'Review saved. Awaiting approval.' });
   } else {
     res.status(500).json({ error: 'Failed to save review' });
+  }
+});
+
+app.get('/api/v1/reviews/admin', requireReviewAdmin, (req, res) => {
+  const reviews = readJSON(REVIEWS_FILE);
+  const all = reviews.map(r => ({
+    id: reviewId(r),
+    name: r.name,
+    occupation: r.occupation || 'Learner',
+    review_text: r.review_text,
+    concepts_seen_count: r.concepts_seen_count || 0,
+    rating: r.rating || 0,
+    approved: r.approved === true,
+    submitted_at: r.submitted_at
+  }));
+  res.json(all);
+});
+
+app.patch('/api/v1/reviews/:id', requireReviewAdmin, (req, res) => {
+  const { id } = req.params;
+  const { approved } = req.body || {};
+  const reviews = readJSON(REVIEWS_FILE);
+  const target = reviews.find(r => reviewId(r) === id);
+  if (!target) return res.status(404).json({ error: 'Review not found' });
+  target.approved = approved === true;
+  if (writeJSON(REVIEWS_FILE, reviews)) {
+    res.json({ message: approved ? 'Review approved' : 'Review unapproved', id, approved: target.approved });
+  } else {
+    res.status(500).json({ error: 'Failed to update review' });
+  }
+});
+
+app.delete('/api/v1/reviews/:id', requireReviewAdmin, (req, res) => {
+  const { id } = req.params;
+  let reviews = readJSON(REVIEWS_FILE);
+  const before = reviews.length;
+  reviews = reviews.filter(r => reviewId(r) !== id);
+  if (reviews.length === before) return res.status(404).json({ error: 'Review not found' });
+  if (writeJSON(REVIEWS_FILE, reviews)) {
+    res.json({ message: 'Review deleted', id });
+  } else {
+    res.status(500).json({ error: 'Failed to delete review' });
   }
 });
 

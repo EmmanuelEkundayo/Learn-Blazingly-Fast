@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'dummy-reviews.json');
+const DATA_FILE = path.join(process.cwd(), 'data', 'reviews.json');
+const ADMIN_TOKEN = process.env.REVIEWS_ADMIN_TOKEN || 'lbf-admin-dev-token';
 
 function readReviews() {
   try {
@@ -33,8 +34,25 @@ function sanitizeInt(value, max) {
   return Math.min(n, max);
 }
 
+function reviewId(review) {
+  return typeof review.id === 'string' ? review.id : review.submitted_at;
+}
+
+function requireAdmin(req, res) {
+  const token = req.headers['x-admin-token'] || req.query.adminToken;
+  if (typeof token !== 'string' || token !== ADMIN_TOKEN) {
+    res.status(401).json({ error: 'Invalid admin token' });
+    return false;
+  }
+  return true;
+}
+
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
+  const { method } = req;
+  const { id } = req.query;
+
+  // ── Public: create a new review (pending approval) ─────────────────────
+  if (method === 'POST') {
     const { name, review_text, occupation, concepts_seen_count, rating } = req.body || {};
     const cleaned = {
       name: sanitizeString(name, 100),
@@ -49,18 +67,23 @@ export default async function handler(req, res) {
     }
 
     const reviews = readReviews();
-    reviews.push({ ...cleaned, submitted_at: new Date().toISOString() });
+    const submitted_at = new Date().toISOString();
+    const nid = `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    reviews.push({ ...cleaned, id: nid, submitted_at, approved: false });
     writeReviews(reviews);
 
     return res.status(201).json({
-      message: 'Review saved.',
+      message: 'Review saved. Awaiting approval.',
       status: 'success'
     });
   }
 
-  if (req.method === 'GET') {
+  // ── Public: list only approved reviews ─────────────────────────────────
+  if (method === 'GET' && !id) {
     const reviews = readReviews();
-    const publicReviews = reviews.map(r => ({
+    const approved = reviews.filter(r => r.approved === true);
+    const publicReviews = approved.map(r => ({
+      id: reviewId(r),
       first_name: r.name ? r.name.split(' ')[0] : 'Anonymous',
       occupation: r.occupation,
       review_text: r.review_text,
@@ -70,6 +93,46 @@ export default async function handler(req, res) {
     return res.status(200).json(publicReviews);
   }
 
-  res.setHeader('Allow', ['POST', 'GET']);
-  return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+  // ── Admin: list all reviews (pending + approved) ───────────────────────
+  if (method === 'GET' && id === 'admin') {
+    if (!requireAdmin(req, res)) return;
+    const reviews = readReviews();
+    const all = reviews.map(r => ({
+      id: reviewId(r),
+      name: r.name,
+      occupation: r.occupation || 'Learner',
+      review_text: r.review_text,
+      concepts_seen_count: r.concepts_seen_count || 0,
+      rating: r.rating || 0,
+      approved: r.approved === true,
+      submitted_at: r.submitted_at
+    }));
+    return res.status(200).json(all);
+  }
+
+  // ── Admin: approve / unapprove a review ────────────────────────────────
+  if (method === 'PATCH') {
+    if (!requireAdmin(req, res)) return;
+    const { approved } = req.body || {};
+    const reviews = readReviews();
+    const target = reviews.find(r => reviewId(r) === id);
+    if (!target) return res.status(404).json({ error: 'Review not found' });
+    target.approved = approved === true;
+    writeReviews(reviews);
+    return res.status(200).json({ message: approved ? 'Review approved' : 'Review unapproved', id, approved: target.approved });
+  }
+
+  // ── Admin: delete a review ─────────────────────────────────────────────
+  if (method === 'DELETE') {
+    if (!requireAdmin(req, res)) return;
+    const reviews = readReviews();
+    const before = reviews.length;
+    const remaining = reviews.filter(r => reviewId(r) !== id);
+    if (remaining.length === before) return res.status(404).json({ error: 'Review not found' });
+    writeReviews(remaining);
+    return res.status(200).json({ message: 'Review deleted', id });
+  }
+
+  res.setHeader('Allow', ['POST', 'GET', 'PATCH', 'DELETE']);
+  return res.status(405).json({ error: `Method ${method} Not Allowed` });
 }

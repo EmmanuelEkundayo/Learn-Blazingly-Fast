@@ -2,6 +2,7 @@ import { Outlet, NavLink, Link, useLocation } from 'react-router'
 import SupportModal from './SupportModal'
 import SearchPalette from './SearchPalette.jsx'
 import AuthModal from './AuthModal.jsx'
+import AdminReviewModal from './AdminReviewModal.jsx'
 import ThemeToggle from './ThemeToggle'
 import { useState, useEffect, Suspense } from 'react'
 import { toast } from 'react-hot-toast'
@@ -41,6 +42,7 @@ export default function Layout() {
   const [isSearchOpen, setIsSearchOpen]   = useState(false)
   const [isMobileOpen, setIsMobileOpen]   = useState(false)
   const [isAuthOpen, setIsAuthOpen]       = useState(false)
+  const [isAdminOpen, setIsAdminOpen]     = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const location = useLocation()
   const userEmail = useAuthStore(s => s.userEmail)
@@ -95,6 +97,10 @@ export default function Layout() {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         setIsSearchOpen(true)
+      }
+      if (e.ctrlKey && e.altKey && e.key === 'o') {
+        e.preventDefault()
+        setIsAdminOpen(open => !open)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -306,6 +312,7 @@ export default function Layout() {
         <SearchPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         <SupportModal />
         <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+        <AdminReviewModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
         <Suspense fallback={<PageFallback />}>
           <Outlet />
         </Suspense>
