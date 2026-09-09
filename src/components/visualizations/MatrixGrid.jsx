@@ -78,13 +78,13 @@ export default function MatrixGrid({ config = {}, data }) {
         <table className="border-collapse text-xs font-mono">
           <thead>
             <tr>
-              <th className="px-2 py-1.5 text-gray-500 text-right font-normal border-b border-r border-surface-600 min-w-[3.5rem]">
+              <th className="px-2 py-1.5 text-gray-400 text-right font-normal border-b border-r border-surface-600 min-w-[3.5rem]">
                 i \ w
               </th>
               {Array.from({ length: W + 1 }, (_, w) => (
                 <th
                   key={w}
-                  className="px-2 py-1.5 text-gray-500 text-center font-normal border-b border-surface-600 min-w-[2.5rem]"
+                  className="px-2 py-1.5 text-gray-400 text-center font-normal border-b border-surface-600 min-w-[2.5rem]"
                 >
                   {w}
                 </th>
@@ -95,7 +95,7 @@ export default function MatrixGrid({ config = {}, data }) {
             {Array.from({ length: n + 1 }, (_, i) => (
               <tr key={i}>
                 {/* Row header */}
-                <td className="px-2 py-1.5 text-gray-500 text-right border-r border-surface-600 whitespace-nowrap">
+                <td className="px-2 py-1.5 text-gray-400 text-right border-r border-surface-600 whitespace-nowrap">
                   {i === 0 ? '—' : `${knapsack.labels[i - 1]} (${i})`}
                 </td>
                 {Array.from({ length: W + 1 }, (_, w) => {
@@ -134,12 +134,12 @@ export default function MatrixGrid({ config = {}, data }) {
       {/* Current decision */}
       {activeCell && activeCell[0] > 0 && (
         <div className="flex items-center gap-2 text-xs font-mono px-1">
-          <span className="text-gray-500">Filling dp[{activeCell[0]}][{activeCell[1]}]:</span>
+          <span className="text-gray-400">Filling dp[{activeCell[0]}][{activeCell[1]}]:</span>
           <span className={tookItem ? 'text-green-400' : 'text-gray-400'}>
             {tookItem ? '✓ TAKE' : '✗ SKIP'}
           </span>
           {tookItem && sourceCells?.[0] && (
-            <span className="text-gray-500">
+            <span className="text-gray-400">
               ← dp[{sourceCells[0][0]}][{sourceCells[0][1]}] + {knapsack.values[activeCell[0] - 1]}
             </span>
           )}

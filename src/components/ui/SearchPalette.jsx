@@ -89,7 +89,7 @@ export default function SearchPalette({ isOpen, onClose }) {
           onClick={e => e.stopPropagation()}
         >
           <div className="relative border-b border-surface-700 flex items-center">
-            <SearchIcon className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
+            <SearchIcon className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <input
               ref={inputRef}
               type="text"
@@ -101,7 +101,7 @@ export default function SearchPalette({ isOpen, onClose }) {
             />
             <button
               onClick={onClose}
-              className="shrink-0 mr-4 sm:mr-6 text-gray-500 hover:text-gray-300 transition-colors"
+              className="shrink-0 mr-4 sm:mr-6 text-gray-400 hover:text-gray-300 transition-colors"
               aria-label="Close"
             >
               <span className="hidden sm:inline">
@@ -131,12 +131,12 @@ export default function SearchPalette({ isOpen, onClose }) {
               {query.trim() === '' ? (
                 <div className="py-10 text-center space-y-2">
                   <p className="text-gray-400 font-medium">Type to search the platform</p>
-                  <p className="text-xs text-gray-600">Concepts · Projects · Cheat Sheets</p>
+                  <p className="text-xs text-gray-400">Concepts · Projects · Cheat Sheets</p>
                 </div>
               ) : flatResults.length === 0 ? (
                 <div className="py-10 text-center space-y-3">
-                  <p className="text-gray-500">No results for &quot;{query}&quot;</p>
-                  <div className="text-xs text-gray-600 space-y-1">
+                  <p className="text-gray-400">No results for &quot;{query}&quot;</p>
+                  <div className="text-xs text-gray-400 space-y-1">
                     <p>Try a different keyword or check the filter</p>
                     <p>Search tips: try &quot;recursion&quot;, &quot;binary tree&quot;, &quot;react&quot;</p>
                   </div>
@@ -145,7 +145,7 @@ export default function SearchPalette({ isOpen, onClose }) {
                 <div className="space-y-4 py-2">
                   {results.concepts.length > 0 && (
                     <div>
-                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">Concepts</h4>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Concepts</h4>
                       {results.concepts.map((c, i) => (
                         <ResultRow
                           key={c.slug}
@@ -161,7 +161,7 @@ export default function SearchPalette({ isOpen, onClose }) {
 
                   {results.projects.length > 0 && (
                     <div>
-                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Projects</h4>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-t border-surface-800 mt-2 pt-4">Projects</h4>
                       {results.projects.map((p, i) => (
                         <ResultRow
                           key={p.slug}
@@ -177,7 +177,7 @@ export default function SearchPalette({ isOpen, onClose }) {
 
                   {results.cheatsheets && results.cheatsheets.length > 0 && (
                     <div>
-                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Cheat Sheets</h4>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-t border-surface-800 mt-2 pt-4">Cheat Sheets</h4>
                       {results.cheatsheets.map((cs, i) => (
                         <ResultRow
                           key={`${cs.sheetId}-${cs.label}-${i}`}
@@ -195,7 +195,7 @@ export default function SearchPalette({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div className="hidden sm:flex bg-surface-800/50 px-6 py-3 border-t border-surface-700 justify-between items-center text-[10px] text-gray-500 font-medium">
+          <div className="hidden sm:flex bg-surface-800/50 px-6 py-3 border-t border-surface-700 justify-between items-center text-[10px] text-gray-400 font-medium">
             <div className="flex gap-4">
                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded bg-surface-700 border border-surface-600">↑↓</kbd> Navigate</span>
                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded bg-surface-700 border border-surface-600">↵</kbd> Select</span>
@@ -212,6 +212,7 @@ function ResultRow({ item, type, query, isSelected, onSelect }) {
   const DOMAIN_COLORS = {
     DSA: 'bg-dsa-600/20 text-dsa-400',
     ML: 'bg-ml-500/20 text-ml-400',
+    AI: 'bg-ai-500/20 text-ai-400',
     Frontend: 'bg-frontend-500/20 text-frontend-400',
     Backend: 'bg-backend-500/20 text-backend-400',
     'Software Engineering': 'bg-se-500/20 text-se-400'
@@ -220,7 +221,7 @@ function ResultRow({ item, type, query, isSelected, onSelect }) {
   const CAT_COLORS = {
     'Frontend': 'bg-frontend-600/20 text-frontend-400',
     'Backend': 'bg-backend-600/20 text-backend-400',
-    'AI-ML': 'bg-ml-500/20 text-ml-400',
+    'AI': 'bg-ml-500/20 text-ml-400',
     'Full-stack': 'bg-dsa-500/20 text-dsa-400'
   }
 
@@ -248,7 +249,7 @@ function ResultRow({ item, type, query, isSelected, onSelect }) {
             </span>
           )}
         </div>
-        <div className="text-xs text-gray-500 mt-0.5 truncate">
+        <div className="text-xs text-gray-400 mt-0.5 truncate">
           {type === 'concept' && item.category}
           {type === 'project' && item.stack.slice(0, 3).join(' · ')}
           {type === 'cheatsheet' && `${item.sheetTitle} · ${item.sectionTitle}`}

@@ -63,7 +63,7 @@ export default function Review() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold">Review</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-400 mt-1">
           {total > 0
             ? `${total} concept${total > 1 ? 's' : ''} need${total === 1 ? 's' : ''} attention`
             : 'Nothing to review right now.'}
@@ -79,7 +79,7 @@ export default function Review() {
         >
           <span className="text-4xl">✓</span>
           <p className="text-gray-300 font-medium">You're all caught up.</p>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-400 text-sm">
             No failed exercises, no pending practice, nothing stale.
           </p>
           <Link to="/browse" className="mt-2 text-sm text-dsa-400 hover:underline">
@@ -89,7 +89,7 @@ export default function Review() {
       )}
 
       {concepts.length === 0 && (
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           No concepts loaded.{' '}
           <Link to="/browse" className="text-dsa-400 hover:underline">Browse the catalog</Link>.
         </p>
@@ -147,15 +147,15 @@ function ReviewSection({ title, description, accent, items, progress, emptyLabel
         <span className={`inline-block w-2 h-2 rounded-full ${dot} shrink-0 mb-0.5`} />
         <h2 className={`text-sm font-semibold ${label}`}>{title}</h2>
         {items.length > 0 && (
-          <span className="text-xs text-gray-600">({items.length})</span>
+          <span className="text-xs text-gray-400">({items.length})</span>
         )}
-        <p className="ml-1 text-xs text-gray-600 hidden sm:block">— {description}</p>
+        <p className="ml-1 text-xs text-gray-400 hidden sm:block">— {description}</p>
       </div>
 
       {/* Rows */}
       <div className={`rounded-xl border ${border} overflow-hidden`}>
         {items.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-gray-600 italic">{emptyLabel}</p>
+          <p className="px-4 py-3 text-sm text-gray-400 italic">{emptyLabel}</p>
         ) : (
           items.map((concept, i) => (
             <ConceptRow
@@ -191,8 +191,8 @@ function ConceptRow({ concept, prog, divider }) {
 
       {/* Title + meta */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-200 truncate">{concept.title}</p>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm font-medium text-gray-300 truncate">{concept.title}</p>
+        <p className="text-xs text-gray-400">
           {concept.category}
           {attempts > 0 && (
             <span className="ml-2 text-red-400/80">
@@ -203,7 +203,7 @@ function ConceptRow({ concept, prog, divider }) {
       </div>
 
       {/* Last seen */}
-      <span className="text-xs text-gray-600 shrink-0 tabular-nums">
+      <span className="text-xs text-gray-400 shrink-0 tabular-nums">
         {relativeTime(prog.last_seen)}
       </span>
 

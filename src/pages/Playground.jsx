@@ -95,7 +95,7 @@ const Terminal = ({ output, onClear, height, setHeight }) => {
         </div>
         <button 
           onClick={onClear}
-          className="p-1 hover:bg-surface-800 rounded transition-colors text-gray-500 hover:text-white"
+          className="p-1 hover:bg-surface-800 rounded transition-colors text-gray-400 hover:text-white"
           title="Clear (Ctrl+L)"
         >
           <Trash2 size={14} />
@@ -103,7 +103,7 @@ const Terminal = ({ output, onClear, height, setHeight }) => {
       </div>
       <div className="flex-1 overflow-auto p-4 font-mono text-sm leading-relaxed custom-scrollbar">
         {output.length === 0 ? (
-          <span className="text-gray-600">Output will appear here...</span>
+          <span className="text-gray-400">Output will appear here...</span>
         ) : (
           output.map((line, i) => (
             <div key={i} className={line.type === 'error' ? 'text-red-400' : 'text-green-400'}>
@@ -357,7 +357,7 @@ export default function Playground() {
 
           <button 
             onClick={() => { setCode(DEFAULT_TEMPLATES[language]); clearOutput(); }}
-            className="p-1.5 text-gray-500 hover:text-white transition-colors"
+            className="p-1.5 text-gray-400 hover:text-white transition-colors"
             title="Reset"
           >
             <RotateCcw size={18} />
@@ -401,7 +401,7 @@ export default function Playground() {
             >
               <div className="p-4 border-b border-surface-800 flex items-center justify-between bg-black/20">
                 <span className="font-semibold text-sm">Algorithm Templates</span>
-                <button onClick={() => setShowTemplates(false)} className="text-gray-500 hover:text-white"><X size={18}/></button>
+                <button onClick={() => setShowTemplates(false)} className="text-gray-400 hover:text-white"><X size={18}/></button>
               </div>
               <div className="flex-1 overflow-auto p-2 space-y-4 no-scrollbar">
                 {['dsa', 'ml', 'patterns'].map(cat => {
@@ -409,7 +409,7 @@ export default function Playground() {
                   if (items.length === 0) return null;
                   return (
                     <div key={cat}>
-                      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">{cat}</div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">{cat}</div>
                       <div className="space-y-1">
                         {items.map(t => (
                           <button
@@ -418,7 +418,7 @@ export default function Playground() {
                             className="w-full text-left px-3 py-2 rounded-md hover:bg-surface-800 text-sm group flex items-center justify-between transition-colors"
                           >
                             <span className="text-gray-300 group-hover:text-white font-medium">{t.name}</span>
-                            <ChevronRight size={14} className="text-gray-600" />
+                            <ChevronRight size={14} className="text-gray-400" />
                           </button>
                         ))}
                       </div>
@@ -472,7 +472,7 @@ export default function Playground() {
                       <div key={i} className="bg-black/40 p-4 rounded-lg border border-surface-800 text-sm space-y-2">
                         <div className="flex gap-2"><span className="text-blue-400 font-bold shrink-0">Input:</span> <code>{ex.input}</code></div>
                         <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">Output:</span> <code>{ex.output}</code></div>
-                        {ex.explanation && <p className="text-gray-500 italic mt-2">{ex.explanation}</p>}
+                        {ex.explanation && <p className="text-gray-400 italic mt-2">{ex.explanation}</p>}
                       </div>
                     ))}
                   </div>
@@ -506,7 +506,7 @@ export default function Playground() {
                   <div className="absolute bottom-6 right-6 flex flex-col gap-3">
                     <button 
                       onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied to clipboard'); }}
-                      className="group flex items-center gap-3 bg-white text-black px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-2xl"
+                      className="group flex items-center gap-3 bg-surface-900 text-gray-100 px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-2xl"
                     >
                       <Copy size={18} />
                       COPY CODE
@@ -516,7 +516,7 @@ export default function Playground() {
               ) : mode === 'compare' ? (
                 <div className="flex-1 flex gap-px bg-surface-800">
                   <div className="flex-1 flex flex-col bg-[#0d0d0f]">
-                    <div className="h-8 flex items-center px-4 bg-surface-900 text-[10px] font-bold text-gray-500 tracking-widest border-b border-surface-800">EDITOR A</div>
+                    <div className="h-8 flex items-center px-4 bg-surface-900 text-[10px] font-bold text-gray-400 tracking-widest border-b border-surface-800">EDITOR A</div>
                     <Editor
                       height="100%"
                       language={language}
@@ -528,7 +528,7 @@ export default function Playground() {
                     />
                   </div>
                   <div className="flex-1 flex flex-col bg-[#0d0d0f]">
-                    <div className="h-8 flex items-center px-4 bg-surface-900 text-[10px] font-bold text-gray-500 tracking-widest border-b border-surface-800">EDITOR B</div>
+                    <div className="h-8 flex items-center px-4 bg-surface-900 text-[10px] font-bold text-gray-400 tracking-widest border-b border-surface-800">EDITOR B</div>
                     <Editor
                       height="100%"
                       language={language}
@@ -594,8 +594,8 @@ export default function Playground() {
                           </div>
                           {!res.passed && (
                             <div className="mt-2 pl-7 text-xs space-y-1 font-mono">
-                              <div className="text-gray-500">Expected: <span className="text-green-400">{JSON.stringify(res.expected)}</span></div>
-                              <div className="text-gray-500">Actual: <span className="text-red-400">{JSON.stringify(res.actual)}</span></div>
+                              <div className="text-gray-400">Expected: <span className="text-green-400">{JSON.stringify(res.expected)}</span></div>
+                              <div className="text-gray-400">Actual: <span className="text-red-400">{JSON.stringify(res.actual)}</span></div>
                             </div>
                           )}
                         </div>
@@ -603,7 +603,7 @@ export default function Playground() {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-2">
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
                     <Trophy size={32} className="opacity-20" />
                     <p>Click "Run Tests" to check your solution</p>
                   </div>
@@ -614,7 +614,7 @@ export default function Playground() {
             <div className="flex flex-col border-t border-surface-800 bg-black shrink-0" style={{ height: terminalHeight }}>
               <div className="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-surface-800 h-10">
                 <div className="flex items-center gap-8">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase">Comparison Panel</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Comparison Panel</span>
                   {comparison && (
                     <div className="flex items-center gap-6 text-xs font-mono">
                       <div className="flex items-center gap-2">
@@ -627,7 +627,7 @@ export default function Playground() {
                     </div>
                   )}
                 </div>
-                <button onClick={clearOutput} className="text-gray-500 hover:text-white"><Trash2 size={14}/></button>
+                <button onClick={clearOutput} className="text-gray-400 hover:text-white"><Trash2 size={14}/></button>
               </div>
               <div className="flex-1 flex divide-x divide-surface-800">
                 <div className="flex-1 overflow-auto p-4 font-mono text-sm custom-scrollbar">
@@ -649,7 +649,7 @@ export default function Playground() {
 
           {/* Quick Stats Overlay (Free mode) */}
           {mode === 'free' && execTime !== null && (
-            <div className="absolute right-6 bottom- terminalHeight ? terminalHeight + 16 : 16 z-10">
+            <div className="absolute right-6 bottom- terminalHeight ? + 16 : z-10">
               <div className="bg-black/60 backdrop-blur border border-surface-700 rounded-full px-3 py-1 flex items-center gap-2 shadow-xl">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-[10px] font-mono text-gray-300">Execution time: <span className="text-white font-bold">{execTime}ms</span></span>

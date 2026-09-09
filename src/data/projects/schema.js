@@ -6,7 +6,7 @@ export const ProjectSchema = {
   "id": "string",
   "slug": "string",
   "title": "string",
-  "category": "Frontend | Backend | AI-ML | Full-stack | Web Scraping | Distributed Systems",
+  "category": "Frontend | Backend | AI | Full-stack | Web Scraping | Distributed Systems",
   "difficulty": "beginner | intermediate | advanced",
   "stack": ["string"],
   "estimated_time": "string (e.g., '45 mins')",

@@ -36,7 +36,7 @@ export default function Testimonials() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-500">
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-400">
         Loading testimonials...
       </div>
     )
@@ -88,7 +88,7 @@ export default function Testimonials() {
                   ))}
                 </div>
 
-                <p className="text-gray-200 text-base italic leading-relaxed">
+                <p className="text-gray-300 text-base italic leading-relaxed">
                   "{r.review_text}"
                 </p>
 
@@ -96,13 +96,13 @@ export default function Testimonials() {
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-bold text-white">{r.first_name}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-widest">{r.occupation}</div>
+                      <div className="text-xs text-gray-400 uppercase tracking-widest">{r.occupation}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-[10px] text-blue-400 font-bold mb-1">
                         EXPLORED {r.concepts_seen_count} CONCEPTS
                       </div>
-                      <div className="text-[10px] text-gray-600 uppercase font-medium">
+                      <div className="text-[10px] text-gray-400 uppercase font-medium">
                         {new Date(r.submitted_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </div>
                     </div>
@@ -115,7 +115,7 @@ export default function Testimonials() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-20 text-gray-500 italic">
+        <div className="text-center py-20 text-gray-400 italic">
           No testimonials found for this category yet.
         </div>
       )}

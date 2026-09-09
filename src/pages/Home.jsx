@@ -6,10 +6,10 @@ import { getPageMeta } from '../utils/seo'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProjectStore }  from '../store/projectStore.js'
 import { useProgressStore } from '../store/progressStore.js'
-import { useAuthStore }     from '../store/authStore.js'
 import { generateCertificate } from '../utils/generateCertificate.js'
 import { searchAll } from '../utils/search.js'
 import { getDailyConcept, isDailyHidden, hideDailyForToday } from '../utils/dailyConcept.js'
+import { getLearnerName, setLearnerName } from '../utils/learnerName.js'
 import NameModal from '../components/ui/NameModal.jsx'
 import { FlameIcon } from '../components/ui/Icons.jsx'
 import mathTricks from '../data/mathTricks/index.js'
@@ -18,6 +18,7 @@ import mathTricks from '../data/mathTricks/index.js'
 const DOMAIN_CHIP = {
   DSA:                  'bg-dsa-600/20 text-dsa-400',
   ML:                   'bg-ml-500/20 text-ml-400',
+  AI:                   'bg-ai-500/20 text-ai-400',
   Frontend:             'bg-frontend-500/20 text-frontend-400',
   Backend:              'bg-backend-500/20 text-backend-400',
   'Software Engineering': 'bg-se-500/20 text-se-400',
@@ -43,7 +44,7 @@ export default function Home() {
 
   // "Start Here" — one beginner per domain (priority order), fill to 4
   const startHereConcepts = useMemo(() => {
-    const DOMAINS = ['DSA', 'ML', 'Frontend', 'Backend', 'Software Engineering']
+    const DOMAINS = ['DSA', 'ML', 'AI', 'Frontend', 'Backend', 'Software Engineering']
     const picked  = new Set()
     const result  = []
     // Prefer one representative per domain
@@ -77,7 +78,7 @@ export default function Home() {
             <span className="text-dsa-500">Learn</span>
             <span className="text-ml-500"> Blazingly Fast</span>
           </h1>
-          <p className="text-gray-500 text-sm mt-1">200+ CS & ML concepts. Under 5 min each.</p>
+          <p className="text-gray-400 text-sm mt-1">200+ CS & ML concepts. Under 5 min each.</p>
         </div>
 
         <ConceptSearch />
@@ -133,7 +134,7 @@ export default function Home() {
 
       {/* ── All clear state ── */}
       {completed === total && total > 0 && (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-gray-400 text-sm">
           All {total} concepts completed. Check out the{' '}
           <Link to="/browse" className="text-gray-300 hover:underline">full catalog</Link>{' '}
           or{' '}
@@ -208,7 +209,7 @@ function ConceptSearch() {
     <div ref={wrapRef} className="relative w-full max-w-lg px-0">
       {/* Input */}
       <div className="relative">
-        <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+        <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
@@ -217,15 +218,14 @@ function ConceptSearch() {
           onFocus={() => { if (query) setOpen(true) }}
           onKeyDown={handleKeyDown}
           placeholder="Search concepts, tags, categories…"
-          className="w-full bg-surface-800 border border-surface-600 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-500
-                     focus:outline-none focus:border-dsa-500/60 focus:ring-1 focus:ring-dsa-500/20 transition-colors"
+          className="w-full bg-surface-800 border border-surface-600 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-dsa-500/60 focus:ring-1 focus:ring-dsa-500/20 transition-colors"
           autoComplete="off"
           spellCheck={false}
         />
         {query && (
           <button
             onClick={() => { setQuery(''); setOpen(false); inputRef.current?.focus() }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 px-1 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 px-1 transition-colors"
             tabIndex={-1}
           >
             ×
@@ -245,7 +245,7 @@ function ConceptSearch() {
           >
             {results.concepts.length > 0 && (
               <div className="mb-1">
-                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Concepts</div>
+                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Concepts</div>
                 {results.concepts.map((c, i) => (
                   <SearchRow 
                     key={c.slug}
@@ -260,7 +260,7 @@ function ConceptSearch() {
 
             {results.projects.length > 0 && (
               <div className="mt-1 border-t border-surface-700/50 pt-1">
-                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Projects</div>
+                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Projects</div>
                 {results.projects.map((p, i) => (
                   <SearchRow 
                     key={p.slug}
@@ -285,7 +285,7 @@ function ConceptSearch() {
 
       {/* Keyboard hint */}
       {!open && !query && (
-        <p className="text-center text-xs text-gray-600 mt-2">
+        <p className="text-center text-xs text-gray-400 mt-2">
           Press Enter to browse all  ·  ↑↓ to navigate results
         </p>
       )}
@@ -314,7 +314,7 @@ function SearchRow({ item, type, isActive, onClick }) {
           </span>
         </div>
       </div>
-      <span className="text-[10px] text-gray-500 shrink-0">{isConcept ? item.category : item.estimated_time}</span>
+      <span className="text-[10px] text-gray-400 shrink-0">{isConcept ? item.category : item.estimated_time}</span>
     </button>
   )
 }
@@ -329,7 +329,7 @@ function ProgressSection({ total, completed, viewed }) {
       <ProgressRing completed={completed} total={total} pct={pct} />
 
       <div className="flex-1 space-y-2 min-w-0">
-        <p className="text-sm font-semibold text-gray-200">
+        <p className="text-sm font-semibold text-gray-300">
           {completed} of {total} completed
         </p>
         <div className="space-y-1">
@@ -339,7 +339,7 @@ function ProgressSection({ total, completed, viewed }) {
         </div>
         <Link
           to="/browse"
-          className="inline-block text-xs text-gray-500 hover:text-gray-300 transition-colors mt-1"
+          className="inline-block text-xs text-gray-400 hover:text-gray-300 transition-colors mt-1"
         >
           View all →
         </Link>
@@ -395,8 +395,8 @@ function ConceptSection({ title, subtitle, concepts, progress }) {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-sm font-semibold text-gray-200">{title}</h2>
-        <p className="text-xs text-gray-500">{subtitle}</p>
+        <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+        <p className="text-xs text-gray-400">{subtitle}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {concepts.map(c => {
@@ -405,19 +405,18 @@ function ConceptSection({ title, subtitle, concepts, progress }) {
             <Link
               key={c.slug}
               to={`/concept/${c.slug}`}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-surface-600 bg-surface-800
-                         hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-surface-600 bg-surface-800 hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
             >
               <span className={`text-xs font-semibold px-1.5 py-0.5 rounded shrink-0 ${DOMAIN_CHIP[c.domain] ?? 'bg-gray-500/20 text-gray-400'}`}>
                 {c.domain === 'Software Engineering' ? 'SE' : c.domain}
               </span>
-              <span className="flex-1 text-sm text-gray-200 truncate group-hover:text-white transition-colors">
+              <span className="flex-1 text-sm text-gray-300 truncate group-hover:text-white transition-colors">
                 {c.title}
               </span>
               {prog.exercise_passed ? (
                 <span className="text-green-400 text-sm shrink-0">✓</span>
               ) : prog.viewed ? (
-                <span className="text-gray-500 text-base shrink-0 leading-none">•</span>
+                <span className="text-gray-400 text-base shrink-0 leading-none">•</span>
               ) : null}
             </Link>
           )
@@ -444,7 +443,7 @@ function ProjectSection({ title, subtitle, projects }) {
   const CAT_COLORS = {
     'Frontend':           'bg-frontend-500/20 text-frontend-400 border-frontend-500/50',
     'Backend':            'bg-backend-500/20 text-backend-400 border-backend-500/50',
-    'AI-ML':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
+    'AI':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
     'Full-stack':         'bg-dsa-500/20 text-dsa-400 border-dsa-500/50',
     'Web Scraping':       'bg-se-500/20 text-se-400 border-se-500/50',
     'Distributed Systems': 'bg-orange-500/20 text-orange-400 border-orange-500/50',
@@ -453,16 +452,15 @@ function ProjectSection({ title, subtitle, projects }) {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold text-gray-200">{title}</h2>
-        <p className="text-xs text-gray-500">{subtitle}</p>
+        <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+        <p className="text-xs text-gray-400">{subtitle}</p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         {projects.map(p => (
           <Link
             key={p.id}
             to={`/project/${p.slug}`}
-            className="flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 rounded-xl border border-surface-600 bg-surface-800
-                       hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
+            className="flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 rounded-xl border border-surface-600 bg-surface-800 hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
           >
             <div className="flex-1 space-y-1">
               <div className="flex items-center gap-2">
@@ -484,7 +482,7 @@ function ProjectSection({ title, subtitle, projects }) {
           </Link>
         ))}
       </div>
-      <Link to="/projects" className="inline-block text-xs text-gray-500 hover:text-gray-300 transition-colors">
+      <Link to="/projects" className="inline-block text-xs text-gray-400 hover:text-gray-300 transition-colors">
         View all projects catalog →
       </Link>
     </section>
@@ -530,7 +528,7 @@ function TestimonialsStrip() {
     <section className="space-y-6 py-4">
       <div className="text-center">
         <h2 className="text-lg font-bold text-white">What developers are saying</h2>
-        <p className="text-xs text-gray-500">Real feedback from our community</p>
+        <p className="text-xs text-gray-400">Real feedback from our community</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -590,7 +588,7 @@ function TestimonialCard({ review }) {
 
       <div className="pt-4 border-t border-surface-700/50">
         <div className="font-bold text-sm text-white">{review.first_name}</div>
-        <div className="text-[11px] text-gray-500 uppercase tracking-widest">{review.occupation}</div>
+        <div className="text-[11px] text-gray-400 uppercase tracking-widest">{review.occupation}</div>
         <div className="mt-2 text-[10px] text-blue-400 font-medium">
           Explored {review.concepts_seen_count} concepts
         </div>
@@ -604,7 +602,7 @@ function TestimonialCard({ review }) {
 function AchievementsSection({ concepts }) {
   const getCompletedDomains = useProgressStore(s => s.getCompletedDomains)
   const completionDates = useProgressStore(s => s.completion_dates)
-  const userName = useAuthStore(s => s.userName)
+  const [userName, setUserName] = useState(() => getLearnerName())
   
   const completed = getCompletedDomains(concepts)
   const [modalOpen, setModalOpen] = useState(false)
@@ -625,6 +623,8 @@ function AchievementsSection({ concepts }) {
   }
 
   const handleNameSubmit = (name) => {
+    setLearnerName(name)
+    setUserName(name)
     setModalOpen(false)
     if (pendingDomain) {
       const count = concepts.filter(c => c.domain === pendingDomain).length
@@ -638,8 +638,8 @@ function AchievementsSection({ concepts }) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-gray-200">Your Achievements</h2>
-          <p className="text-xs text-gray-500">Mastery certificates for completed domains</p>
+          <h2 className="text-sm font-semibold text-gray-300">Your Achievements</h2>
+          <p className="text-xs text-gray-400">Mastery certificates for completed domains</p>
         </div>
         <Link to="/certificates" className="text-xs text-blue-400 hover:text-blue-300">
           View All →
@@ -657,7 +657,7 @@ function AchievementsSection({ concepts }) {
                   <span className="text-yellow-400 text-lg">✦</span>
                   <div className="font-bold text-white text-sm">{domain}</div>
                 </div>
-                <div className="text-[10px] text-gray-500 font-medium">
+                <div className="text-[10px] text-gray-400 font-medium">
                   {new Date(date).toLocaleDateString()}
                 </div>
               </div>
@@ -693,7 +693,7 @@ function DailyConceptCard({ concepts, viewedSlugs, progress }) {
     if (hidden) {
       return (
         <div className="text-center py-4 border border-surface-700/50 rounded-xl bg-surface-800/30">
-          <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">See tomorrow's concept after midnight ✺</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">See tomorrow's concept after midnight ✺</p>
         </div>
       )
     }
@@ -705,6 +705,7 @@ function DailyConceptCard({ concepts, viewedSlugs, progress }) {
   const DOMAIN_ACCENT = {
     DSA: 'border-dsa-500',
     ML: 'border-ml-500',
+    AI: 'border-ai-500',
     Frontend: 'border-frontend-500',
     Backend: 'border-backend-500',
     'Software Engineering': 'border-se-500',
@@ -725,7 +726,7 @@ function DailyConceptCard({ concepts, viewedSlugs, progress }) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black bg-gray-700 text-gray-300 px-2 py-0.5 rounded tracking-tighter">DAILY CONCEPT</span>
-            <span className="text-[10px] text-gray-500 font-bold">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+            <span className="text-[10px] text-gray-400 font-bold">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2 text-left">
             {concept.title}
@@ -735,7 +736,7 @@ function DailyConceptCard({ concepts, viewedSlugs, progress }) {
         </div>
         <button 
           onClick={handleSkip}
-          className="text-gray-600 hover:text-gray-400 text-xs font-bold uppercase tracking-widest transition-colors shrink-0 ml-4"
+          className="text-gray-400 hover:text-gray-400 text-xs font-bold uppercase tracking-widest transition-colors shrink-0 ml-4"
         >
           Skip today
         </button>
@@ -786,31 +787,30 @@ function MathTricksSection() {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold text-gray-200">Explore Mathematics</h2>
-        <p className="text-xs text-gray-500">Beautiful math, brought to life with Python</p>
+        <h2 className="text-sm font-semibold text-gray-300">Explore Mathematics</h2>
+        <p className="text-xs text-gray-400">Beautiful math, brought to life with Python</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {featured.map(trick => (
           <Link
             key={trick.id}
             to={`/math/${trick.slug}`}
-            className="flex flex-col gap-2 px-4 py-3 rounded-xl border border-surface-600 bg-surface-800
-                       hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
+            className="flex flex-col gap-2 px-4 py-3 rounded-xl border border-surface-600 bg-surface-800 hover:border-surface-400 hover:bg-surface-700 transition-all duration-100 group"
           >
             <div className="flex items-center gap-2">
               <span className={`text-[9px] font-bold uppercase tracking-tight px-1.5 py-0.5 rounded ${MATH_CAT_BADGE[trick.category] ?? 'bg-gray-500/10 text-gray-400'}`}>
                 {trick.category.split(' ')[0]}
               </span>
-              <span className="text-[9px] text-gray-500">{trick.visualization_type}</span>
+              <span className="text-[9px] text-gray-400">{trick.visualization_type}</span>
             </div>
-            <span className="text-sm font-semibold text-gray-200 group-hover:text-white transition-colors">
+            <span className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors">
               {trick.title}
             </span>
-            <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{trick.tagline}</p>
+            <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{trick.tagline}</p>
           </Link>
         ))}
       </div>
-      <Link to="/math" className="inline-block text-xs text-gray-500 hover:text-gray-300 transition-colors">
+      <Link to="/math" className="inline-block text-xs text-gray-400 hover:text-gray-300 transition-colors">
         Explore all {mathTricks.length} math tricks →
       </Link>
     </section>

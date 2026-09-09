@@ -81,7 +81,7 @@ export default function MathTrick() {
 
   if (!trick) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-sm">
+      <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">
         Trick not found.{' '}
         <Link to="/math" className="text-violet-400 hover:underline ml-1">Browse all →</Link>
       </div>
@@ -117,7 +117,7 @@ function LeftPanel({ trick }) {
     <div className="lg:w-[40%] lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:overflow-y-auto border-r border-surface-700/50 px-6 py-8 sm:px-8 space-y-6">
 
       {/* Back */}
-      <Link to="/math" className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors">
+      <Link to="/math" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-300 transition-colors">
         ← Math Tricks
       </Link>
 
@@ -144,7 +144,7 @@ function LeftPanel({ trick }) {
 
       {/* Explanation */}
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Explanation</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Explanation</h2>
         <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
           {trick.explanation.split('\n').filter(Boolean).map((para, i) => (
             <p key={i}>{para.trim()}</p>
@@ -154,7 +154,7 @@ function LeftPanel({ trick }) {
 
       {/* Why it's beautiful */}
       <div>
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Why it's beautiful</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Why it's beautiful</h2>
         <blockquote className="border-l-2 border-violet-500/50 pl-4 italic text-sm text-gray-400 leading-relaxed">
           {trick.wow_factor}
         </blockquote>
@@ -163,7 +163,7 @@ function LeftPanel({ trick }) {
       {/* Tags */}
       <div className="flex flex-wrap gap-1.5">
         {trick.tags.map(tag => (
-          <span key={tag} className="text-[10px] text-gray-600 bg-surface-800 border border-surface-700 px-2 py-0.5 rounded-full">
+          <span key={tag} className="text-[10px] text-gray-400 bg-surface-800 border border-surface-700 px-2 py-0.5 rounded-full">
             #{tag}
           </span>
         ))}
@@ -290,7 +290,7 @@ function RightPanel({ trick, navigate }) {
       {/* ── Interactive sliders ── */}
       {trick.visualization_type === 'interactive' && (
         <div className="bg-surface-800 border border-surface-700 rounded-xl p-4 space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Parameters</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Parameters</p>
           {trick.interactive_config.sliders.map(slider => (
             <SliderControl
               key={slider.id}
@@ -309,7 +309,7 @@ function RightPanel({ trick, navigate }) {
         {isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0f1117]/90 z-10 gap-3">
             <Spinner />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               {pyStatus === 'loading' ? 'Loading Python runtime…' : 'Running visualization…'}
             </p>
           </div>
@@ -333,7 +333,7 @@ function RightPanel({ trick, navigate }) {
 
         {/* Empty state */}
         {!error && !currentImage && !isLoading && (
-          <div className="flex items-center justify-center min-h-[300px] text-gray-700 text-sm">
+          <div className="flex items-center justify-center min-h-[300px] text-gray-300 text-sm">
             No output yet
           </div>
         )}
@@ -374,7 +374,7 @@ function RightPanel({ trick, navigate }) {
             />
           </div>
 
-          <span className="text-[10px] text-gray-500 tabular-nums">
+          <span className="text-[10px] text-gray-400 tabular-nums">
             {currentFrame + 1}/{frames.length}
           </span>
         </div>
@@ -405,13 +405,13 @@ function RightPanel({ trick, navigate }) {
       {/* ── Python code viewer ── */}
       <div className="bg-[#0a0a0f] border border-surface-700 rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-700/50">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
             <PythonIcon className="w-3.5 h-3.5 text-blue-400" />
             Python · Pyodide
           </div>
           <button
             onClick={copyCode}
-            className="text-[10px] font-medium text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1"
+            className="text-[10px] font-medium text-gray-400 hover:text-gray-300 transition-colors flex items-center gap-1"
           >
             {copied ? '✓ Copied' : '⧉ Copy'}
           </button>
@@ -455,7 +455,7 @@ function SliderControl({ slider, value, onChange }) {
         onChange={e => onChange(Number(e.target.value))}
         className="w-full h-1.5 accent-violet-500 cursor-pointer"
       />
-      <div className="flex justify-between text-[10px] text-gray-600">
+      <div className="flex justify-between text-[10px] text-gray-400">
         <span>{slider.min}</span>
         <span>{slider.max}</span>
       </div>

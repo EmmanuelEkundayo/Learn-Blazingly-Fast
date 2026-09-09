@@ -141,7 +141,7 @@ export default function AdminReviewModal({ isOpen, onClose }) {
               )}
               <button
                 onClick={onClose}
-                className="p-1 rounded-lg text-gray-500 hover:text-white hover:bg-surface-800 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-surface-800 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -196,11 +196,11 @@ export default function AdminReviewModal({ isOpen, onClose }) {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-3">
                 {loading ? (
-                  <div className="py-16 flex justify-center text-gray-500">
+                  <div className="py-16 flex justify-center text-gray-400">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : shown.length === 0 ? (
-                  <div className="py-16 text-center text-gray-500">
+                  <div className="py-16 text-center text-gray-400">
                     {filter === 'pending' ? 'No pending reviews. New submissions will appear here for approval.' : filter === 'approved' ? 'No approved reviews yet.' : 'No reviews yet.'}
                   </div>
                 ) : (
@@ -210,14 +210,14 @@ export default function AdminReviewModal({ isOpen, onClose }) {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-white text-sm">{rev.name}</span>
-                            <span className="text-xs text-gray-500">{rev.occupation}</span>
+                            <span className="text-xs text-gray-400">{rev.occupation}</span>
                             {rev.approved ? (
                               <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600/20 text-emerald-400 font-semibold">APPROVED · LIVE</span>
                             ) : (
                               <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/20 text-amber-400 font-semibold">PENDING</span>
                             )}
                           </div>
-                          <div className="text-[10px] text-gray-600 mt-0.5">
+                          <div className="text-[10px] text-gray-400 mt-0.5">
                             {new Date(rev.submitted_at).toLocaleString()} · {rev.concepts_seen_count} concepts
                           </div>
                         </div>

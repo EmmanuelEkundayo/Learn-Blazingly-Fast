@@ -103,7 +103,7 @@ function RoadmapCard({ roadmap, progress }) {
         <div className="space-y-2 mb-6">
           <h3 className="text-xl font-bold text-white group-hover:translate-x-1 transition-transform inline-flex items-center gap-2">
             {roadmap.title}
-            <span className="text-gray-600 font-normal">→</span>
+            <span className="text-gray-400 font-normal">→</span>
           </h3>
           <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
             {roadmap.description}
@@ -111,7 +111,7 @@ function RoadmapCard({ roadmap, progress }) {
         </div>
 
         <div className="mt-auto space-y-4">
-          <div className="flex items-center gap-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+          <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
             <span className="flex items-center gap-1.5"><ClockIcon className="w-3 h-3" /> {roadmap.estimated_weeks} weeks</span>
             <span className="flex items-center gap-1.5"><BookIcon className="w-3 h-3" /> {roadmap.phases.reduce((acc, p) => acc + p.concepts.length, 0)} concepts</span>
           </div>
@@ -122,7 +122,7 @@ function RoadmapCard({ roadmap, progress }) {
               <span className={progress.percentage > 0 ? 'text-white' : 'text-gray-600'}>
                 {progress.percentage}% COMPLETE
               </span>
-              <span className="text-gray-600">{progress.completed}/{progress.total}</span>
+              <span className="text-gray-400">{progress.completed}/{progress.total}</span>
             </div>
             <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
               <motion.div 

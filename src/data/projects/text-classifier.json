@@ -2,7 +2,7 @@
   "id": "text-classifier",
   "slug": "text-classifier",
   "title": "Zero-Shot Text Classifier",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "beginner",
   "stack": [
     "Python",

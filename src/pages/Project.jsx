@@ -10,7 +10,7 @@ import { getProjectMeta } from '../utils/seo'
 const CAT_COLORS = {
   'Frontend':           'bg-frontend-500/20 text-frontend-400 border-frontend-500/50',
   'Backend':            'bg-backend-500/20 text-backend-400 border-backend-500/50',
-  'AI-ML':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
+  'AI':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
   'Full-stack':         'bg-dsa-500/20 text-dsa-400 border-dsa-500/50',
   'Web Scraping':       'bg-se-500/20 text-se-400 border-se-500/50',
   'Distributed Systems': 'bg-orange-500/20 text-orange-400 border-orange-500/50',
@@ -19,6 +19,7 @@ const CAT_COLORS = {
 const DOMAIN_CHIPS = {
   'DSA':                  'bg-dsa-600/20 text-dsa-400',
   'ML':                   'bg-ml-500/20 text-ml-400',
+  'AI':                   'bg-ai-500/20 text-ai-400',
   'Frontend':             'bg-frontend-500/20 text-frontend-400',
   'Backend':              'bg-backend-500/20 text-backend-400',
   'Software Engineering': 'bg-se-500/20 text-se-400',
@@ -55,7 +56,7 @@ export default function Project() {
       <div className="space-y-4">
         <button 
           onClick={() => navigate(-1)}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+          className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
         >
           ← Back
         </button>
@@ -66,7 +67,7 @@ export default function Project() {
               <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${colorClass}`}>
                 {project.category}
               </span>
-              <span className="text-xs text-gray-500 font-medium">{project.estimated_time}</span>
+              <span className="text-xs text-gray-400 font-medium">{project.estimated_time}</span>
             </div>
             <h1 className="text-4xl font-bold text-white leading-tight">{project.title}</h1>
             <div className="flex flex-wrap gap-2">
@@ -190,7 +191,7 @@ export default function Project() {
 function Section({ title, children }) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500">{title}</h3>
+      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">{title}</h3>
       {children}
     </div>
   )

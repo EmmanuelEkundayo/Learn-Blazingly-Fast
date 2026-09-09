@@ -115,7 +115,7 @@ export default function TraceOutput({
               <span className="text-cyan-300">Input: {exercise.input_case}</span>
             )}
           </div>
-          <pre className="p-4 text-gray-200 overflow-x-auto leading-relaxed whitespace-pre">
+          <pre className="p-4 text-gray-300 overflow-x-auto leading-relaxed whitespace-pre">
             {codeSnippet}
           </pre>
         </div>
@@ -124,7 +124,7 @@ export default function TraceOutput({
       {/* Multiple-Choice or Input Mode */}
       {isMultipleChoice ? (
         <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
-          <label className="text-sm font-semibold text-gray-200">
+          <label className="text-sm font-semibold text-gray-300">
             Select the correct output:
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -163,7 +163,7 @@ export default function TraceOutput({
         </div>
       ) : (
         <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
-          <label className="text-sm font-semibold text-gray-200">
+          <label className="text-sm font-semibold text-gray-300">
             Type the expected output:
           </label>
           <div className="flex gap-3">
@@ -254,7 +254,7 @@ export default function TraceOutput({
           {submitted && !isCorrect && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-200 hover:bg-surface-600 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-300 hover:bg-surface-600 transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" /> Try Again
             </button>

@@ -54,7 +54,7 @@ export default function StateDiagram({ config = {} }) {
 
   if (states.length === 0) {
     return (
-      <div className="rounded-lg border border-surface-600 bg-surface-800 min-h-[200px] flex items-center justify-center text-gray-600 text-sm">
+      <div className="rounded-lg border border-surface-600 bg-surface-800 min-h-[200px] flex items-center justify-center text-gray-400 text-sm">
         No states config provided.
       </div>
     )

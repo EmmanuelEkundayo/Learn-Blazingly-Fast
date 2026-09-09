@@ -85,13 +85,13 @@ export default function StepControls({
         </button>
 
         {/* Step counter */}
-        <span className="ml-1 text-xs text-gray-500 font-mono tabular-nums">
+        <span className="ml-1 text-xs text-gray-400 font-mono tabular-nums">
           {step + 1} / {totalSteps}
         </span>
 
         {/* Speed picker */}
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-xs text-gray-500">Speed</span>
+          <span className="text-xs text-gray-400">Speed</span>
           {SPEEDS.map((s) => (
             <button
               key={s}

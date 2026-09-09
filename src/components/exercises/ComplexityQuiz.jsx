@@ -94,7 +94,7 @@ export default function ComplexityQuiz({
 
         {/* Code Snippet if provided */}
         {codeSnippet && (
-          <div className="mt-4 rounded-lg bg-surface-900 border border-surface-700 p-4 font-mono text-xs text-gray-200 overflow-x-auto">
+          <div className="mt-4 rounded-lg bg-surface-900 border border-surface-700 p-4 font-mono text-xs text-gray-300 overflow-x-auto">
             <pre>{codeSnippet}</pre>
           </div>
         )}
@@ -127,7 +127,7 @@ export default function ComplexityQuiz({
         {/* Time Complexity Options */}
         <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-gray-200">
+            <label className="text-sm font-semibold text-gray-300">
               ⏱️ Time Complexity
             </label>
             {submitted && (
@@ -174,7 +174,7 @@ export default function ComplexityQuiz({
         {/* Space Complexity Options */}
         <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-gray-200">
+            <label className="text-sm font-semibold text-gray-300">
               💾 Space Complexity
             </label>
             {submitted && (
@@ -285,7 +285,7 @@ export default function ComplexityQuiz({
           {submitted && !allPassed && (
             <button
               onClick={handleReset}
-              className="px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-200 hover:bg-surface-600 transition-all"
+              className="px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-300 hover:bg-surface-600 transition-all"
             >
               Retry
             </button>

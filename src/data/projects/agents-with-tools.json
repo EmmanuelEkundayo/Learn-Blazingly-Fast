@@ -2,7 +2,7 @@
   "id": "agents-with-tools",
   "slug": "agents-with-tools",
   "title": "Autonomous AI Agents",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "advanced",
   "stack": [
     "Python",

@@ -78,7 +78,7 @@ export default function MathTricks() {
           </p>
 
           {/* Stats row */}
-          <div className="flex justify-center gap-6 mt-6 text-sm text-gray-500">
+          <div className="flex justify-center gap-6 mt-6 text-sm text-gray-400">
             <span><span className="text-white font-semibold">{mathTricks.length}</span> tricks</span>
             <span><span className="text-amber-400 font-semibold">{counts.animated}</span> animated</span>
             <span><span className="text-teal-400 font-semibold">{counts.interactive}</span> interactive</span>
@@ -133,7 +133,7 @@ export default function MathTricks() {
         </motion.div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-20 text-gray-600 text-sm">
+          <div className="text-center py-20 text-gray-400 text-sm">
             No tricks match the selected filters.
           </div>
         )}
@@ -179,7 +179,7 @@ function TrickCard({ trick, index }) {
         </p>
 
         {/* Wow factor preview */}
-        <p className="text-[10px] text-gray-500 italic line-clamp-2 mb-3 leading-relaxed border-l-2 border-surface-600 pl-2">
+        <p className="text-[10px] text-gray-400 italic line-clamp-2 mb-3 leading-relaxed border-l-2 border-surface-600 pl-2">
           {trick.wow_factor}
         </p>
 
@@ -188,7 +188,7 @@ function TrickCard({ trick, index }) {
           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${DIFF_BADGE[trick.difficulty]}`}>
             {trick.difficulty}
           </span>
-          <span className="text-gray-600 text-xs group-hover:text-gray-400 transition-colors">Explore →</span>
+          <span className="text-gray-400 text-xs group-hover:text-gray-400 transition-colors">Explore →</span>
         </div>
       </Link>
     </motion.div>

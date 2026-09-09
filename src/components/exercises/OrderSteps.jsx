@@ -256,7 +256,7 @@ export default function OrderSteps({
           {submitted && !isCorrect && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-200 hover:bg-surface-600 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-300 hover:bg-surface-600 transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" /> Re-shuffle & Retry
             </button>

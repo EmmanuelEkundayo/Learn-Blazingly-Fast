@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
@@ -31,17 +31,6 @@
     />
   </head>
   <body>
-    <script>
-      (function() {
-        try {
-          var stored = JSON.parse(localStorage.getItem('lbf-theme'));
-          var theme = stored && stored.state && stored.state.theme || 'dark';
-          document.documentElement.classList.add(theme);
-        } catch(e) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script data-goatcounter="https://learnblazinglyfast.goatcounter.com/count"

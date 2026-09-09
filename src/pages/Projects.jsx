@@ -9,7 +9,7 @@ const CATEGORIES = [
   'All', 
   'Frontend', 
   'Backend', 
-  'AI-ML', 
+  'AI', 
   'Full-stack', 
   'Web Scraping', 
   'Distributed Systems'
@@ -18,7 +18,7 @@ const CATEGORIES = [
 const CAT_COLORS = {
   'Frontend':           'bg-frontend-500/20 text-frontend-400 border-frontend-500/50',
   'Backend':            'bg-backend-500/20 text-backend-400 border-backend-500/50',
-  'AI-ML':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
+  'AI':              'bg-ml-500/20 text-ml-400 border-ml-500/50',
   'Full-stack':         'bg-dsa-500/20 text-dsa-400 border-dsa-500/50',
   'Web Scraping':       'bg-se-500/20 text-se-400 border-se-500/50',
   'Distributed Systems': 'bg-orange-500/20 text-orange-400 border-orange-500/50',
@@ -27,7 +27,7 @@ const CAT_COLORS = {
 const CAT_ACCENTS = {
   'Frontend':           'text-frontend-400',
   'Backend':            'text-backend-400',
-  'AI-ML':              'text-ml-400',
+  'AI':              'text-ml-400',
   'Full-stack':         'text-dsa-400',
   'Web Scraping':       'text-se-400',
   'Distributed Systems': 'text-orange-400',
@@ -54,7 +54,7 @@ export default function Projects() {
 
         <div className="flex flex-col sm:flex-row gap-3 min-w-[300px]">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search projects..."
@@ -82,7 +82,7 @@ export default function Projects() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-20 text-gray-500">
+        <div className="text-center py-20 text-gray-400">
           No projects found matching your criteria.
         </div>
       )}
@@ -110,7 +110,7 @@ function ProjectCard({ project }) {
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colorClass}`}>
             {project.category}
           </span>
-          <span className="text-xs text-gray-500">{project.estimated_time}</span>
+          <span className="text-xs text-gray-400">{project.estimated_time}</span>
         </div>
 
         <h3 className="text-lg font-bold text-gray-100 group-hover:text-white mb-2 transition-colors">

@@ -2,7 +2,7 @@
   "id": "recommendation-engine",
   "slug": "recommendation-engine",
   "title": "Movie Recommendation Engine",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "advanced",
   "stack": [
     "Python",

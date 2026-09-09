@@ -77,6 +77,8 @@ function domainAccent(domain) {
       return { text: 'text-dsa-400',      border: 'border-dsa-500',      ring: 'hover:border-dsa-500      hover:text-dsa-300'      }
     case 'ML':
       return { text: 'text-ml-400',       border: 'border-ml-500',       ring: 'hover:border-ml-400       hover:text-ml-300'       }
+    case 'AI':
+      return { text: 'text-ai-400',       border: 'border-ai-500',       ring: 'hover:border-ai-400       hover:text-ai-300'       }
     case 'Frontend':
       return { text: 'text-frontend-400', border: 'border-frontend-500', ring: 'hover:border-frontend-500 hover:text-frontend-300' }
     case 'Backend':
@@ -139,7 +141,7 @@ export default function Concept() {
     }
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500 font-mono text-sm mb-3">/{slug}</p>
+        <p className="text-gray-400 font-mono text-sm mb-3">/{slug}</p>
         <h1 className="text-2xl font-bold mb-4">Concept not found</h1>
         <Link to="/browse" className="text-gray-400 hover:underline text-sm">
           ← Browse all concepts
@@ -189,14 +191,14 @@ export default function Concept() {
              <div>
                <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Following Roadmap</p>
                <p className="text-sm font-bold text-white">
-                 {activeRoadmap.title} <span className="text-gray-600 mx-1">•</span> 
+                 {activeRoadmap.title} <span className="text-gray-400 mx-1">•</span> 
                  <span className="text-gray-400 font-normal">Phase {activeRoadmap.phases.indexOf(currentPhase) + 1} of {activeRoadmap.phases.length}</span>
                </p>
              </div>
           </div>
           <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-start border-t sm:border-t-0 border-surface-700 pt-3 sm:pt-0">
              <div className="text-right">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Path Progress</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Path Progress</p>
                 <div className="flex items-center gap-2">
                    <div className="w-20 h-1.5 bg-black/40 rounded-full overflow-hidden">
                       <div className="h-full bg-blue-500" style={{ width: `${roadmapProgress.percentage}%` }} />
@@ -206,7 +208,7 @@ export default function Concept() {
              </div>
              <Link 
                to={`/roadmaps/${activeRoadmap.slug}`}
-               className="px-4 py-2 bg-white text-black text-xs font-black rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg"
+               className="px-4 py-2 bg-surface-900 text-gray-100 text-xs font-black rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg"
              >
                View Path
              </Link>
@@ -220,13 +222,13 @@ export default function Concept() {
       <header className="flex flex-wrap items-center gap-2 mb-5">
         <Link
           to="/browse"
-          className="text-gray-500 hover:text-gray-300 text-sm transition-colors flex items-center gap-1"
+          className="text-gray-400 hover:text-gray-300 text-sm transition-colors flex items-center gap-1"
         >
           ← Back
         </Link>
-        <span className="text-gray-700 select-none">|</span>
+        <span className="text-gray-300 select-none">|</span>
         <span className={`text-sm font-semibold ${accent.text}`}>{domain}</span>
-        <span className="text-gray-700 select-none text-xs">›</span>
+        <span className="text-gray-300 select-none text-xs">›</span>
         <span className="text-sm text-gray-400">{category}</span>
         <span className={`ml-auto text-xs px-2 py-0.5 rounded border font-medium ${DIFF_STYLE[difficulty]}`}>
           {difficulty}
@@ -292,7 +294,7 @@ export default function Concept() {
         <section>
           <SectionLabel className="mb-3">
             Visualization
-            <span className="ml-2 text-gray-600 font-normal normal-case tracking-normal font-mono text-xs">
+            <span className="ml-2 text-gray-400 font-normal normal-case tracking-normal font-mono text-xs">
               {visualization?.type}
             </span>
           </SectionLabel>
@@ -326,7 +328,7 @@ export default function Concept() {
               onConfidence={handleConfidence}
             />
           ) : (
-            <p className="text-gray-500 text-sm font-mono">
+            <p className="text-gray-400 text-sm font-mono">
               Exercise type <code className="text-gray-400">{exercise?.type}</code> — coming soon.
             </p>
           )}
@@ -377,7 +379,7 @@ export default function Concept() {
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-gray-500 font-mono border border-surface-600"
+                  className="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-gray-400 font-mono border border-surface-600"
                 >
                   {tag}
                 </span>
@@ -449,19 +451,19 @@ function ShareMenu({ concept, accent }) {
           >
             <button 
               onClick={() => generateShareCard(cardRef.current, concept.slug)}
-              className="w-full px-4 py-2.5 text-sm text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-sm text-left text-gray-300 hover:bg-surface-700 transition-colors flex items-center gap-2"
             >
               <ImageIcon className="w-4 h-4" /> Download Card
             </button>
             <button 
               onClick={handleCopy}
-              className="w-full px-4 py-2.5 text-sm text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-sm text-left text-gray-300 hover:bg-surface-700 transition-colors flex items-center gap-2"
             >
               <LinkIcon className="w-4 h-4" /> Copy Link
             </button>
             <button 
               onClick={handleXShare}
-              className="w-full px-4 py-2.5 text-sm text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-sm text-left text-gray-300 hover:bg-surface-700 transition-colors flex items-center gap-2"
             >
               <XIcon className="w-3.5 h-3.5" /> Share on X
             </button>
@@ -496,6 +498,7 @@ function HiddenShareCard({ concept }) {
   const DOMAIN_COLORS = {
     DSA: '#3b82f6',
     ML: '#f59e0b',
+    AI: '#06b6d4',
     Frontend: '#8b5cf6',
     Backend: '#10b981',
     'Software Engineering': '#f43f5e'
@@ -624,7 +627,7 @@ function PersonalNotes({ slug }) {
       <section className="mb-8">
         <button 
           onClick={() => setIsEditing(true)}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors bg-surface-800/50 border border-surface-700/50 px-4 py-3 rounded-xl w-full"
+          className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-300 transition-colors bg-surface-800/50 border border-surface-700/50 px-4 py-3 rounded-xl w-full"
         >
           <span className="text-lg">✎</span>
           <span>+ Add a personal note for this concept...</span>
@@ -648,11 +651,11 @@ function PersonalNotes({ slug }) {
              <div className="flex items-center gap-2 text-[10px]">
                <span className="text-red-400 font-bold uppercase tracking-widest">Are you sure?</span>
                <button onClick={handleDelete} className="text-white hover:underline">Yes</button>
-               <span className="text-gray-600">/</span>
-               <button onClick={() => setShowConfirm(false)} className="text-gray-500 hover:underline">Cancel</button>
+               <span className="text-gray-400">/</span>
+               <button onClick={() => setShowConfirm(false)} className="text-gray-400 hover:underline">Cancel</button>
              </div>
            ) : (
-             <button onClick={() => setShowConfirm(true)} className="text-gray-500 hover:text-red-400 opacity-60 hover:opacity-100 transition-all">
+             <button onClick={() => setShowConfirm(true)} className="text-gray-400 hover:text-red-400 opacity-60 hover:opacity-100 transition-all">
                <TrashIcon className="w-4 h-4" />
              </button>
            )}
@@ -665,7 +668,7 @@ function PersonalNotes({ slug }) {
             value={text}
             onChange={handleTextChange}
             placeholder="Write anything — intuitions, gotchas, connections to other concepts..."
-            className="w-full bg-surface-900 border border-surface-700 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-surface-600 min-h-[140px] resize-y"
+            className="w-full bg-surface-900 border border-surface-700 rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-surface-600 min-h-[140px] resize-y"
           />
           <div className="flex justify-end">
              <span className={`text-[10px] font-mono ${text.length > 4500 ? 'text-orange-500' : 'text-gray-600'}`}>
@@ -709,7 +712,7 @@ function PrerequisiteCard({ slug, getProgress }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         ) : (
-          <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         )}
@@ -722,7 +725,7 @@ function PrerequisiteCard({ slug, getProgress }) {
           {concept?.domain ?? 'Unknown'}
         </p>
       </div>
-      <span className="text-gray-600 text-xs shrink-0">
+      <span className="text-gray-400 text-xs shrink-0">
         {completed ? 'Completed' : 'Not done'}
       </span>
     </button>
@@ -742,7 +745,7 @@ function SectionLabel({ children, className = '' }) {
 function ComplexityBadge({ label, value }) {
   return (
     <div className="px-3 py-2.5 rounded-lg bg-surface-700 border border-surface-600">
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{label}</p>
       <p className={`font-mono font-semibold text-sm leading-none ${complexityColor(value)}`}>
         {value}
       </p>
@@ -769,8 +772,8 @@ function VizPlaceholder({ type }) {
   return (
     <div className="rounded-lg border border-surface-600 bg-surface-800 min-h-[400px] flex flex-col items-center justify-center gap-2">
       <span className="text-2xl opacity-30">⬡</span>
-      <span className="text-gray-500 text-sm font-mono">{type}</span>
-      <span className="text-gray-600 text-xs">visualization — coming in Step 3 expansion</span>
+      <span className="text-gray-400 text-sm font-mono">{type}</span>
+      <span className="text-gray-400 text-xs">visualization — coming in Step 3 expansion</span>
     </div>
   )
 }
@@ -809,6 +812,7 @@ function domainDot(domain) {
   return {
     DSA:                  'bg-dsa-400',
     ML:                   'bg-ml-400',
+    AI:                   'bg-ai-400',
     Frontend:             'bg-frontend-400',
     Backend:              'bg-backend-400',
     'Software Engineering': 'bg-se-400',

@@ -129,7 +129,7 @@ export default function SpotTheBug({
                 }}
                 className={`flex items-start rounded px-2.5 py-1 transition-colors border border-transparent ${lineClass}`}
               >
-                <span className="w-8 shrink-0 text-gray-500 select-none text-right pr-3 font-mono">
+                <span className="w-8 shrink-0 text-gray-400 select-none text-right pr-3 font-mono">
                   {lineNum}
                 </span>
                 <span className="whitespace-pre flex-1">{line || ' '}</span>
@@ -152,7 +152,7 @@ export default function SpotTheBug({
       {/* Multiple-Choice Options if present */}
       {options.length > 0 && (
         <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
-          <label className="text-sm font-semibold text-gray-200">
+          <label className="text-sm font-semibold text-gray-300">
             What is the bug causing the failure?
           </label>
           <div className="space-y-2">
@@ -265,7 +265,7 @@ export default function SpotTheBug({
           {submitted && !isCorrect && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-200 hover:bg-surface-600 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-600 bg-surface-700/80 text-xs font-semibold text-gray-300 hover:bg-surface-600 transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" /> Try Again
             </button>

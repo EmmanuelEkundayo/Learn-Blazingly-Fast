@@ -106,14 +106,14 @@
 
 ## New Features (2026-09-03)
 
-1. **Authentication System**:
-   - JWT-based auth with httpOnly cookies (`server/auth.js`).
-   - Register, login, logout, profile update endpoints.
-   - `requireAuth` and `optionalAuth` middleware (`server/middleware.js`).
-   - Database abstraction layer (`server/store.js`) — JSON-file-backed Store class.
-   - Frontend `AuthModal` component with Sign In / Sign Up tabs.
-   - `authStore.js` upgraded to use API calls with backward compatibility.
-   - Reviews now require authentication; leaderboard supports optional auth.
+1. **Auth removed entirely (2026-09-09)**:
+   - No sign-in/sign-up anywhere. Deleted `server/auth.js`, `server/middleware.js`, `server/store.js` (were JWT + bcrypt + httpOnly cookies).
+   - Deleted `src/store/authStore.js` + `src/components/ui/AuthModal.jsx`; removed user menu, Sign In button, and `Ctrl`-driven auth from `Layout.jsx`.
+   - Reviews POST is now public (no auth); the SupportModal form collects name/email/phone/occupation directly.
+   - Progress lives purely in localStorage (`syncToServer`/`syncFromServer` removed from `progressStore.js`).
+   - Leaderboard opt-in collects first name + email + occupation locally; toast "Join" routes to `/leaderboard`.
+   - Certificates/roadmaps ask for the certificate name once (persisted via `src/utils/learnerName.js`).
+   - Server CORS now allows `x-admin-token` header. `REVIEWS_ADMIN_TOKEN` env var added to `.env.example`.
 
 2. **Mobile Responsive Polish**:
    - Visualization components (ArrayBars, GraphCanvas) scale down on mobile.
@@ -147,20 +147,16 @@
    - Per-page meta: Home, Concept, Browse, CheatSheet, Projects, Roadmaps, Playground, Leaderboard, Math.
    - Dynamic meta for concept/project/cheatsheet/roadmap detail pages.
 
-8. **Dark/Light Theme Toggle**:
-   - Zustand store (`src/store/themeStore.js`) with localStorage persistence.
-   - CSS custom properties switch surface colors based on `.dark` class on `<html>`.
-   - Flash-prevention script in `index.html` reads theme before React renders.
-   - `ThemeToggle` button in Layout header (Sun/Moon icons from lucide-react).
-   - Tailwind `darkMode: 'class'` strategy; light theme defaults, dark overrides.
+8. **Dark Theme Only (2026-09-09)**:
+   - Light theme removed entirely; navbar never white.
+   - Theme colors moved from `.dark` class to `:root` (dark surfaces + `color-scheme: dark`).
+   - Deleted `src/store/themeStore.ts` + `src/components/ui/ThemeToggle.tsx`; removed dark mode flash script from `index.html`.
+   - Strip-light script transformed 44 files; `dark:` classes remain only inside `src/data/cheatsheets/*` (educational code examples).
+   - Deliberate design accents kept: `bg-white/10` overlays in OnboardingTour, `bg-white text-black` CTAs in Roadmaps/Home.
 
-9. **Progress Sync to Auth**:
-   - Server endpoints: `GET /api/progress` and `PUT /api/progress` (require auth).
-   - Progress saved per-user in `server/data/progress/<email>.json`.
-   - Debounced sync (2s) after `recordAttempt` and `markViewed` when logged in.
-   - Merge strategy: server wins if it has more passed exercises.
-   - `syncFromServer()` called on auth init in `App.jsx`.
-   - localStorage remains primary; server sync is supplementary.
+9. **AI as a Separate Section (2026-09-09)**:
+   - AI (cyan) added to Browse filter pills, domain color maps (Concept/Home/Notes/Project/SearchPalette), Tailwind palette, and CSS var `--domain-ai`.
+   - Project category `AI-ML` renamed to `AI`; concepts `AI/ML` → `AI` normalized. 498 concepts validate.
 
 10. **Dynamic OG Images**:
     - `api/og.js` Vercel serverless function generates SVG-based OG images.
@@ -232,7 +228,7 @@ npm run test:e2e                     # Playwright E2E tests (16 tests)
 > Almost feature-complete. Remaining work is incremental polish.
 
 ### High Priority (Product Completeness)
-- [ ] **Concept progress persistence** — `progressStore.js` uses localStorage; lost on clear. Auth progress sync not yet implemented.
+- [x] **Concept progress persistence** — progress is localStorage-only by design (account sync removed 2026-09-09).
 - [ ] **TypeScript migration** — infra set up, only 3 example files converted. Continue converting `src/utils/*`, `src/store/*`, `src/components/ui/*` next.
 
 ### Medium Priority (UX)

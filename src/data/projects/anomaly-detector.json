@@ -2,7 +2,7 @@
   "id": "anomaly-detector",
   "slug": "anomaly-detector",
   "title": "AI Anomaly Detector",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "intermediate",
   "stack": [
     "Python",

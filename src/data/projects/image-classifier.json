@@ -2,7 +2,7 @@
   "id": "image-classifier",
   "slug": "image-classifier",
   "title": "CIFAR-10 Image Classifier",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "intermediate",
   "stack": [
     "Python",

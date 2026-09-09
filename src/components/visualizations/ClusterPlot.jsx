@@ -266,13 +266,13 @@ export default function ClusterPlot({ config = {} }) {
     <div className="flex flex-col gap-3">
       {/* Stats */}
       <div className="flex items-center gap-3 text-xs font-mono px-3 py-2 rounded bg-surface-700 border border-surface-600">
-        <span className="text-gray-500">mode:</span>
+        <span className="text-gray-400">mode:</span>
         <span className="text-dsa-400 font-bold">{config.mode || 'k-means'}</span>
-        <span className="text-gray-600">|</span>
-        <span className="text-gray-500">step:</span>
+        <span className="text-gray-400">|</span>
+        <span className="text-gray-400">step:</span>
         <span className="text-dsa-400 font-bold">{iterNum}</span>
-        <span className="text-gray-600">|</span>
-        <span className="text-gray-500">points:</span>
+        <span className="text-gray-400">|</span>
+        <span className="text-gray-400">points:</span>
         <span className="text-gray-300 font-bold">{cur.points.length}</span>
       </div>
 

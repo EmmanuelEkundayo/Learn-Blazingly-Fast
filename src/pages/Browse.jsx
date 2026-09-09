@@ -62,13 +62,13 @@ export default function Browse() {
       {/* ── Page title ── */}
       <div className="flex items-baseline gap-3">
         <h1 className="text-xl font-bold">Browse</h1>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-gray-400">
           {hasActiveFilter ? `${totalShown} of ${totalAll}` : totalAll} concepts
         </span>
         {hasActiveFilter && (
           <button
             onClick={clearFilters}
-            className="ml-auto text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            className="ml-auto text-xs text-gray-400 hover:text-gray-300 transition-colors"
           >
             Clear filters ×
           </button>
@@ -87,11 +87,11 @@ export default function Browse() {
               placeholder="Search by title or tag…"
               className="w-full bg-surface-800 border border-surface-600 rounded-lg px-3 py-2.5 pl-9 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-surface-400 transition-colors"
             />
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-sm leading-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 text-sm leading-none"
               >
                 ×
               </button>
@@ -111,7 +111,7 @@ export default function Browse() {
         {/* Row 2: domain + difficulty pills (scrollable on mobile) */}
         <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
           <PillGroup
-            options={['All', 'DSA', 'ML', 'Frontend', 'Backend', 'Software Engineering']}
+            options={['All', 'DSA', 'ML', 'AI', 'Frontend', 'Backend', 'Software Engineering']}
             labels={{ 'Software Engineering': 'SE' }}
             value={domain}
             onChange={setDomain}
@@ -119,6 +119,7 @@ export default function Browse() {
             colorFn={v =>
               v === 'DSA'                  ? 'dsa'      :
               v === 'ML'                   ? 'ml'       :
+              v === 'AI'                   ? 'ai'       :
               v === 'Frontend'             ? 'frontend' :
               v === 'Backend'              ? 'backend'  :
               v === 'Software Engineering' ? 'se'       : null
@@ -170,9 +171,7 @@ function ConceptCard({ concept, prog }) {
   return (
     <Link
       to={`/concept/${slug}`}
-      className="group relative flex flex-col gap-3 p-4 rounded-xl border border-surface-600 bg-surface-800
-                 hover:border-surface-400 hover:bg-surface-700 hover:-translate-y-0.5
-                 transition-all duration-150 cursor-pointer"
+      className="group relative flex flex-col gap-3 p-4 rounded-xl border border-surface-600 bg-surface-800 hover:border-surface-400 hover:bg-surface-700 hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
     >
       {/* Domain + status row */}
       <div className="flex items-center justify-between">
@@ -185,7 +184,7 @@ function ConceptCard({ concept, prog }) {
         <p className="font-semibold text-sm text-gray-100 leading-snug group-hover:text-white transition-colors">
           {title}
         </p>
-        <p className="text-xs text-gray-500 mt-0.5">{category}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{category}</p>
       </div>
 
       {/* Difficulty pill */}
@@ -201,6 +200,7 @@ function ConceptCard({ concept, prog }) {
 const DOMAIN_BADGE_STYLE = {
   DSA:                  'bg-dsa-600/20 text-dsa-400',
   ML:                   'bg-ml-500/20 text-ml-400',
+  AI:                   'bg-ai-500/20 text-ai-400',
   Frontend:             'bg-frontend-500/20 text-frontend-400',
   Backend:              'bg-backend-500/20 text-backend-400',
   'Software Engineering': 'bg-se-500/20 text-se-400',
@@ -218,7 +218,7 @@ function DomainBadge({ domain }) {
 
 function StatusDot({ passed, viewed }) {
   if (passed)      return <span className="text-green-400 text-sm leading-none" title="Exercise passed">✓</span>
-  if (viewed)      return <span className="text-gray-500 text-base leading-none" title="Visited">•</span>
+  if (viewed)      return <span className="text-gray-400 text-base leading-none" title="Visited">•</span>
   return null
 }
 
@@ -240,6 +240,7 @@ function PillGroup({ options, labels = {}, value, onChange, colorFn, concepts = 
               ${active
                 ? color === 'dsa'      ? 'bg-dsa-600 text-white'
                 : color === 'ml'       ? 'bg-ml-500 text-white'
+                : color === 'ai'       ? 'bg-ai-600 text-white'
                 : color === 'frontend' ? 'bg-frontend-600 text-white'
                 : color === 'backend'  ? 'bg-backend-600 text-white'
                 : color === 'se'       ? 'bg-se-600 text-white'
@@ -269,7 +270,7 @@ function EmptyState({ query, onClear }) {
       <span className="text-3xl opacity-20">⬡</span>
       <p className="text-gray-400 font-medium">No concepts match your filters.</p>
       {query && (
-        <p className="text-gray-500 text-sm">No results for "{query}".</p>
+        <p className="text-gray-400 text-sm">No results for "{query}".</p>
       )}
       <button
         onClick={onClear}

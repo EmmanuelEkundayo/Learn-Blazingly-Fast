@@ -438,7 +438,7 @@ export default function LossLandscape({ config = {} }) {
       <div className="flex gap-2 flex-wrap text-xs font-mono">
         {statsData.slice(0, isBV ? 3 : isLossFns ? 3 : 4).map(({ label, val, color }) => (
           <div key={label} className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-700 border border-surface-600">
-            <span className="text-gray-500">{label}:</span>
+            <span className="text-gray-400">{label}:</span>
             <motion.span key={String(val)} animate={{ opacity: [0.4, 1] }} transition={{ duration: 0.2 }}
               className={`font-bold ${color}`}>{val}</motion.span>
           </div>
@@ -536,7 +536,7 @@ export default function LossLandscape({ config = {} }) {
       </div>
 
       {/* Convergence note */}
-      <div className="text-xs text-gray-600 font-mono truncate">
+      <div className="text-xs text-gray-400 font-mono truncate">
         {noteText}
       </div>
 

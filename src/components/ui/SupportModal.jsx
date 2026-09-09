@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProgressStore } from '../../store/progressStore.js'
-import { useAuthStore } from '../../store/authStore.js'
 import toast from 'react-hot-toast'
 
 export default function SupportModal() {
   const show = useProgressStore((s) => s.show_support_modal)
   const interacted = useProgressStore((s) => s.interacted_concepts)
   const dismiss = useProgressStore((s) => s.dismissSupportModal)
-  const setUserEmail = useAuthStore((s) => s.setUserEmail)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -76,7 +74,6 @@ export default function SupportModal() {
 
       if (!res.ok) throw new Error('Submission failed')
 
-      setUserEmail(formData.email)
       localStorage.setItem('completed_support', 'true')
       toast.success(`Thank you, ${formData.name} — your review means a lot ✦`)
       dismiss()
@@ -188,7 +185,7 @@ export default function SupportModal() {
               )}
             </button>
 
-            <p className="text-[10px] text-gray-500 text-center mt-4 uppercase tracking-widest">
+            <p className="text-[10px] text-gray-400 text-center mt-4 uppercase tracking-widest">
               Learn Blazingly Fast is built by one developer. Your review helps other developers find us.
             </p>
           </form>

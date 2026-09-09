@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
   content: [
     './index.html',
     './src/**/*.{js,jsx}',
@@ -38,19 +37,18 @@ export default {
           500: '#f43f5e',
           600: '#e11d48',
         },
+        ai: {
+          300: '#67e8f9',
+          400: '#22d3ee',
+          500: '#06b6d4',
+          600: '#0891b2',
+        },
         surface: {
           900: 'var(--surface-900)',
           800: 'var(--surface-800)',
           700: 'var(--surface-700)',
           600: 'var(--surface-600)',
           500: 'var(--surface-500)',
-        },
-        light: {
-          900: '#ffffff',
-          800: '#f8f9fa',
-          700: '#e9ecef',
-          600: '#dee2e6',
-          500: '#ced4da',
         },
       },
       fontFamily: {

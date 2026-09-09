@@ -1,12 +1,9 @@
 import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import authRoutes from './auth.js';
-import { optionalAuth, requireAuth } from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,19 +12,14 @@ const app = express();
 
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
 
 const DATA_DIR = path.join(__dirname, 'data');
 const REVIEWS_FILE = path.join(DATA_DIR, 'reviews.json');
 const LEADERBOARD_FILE = path.join(DATA_DIR, 'leaderboard.json');
-const PROGRESS_DIR = path.join(DATA_DIR, 'progress');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR);
-}
-if (!fs.existsSync(PROGRESS_DIR)) {
-  fs.mkdirSync(PROGRESS_DIR);
 }
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3001')
@@ -40,8 +32,7 @@ app.use((req, res, next) => {
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
   }
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -109,8 +100,6 @@ function reviewId(review) {
   return typeof review.id === 'string' ? review.id : review.submitted_at;
 }
 
-app.use('/api/v1/auth', authRoutes);
-
 app.use('/api/v1', apiLimiter);
 
 app.get('/api/v1/reviews', (req, res) => {
@@ -127,7 +116,7 @@ app.get('/api/v1/reviews', (req, res) => {
   res.json(anon);
 });
 
-app.post('/api/v1/reviews', writeLimiter, requireAuth, (req, res) => {
+app.post('/api/v1/reviews', writeLimiter, (req, res) => {
   const { name, occupation, review_text, concepts_seen_count, rating, concepts_seen } = req.body || {};
 
   const cleaned = {
@@ -213,7 +202,7 @@ app.get('/api/v1/support-status', (req, res) => {
   res.json({ completed });
 });
 
-app.post('/api/v1/leaderboard/submit', writeLimiter, optionalAuth, (req, res) => {
+app.post('/api/v1/leaderboard/submit', writeLimiter, (req, res) => {
   const { name, email, occupation, concepts_passed, domains_completed, streak, opted_in } = req.body || {};
   if (!opted_in) return res.status(400).json({ error: 'User did not opt in' });
 
@@ -281,44 +270,6 @@ app.post('/api/v1/leaderboard/opt-out', writeLimiter, (req, res) => {
     res.json({ message: 'Removed from leaderboard' });
   } else {
     res.status(500).json({ error: 'Failed to remove' });
-  }
-});
-
-function sanitizeEmail(email) {
-  return typeof email === 'string'
-    ? email.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '').slice(0, 320)
-    : '';
-}
-
-function getProgressFile(email) {
-  const safe = sanitizeEmail(email);
-  if (!safe || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe)) return null;
-  return path.join(PROGRESS_DIR, `${safe.replace(/@/g, '_at_').replace(/\./g, '_dot_')}.json`);
-}
-
-app.get('/api/v1/progress', requireAuth, (req, res) => {
-  const file = getProgressFile(req.user.email);
-  if (!file) return res.status(400).json({ error: 'Invalid email' });
-  const data = readJSON(file);
-  res.json(data && typeof data === 'object' && !Array.isArray(data) ? data : {});
-});
-
-app.put('/api/v1/progress', requireAuth, writeLimiter, (req, res) => {
-  const file = getProgressFile(req.user.email);
-  if (!file) return res.status(400).json({ error: 'Invalid email' });
-  const payload = req.body || {};
-  const safe = {
-    progress: payload.progress && typeof payload.progress === 'object' && !Array.isArray(payload.progress) ? payload.progress : {},
-    interacted_concepts: Array.isArray(payload.interacted_concepts) ? payload.interacted_concepts.slice(0, 500) : [],
-    completion_dates: payload.completion_dates && typeof payload.completion_dates === 'object' && !Array.isArray(payload.completion_dates) ? payload.completion_dates : {},
-    streak: payload.streak && typeof payload.streak === 'object' ? { count: sanitizeInt(payload.streak.count, 10000), last_date: payload.streak.last_date || null } : { count: 0, last_date: null },
-    leaderboard_opted_in: typeof payload.leaderboard_opted_in === 'boolean' ? payload.leaderboard_opted_in : null,
-    active_roadmap_slug: typeof payload.active_roadmap_slug === 'string' ? payload.active_roadmap_slug.slice(0, 200) : null,
-  };
-  if (writeJSON(file, safe)) {
-    res.json({ message: 'Progress saved' });
-  } else {
-    res.status(500).json({ error: 'Failed to save progress' });
   }
 });
 

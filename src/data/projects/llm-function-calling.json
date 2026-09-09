@@ -2,7 +2,7 @@
   "id": "llm-function-calling",
   "slug": "llm-function-calling",
   "title": "LLM Function Calling",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "intermediate",
   "stack": [
     "Python",

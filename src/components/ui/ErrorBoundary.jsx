@@ -47,7 +47,7 @@ export default class ErrorBoundary extends Component {
             </div>
             {import.meta.env.DEV && this.state.info && (
               <details className="text-left mt-4">
-                <summary className="text-xs text-gray-600 cursor-pointer hover:text-gray-400">Stack trace</summary>
+                <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-400">Stack trace</summary>
                 <pre className="mt-2 text-xs text-red-300 bg-surface-800 border border-surface-700 rounded-xl p-4 overflow-auto max-h-48">
                   {this.state.error?.message}
                   {'\n\n'}

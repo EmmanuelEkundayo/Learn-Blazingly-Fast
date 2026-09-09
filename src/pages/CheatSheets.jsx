@@ -112,7 +112,7 @@ export default function CheatSheets() {
                     {/* Footer */}
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-800/40">
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
                           Quick Reference
                         </span>
                         <span className="text-xs text-gray-400 font-semibold">
@@ -135,7 +135,7 @@ export default function CheatSheets() {
         {/* Empty State */}
         {filteredSheets.length === 0 && (
           <div className="text-center py-20">
-            <h3 className="text-2xl font-bold text-gray-500">No cheat sheets found in this category.</h3>
+            <h3 className="text-2xl font-bold text-gray-400">No cheat sheets found in this category.</h3>
             <button 
               onClick={() => setActiveCategory('All')}
               className="mt-4 text-blue-400 hover:text-blue-300 font-semibold"

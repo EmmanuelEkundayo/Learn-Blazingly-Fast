@@ -6,8 +6,6 @@ import OnboardingTrigger from './components/ui/OnboardingTrigger.jsx'
 import Layout from './components/ui/Layout.jsx'
 import { useConceptStore } from './store/conceptStore.js'
 import { useProjectStore } from './store/projectStore.js'
-import { useAuthStore } from './store/authStore.js'
-import { useProgressStore } from './store/progressStore.js'
 import concepts from './data/concepts/index.js'
 import projects from './data/projects/index.js'
 
@@ -35,8 +33,6 @@ const MathTrick    = lazy(() => import('./pages/MathTrick.jsx'))
 export default function App() {
   const setConcepts = useConceptStore(s => s.setConcepts)
   const setProjects = useProjectStore(s => s.setProjects)
-  const initAuth = useAuthStore(s => s.init)
-  const syncProgressFromServer = useProgressStore(s => s.syncFromServer)
   useEffect(() => { 
     async function loadData() {
       try {
@@ -53,14 +49,8 @@ export default function App() {
         console.error('Failed to load data:', err)
       }
     }
-    
-    async function init() {
-      await loadData()
-      await initAuth()
-      syncProgressFromServer()
-    }
-    init()
-  }, [setConcepts, setProjects, initAuth, syncProgressFromServer])
+    loadData()
+  }, [setConcepts, setProjects])
 
   return (
     <ErrorBoundary>

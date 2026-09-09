@@ -19,9 +19,9 @@ mindmap
         conceptStore
         projectStore
         notesStore
-        authStore
         progressStore
-      UI
+      Utilities
+        learnerName (certificate name)
         Tailwind CSS
         Framer Motion
         react-hot-toast
@@ -85,7 +85,7 @@ Learning-Platform/
 | `projectStore` | All projects (populated by `App.jsx` on boot) |
 | `progressStore` | User progress / completion tracking (localStorage-persisted) |
 | `notesStore` | User notes |
-| `authStore` | Lightweight identity (drives `NameModal.jsx`) |
+| `learnerName` util | Certificate name (localStorage, replaces `authStore` which was removed) |
 
 ## Data flow — how content reaches the screen
 

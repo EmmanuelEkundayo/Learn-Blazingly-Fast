@@ -253,10 +253,10 @@ export default function DecisionBoundary({ config = {} }) {
     <div className="flex flex-col gap-3">
       {/* Stat pill */}
       <div className="flex items-center gap-3 px-3 py-2 rounded bg-surface-700 border border-surface-600 text-xs font-mono">
-        <span className="text-gray-500">model:</span>
+        <span className="text-gray-400">model:</span>
         <span className="text-gray-300">{config.mode || 'logistic-regression'}</span>
-        <span className="text-gray-600">|</span>
-        <span className="text-gray-500">{statLabel}:</span>
+        <span className="text-gray-400">|</span>
+        <span className="text-gray-400">{statLabel}:</span>
         <span className={`font-bold ${statVal !== '—' ? 'text-green-400' : 'text-gray-600'}`}>{statVal}</span>
       </div>
 

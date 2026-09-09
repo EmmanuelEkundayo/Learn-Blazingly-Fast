@@ -285,7 +285,7 @@ function SidePanel({ title, items, accent }) {
       <div className="flex flex-col gap-1">
         <AnimatePresence>
           {items.length === 0 ? (
-            <span className="text-xs text-gray-500 font-mono">—</span>
+            <span className="text-xs text-gray-400 font-mono">—</span>
           ) : (
             items.map((id, idx) => (
               <motion.span
@@ -294,7 +294,7 @@ function SidePanel({ title, items, accent }) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 8 }}
                 transition={{ duration: 0.15 }}
-                className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-600 text-gray-200 w-fit"
+                className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-600 text-gray-300 w-fit"
               >
                 {id}
               </motion.span>

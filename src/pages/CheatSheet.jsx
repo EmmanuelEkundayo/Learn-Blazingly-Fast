@@ -37,7 +37,7 @@ function CodeBlock({ item, badge }) {
     <div className="rounded-xl border border-gray-700/60 bg-gray-900 overflow-hidden mb-3">
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-700/40">
-        <span className="text-sm font-medium text-gray-200">{item.label}</span>
+        <span className="text-sm font-medium text-gray-300">{item.label}</span>
         <div className="flex items-center gap-2">
           {item.language && (
             <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${badge}`}>
@@ -60,7 +60,7 @@ function CodeBlock({ item, badge }) {
 
       {/* Note */}
       {item.note && (
-        <p className="px-3 pb-2 text-xs text-gray-500 italic">{item.note}</p>
+        <p className="px-3 pb-2 text-xs text-gray-400 italic">{item.note}</p>
       )}
     </div>
   )
@@ -168,7 +168,7 @@ export default function CheatSheet() {
         <div className="max-w-6xl mx-auto space-y-3">
           {/* Row 1: back + actions */}
           <div className="flex items-center gap-3">
-            <Link to="/cheatsheets" className="text-gray-500 hover:text-gray-300 text-sm shrink-0">
+            <Link to="/cheatsheets" className="text-gray-400 hover:text-gray-300 text-sm shrink-0">
               ← Back
             </Link>
             <div className="ml-auto flex items-center gap-2">
@@ -181,11 +181,11 @@ export default function CheatSheet() {
                   onChange={e => setQuery(e.target.value)}
                   className="bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-8 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 w-36 sm:w-48"
                 />
-                <svg className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                 </svg>
                 {query && (
-                  <button onClick={() => setQuery('')} className="absolute right-2 top-1.5 text-gray-500 hover:text-gray-300 text-xs">✕</button>
+                  <button onClick={() => setQuery('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-300 text-xs">✕</button>
                 )}
               </div>
               <button
@@ -216,7 +216,7 @@ export default function CheatSheet() {
 
           {/* Result count */}
           {query && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               {totalResults} result{totalResults !== 1 ? 's' : ''} for "{query}"
             </p>
           )}
@@ -227,7 +227,7 @@ export default function CheatSheet() {
         {/* ── Sidebar (desktop) ── */}
         <aside className="hidden lg:block w-52 shrink-0">
           <nav className="sticky top-20 flex flex-col gap-0.5 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1">
-            <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 px-2">Sections</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 px-2">Sections</p>
             {sheet.sections.map((sec, i) => (
               <button
                 key={i}
@@ -265,7 +265,7 @@ export default function CheatSheet() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-20 text-gray-500">
+            <div className="text-center py-20 text-gray-400">
               No results for "{query}"
             </div>
           )}

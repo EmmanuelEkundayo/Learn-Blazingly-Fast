@@ -2,7 +2,7 @@
   "id": "summarizer",
   "slug": "summarizer",
   "title": "Smart Text Summarizer",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "intermediate",
   "stack": [
     "Python",

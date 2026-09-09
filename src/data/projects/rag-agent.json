@@ -2,7 +2,7 @@
   "id": "rag-agent",
   "slug": "rag-agent",
   "title": "Retrieval-Augmented Generation (RAG) Agent",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "advanced",
   "stack": [
     "Python",

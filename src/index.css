@@ -4,32 +4,23 @@
 
 @layer base {
   :root {
-    color-scheme: light;
-    --surface-900: #ffffff;
-    --surface-800: #f8f9fa;
-    --surface-700: #e9ecef;
-    --surface-600: #dee2e6;
-    --surface-500: #ced4da;
-    --domain-dsa:      theme('colors.dsa.500');
-    --domain-ml:       theme('colors.ml.500');
-    --domain-frontend: theme('colors.frontend.500');
-    --domain-backend:  theme('colors.backend.500');
-    --domain-se:       theme('colors.se.500');
-  }
-
-  .dark {
     color-scheme: dark;
     --surface-900: #0d0d0f;
     --surface-800: #141418;
     --surface-700: #1c1c22;
     --surface-600: #26262e;
     --surface-500: #32323c;
+    --domain-dsa:      theme('colors.dsa.500');
+    --domain-ml:       theme('colors.ml.500');
+    --domain-frontend: theme('colors.frontend.500');
+    --domain-backend:  theme('colors.backend.500');
+    --domain-se:       theme('colors.se.500');
+    --domain-ai:       theme('colors.ai.500');
   }
 
   body {
     @apply font-sans antialiased;
-    @apply bg-white text-gray-900;
-    @apply dark:bg-surface-900 dark:text-gray-100;
+    @apply bg-surface-900 text-gray-100;
   }
 
   code, pre, .monaco-editor {

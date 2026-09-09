@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuthStore } from '../../store/authStore.js'
 
 export default function NameModal({ isOpen, onSubmit, onCancel }) {
   const [name, setName] = useState('')
-  const setUserName = useAuthStore(s => s.setUserName)
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!name.trim()) return
-    setUserName(name.trim())
     onSubmit(name.trim())
   }
 

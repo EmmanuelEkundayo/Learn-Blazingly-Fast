@@ -18,9 +18,7 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "bcrypt": "^6.0.0",
     "canvas-confetti": "^1.9.4",
-    "cookie-parser": "^1.4.7",
     "d3": "^7.9.0",
     "express": "^4.19.2",
     "express-rate-limit": "^8.7.0",
@@ -28,7 +26,6 @@
     "fuse.js": "^7.1.0",
     "helmet": "^8.3.0",
     "html2canvas": "^1.4.1",
-    "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.7.0",
     "react": "^18.3.1",

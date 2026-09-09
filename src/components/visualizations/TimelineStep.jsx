@@ -69,7 +69,7 @@ function PipelineViz({ config }) {
 
                 {showArrow && (
                   <div className="flex items-center justify-center w-5 shrink-0">
-                    <span className="text-gray-600 text-sm">›</span>
+                    <span className="text-gray-400 text-sm">›</span>
                   </div>
                 )}
               </div>
@@ -168,7 +168,7 @@ function BackpropFallback() {
                   style={{ minWidth: 90 }}
                 >
                   <span className="text-sm font-bold" style={{ color: clr }}>{layer.label}</span>
-                  <span className="text-[9px] text-gray-600 font-mono text-center">{layer.sub}</span>
+                  <span className="text-[9px] text-gray-400 font-mono text-center">{layer.sub}</span>
                   {cur.values[layer.id] && (
                     <motion.div key={cur.values[layer.id]}
                       initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
@@ -204,7 +204,7 @@ function BackpropFallback() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-4 text-xs text-gray-400">
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 inline-block bg-dsa-500" />forward</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 inline-block bg-amber-500" />backward</span>
       </div>

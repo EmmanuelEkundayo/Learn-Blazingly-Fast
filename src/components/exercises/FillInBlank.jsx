@@ -181,11 +181,11 @@ export default function FillInBlank({ exercise, concept, domain = 'DSA', onPass,
   return (
     <div className="space-y-4">
       {/* Prompt */}
-      <p className="text-gray-200 text-sm leading-relaxed">{exercise.prompt}</p>
+      <p className="text-gray-300 text-sm leading-relaxed">{exercise.prompt}</p>
 
       {/* Blank counter */}
       {blanksInStarter > 0 && (
-        <p className="text-xs text-gray-500 font-mono">
+        <p className="text-xs text-gray-400 font-mono">
           {blanksInStarter} blank{blanksInStarter > 1 ? 's' : ''} to fill
           {' '}(<code className="text-gray-400">___________</code>)
         </p>
@@ -208,7 +208,7 @@ export default function FillInBlank({ exercise, concept, domain = 'DSA', onPass,
           options={EDITOR_OPTIONS}
           loading={
             <div
-              className="flex items-center justify-center bg-surface-900 text-gray-500 text-sm font-mono"
+              className="flex items-center justify-center bg-surface-900 text-gray-400 text-sm font-mono"
               style={{ height: editorHeight }}
             >
               Loading editor…
@@ -290,7 +290,7 @@ export default function FillInBlank({ exercise, concept, domain = 'DSA', onPass,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex items-center gap-2 text-xs text-gray-500 font-mono"
+            className="flex items-center gap-2 text-xs text-gray-400 font-mono"
           >
             <Spinner className="text-dsa-400" />
             Loading Python runtime (first run ~3–5 s on fast connection)…
@@ -355,7 +355,7 @@ export default function FillInBlank({ exercise, concept, domain = 'DSA', onPass,
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">Solution</p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Solution</p>
             <pre className="text-xs font-mono bg-surface-900 border border-surface-600 rounded p-4 text-green-300 leading-relaxed overflow-x-auto scrollbar-thin">
               {exercise.solution}
             </pre>
@@ -389,7 +389,7 @@ export default function FillInBlank({ exercise, concept, domain = 'DSA', onPass,
           </motion.div>
         )}
         {execResult?.passed && confidence && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-gray-500">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-gray-400">
             Confidence logged. Move on to the next concept →
           </motion.p>
         )}
@@ -409,7 +409,7 @@ function TerminalPanel({ result }) {
       {/* Terminal header */}
       <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-800 border-b border-surface-700">
         <span className={`w-2 h-2 rounded-full ${passed ? 'bg-green-500' : error ? 'bg-red-500' : 'bg-yellow-500'}`} />
-        <span className="text-xs text-gray-500 font-mono">output</span>
+        <span className="text-xs text-gray-400 font-mono">output</span>
         {passed && <span className="ml-auto text-xs text-green-400 font-mono font-medium">PASS</span>}
       </div>
 
@@ -431,7 +431,7 @@ function TerminalPanel({ result }) {
 
         {/* No output at all */}
         {!hasOutput && (
-          <span className="text-gray-600 italic">No output.</span>
+          <span className="text-gray-400 italic">No output.</span>
         )}
       </div>
     </div>

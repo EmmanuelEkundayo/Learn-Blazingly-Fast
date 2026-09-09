@@ -3,15 +3,15 @@ import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
-import { useAuthStore }     from '../store/authStore.js'
 import { generateCertificate } from '../utils/generateCertificate.js'
+import { getLearnerName, setLearnerName } from '../utils/learnerName.js'
 import NameModal from '../components/ui/NameModal.jsx'
 
 export default function Certificates() {
   const concepts = useConceptStore(s => s.concepts)
   const getCompletedDomains = useProgressStore(s => s.getCompletedDomains)
   const completionDates = useProgressStore(s => s.completion_dates)
-  const userName = useAuthStore(s => s.userName)
+  const [userName, setUserName] = useState(() => getLearnerName())
   
   const completed = getCompletedDomains(concepts)
   const [modalOpen, setModalOpen] = useState(false)
@@ -29,6 +29,8 @@ export default function Certificates() {
   }
 
   const handleNameSubmit = (name) => {
+    setLearnerName(name)
+    setUserName(name)
     setModalOpen(false)
     if (pendingDomain) {
       const count = concepts.filter(c => c.domain === pendingDomain).length
@@ -69,18 +71,18 @@ export default function Certificates() {
                     <span className="text-2xl">✦</span>
                     <div>
                       <h3 className="font-bold text-xl text-white">{domain}</h3>
-                      <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Mastery Achieved</p>
+                      <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Mastery Achieved</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex-1 border-y border-surface-700/50 py-4 my-2 flex items-center justify-between relative z-10">
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Concepts</p>
+                    <p className="text-xs text-gray-400 uppercase font-medium">Concepts</p>
                     <p className="text-lg font-bold text-white">{count}</p>
                   </div>
                   <div className="text-right space-y-1">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Date</p>
+                    <p className="text-xs text-gray-400 uppercase font-medium">Date</p>
                     <p className="text-lg font-bold text-white">{new Date(date).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -104,7 +106,7 @@ export default function Certificates() {
           <div className="text-6xl opacity-10">✦</div>
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-white">No certificates earned yet</h3>
-            <p className="text-gray-500 max-w-sm mx-auto">
+            <p className="text-gray-400 max-w-sm mx-auto">
               Complete all concepts in any domain to earn your professional certificate of completion.
             </p>
           </div>

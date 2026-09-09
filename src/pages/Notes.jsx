@@ -62,7 +62,7 @@ export default function Notes() {
       ) : (
         <div className="text-center py-32 space-y-6">
           <div className="text-6xl opacity-10">✎</div>
-          <p className="text-gray-500 max-w-sm mx-auto">
+          <p className="text-gray-400 max-w-sm mx-auto">
             You haven't written any notes yet. Notes appear here after you add them on any concept page.
           </p>
           <Link 
@@ -81,6 +81,7 @@ function domainBadge(domain) {
   return {
     DSA:                  'bg-dsa-600/20 text-dsa-400 border-dsa-500/30',
     ML:                   'bg-ml-500/20 text-ml-400 border-ml-500/30',
+    AI:                   'bg-ai-500/20 text-ai-400 border-ai-500/30',
     Frontend:             'bg-frontend-500/20 text-frontend-400 border-frontend-500/30',
     Backend:              'bg-backend-500/20 text-backend-400 border-backend-500/30',
     'Software Engineering': 'bg-se-500/20 text-se-400 border-se-500/30',

@@ -32,7 +32,7 @@ export default function ArrayPointers({ config = {} }) {
     <div className="flex flex-col gap-4">
       {/* Target banner */}
       <div className="flex items-center gap-3 px-3 py-2 rounded bg-surface-700 border border-surface-600 text-sm font-mono">
-        <span className="text-gray-500">target =</span>
+        <span className="text-gray-400">target =</span>
         <span className="text-amber-400 font-bold">{target}</span>
         <AnimatePresence>
           {cur.found && (
@@ -75,7 +75,7 @@ export default function ArrayPointers({ config = {} }) {
                   className="flex flex-col items-center justify-center border rounded-sm"
                 >
                   <span style={{ color: tc }} className="text-sm font-mono font-bold leading-none">{val}</span>
-                  <span className="text-[9px] text-gray-700 font-mono mt-0.5">{i}</span>
+                  <span className="text-[9px] text-gray-300 font-mono mt-0.5">{i}</span>
                 </motion.div>
               )
             })}
@@ -107,7 +107,7 @@ export default function ArrayPointers({ config = {} }) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
         {[
           ['#3b82f6', '#1e293b', 'active window (lo…hi)'],
           ['#f59e0b', '#451a03', 'mid — comparing'],

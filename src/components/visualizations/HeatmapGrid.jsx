@@ -368,7 +368,7 @@ export default function HeatmapGrid({ config = {} }) {
           <div style={{ display: 'flex', marginLeft: CELL + 8 }}>
             {colTokens.map((tok, j) => (
               <div key={j} style={{ width: CELL }} className="flex items-end justify-center pb-1">
-                <span className="text-[10px] font-mono text-gray-500 leading-none"
+                <span className="text-[10px] font-mono text-gray-400 leading-none"
                   style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 32 }}>
                   {tok}
                 </span>
@@ -430,13 +430,13 @@ export default function HeatmapGrid({ config = {} }) {
       )}
 
       {/* Color scale legend */}
-      <div className="flex items-center gap-3 text-xs text-gray-500">
+      <div className="flex items-center gap-3 text-xs text-gray-400">
         <span>{(matrixCfg.colorDomain?.[0] ?? 0).toFixed(2)}</span>
         <div className="flex-1 h-2 rounded overflow-hidden" style={{
           background: 'linear-gradient(to right, #1a0533, #7c1d0d, #d94e13, #facc15)',
         }} />
         <span>{(matrixCfg.colorDomain?.[1] ?? 0.5).toFixed(2)}+</span>
-        <span className="text-gray-600 ml-2">{matrixCfg.special === 'distillation' ? 'probability' : matrixCfg.rowLabel ? 'value' : 'attention weight'}</span>
+        <span className="text-gray-400 ml-2">{matrixCfg.special === 'distillation' ? 'probability' : matrixCfg.rowLabel ? 'value' : 'attention weight'}</span>
       </div>
 
       {/* Active row stats */}
@@ -448,7 +448,7 @@ export default function HeatmapGrid({ config = {} }) {
           >
             {(activeMatrix[cur.activeRow] ?? []).map((w, j) => (
               <div key={j} className="flex items-center gap-1 px-2 py-0.5 rounded bg-surface-700 border border-surface-600">
-                <span className="text-gray-500">{colTokens[j]}:</span>
+                <span className="text-gray-400">{colTokens[j]}:</span>
                 <span className="font-bold" style={{ color: w > 0.3 ? '#facc15' : '#9ca3af' }}>
                   {w.toFixed(2)}
                 </span>

@@ -5,8 +5,8 @@ import confetti from 'canvas-confetti'
 import roadmaps from '../data/roadmaps/index.js'
 import { useProgressStore } from '../store/progressStore.js'
 import { useConceptStore }  from '../store/conceptStore.js'
-import { useAuthStore }     from '../store/authStore.js'
 import { generateCertificate } from '../utils/generateCertificate.js'
+import { getLearnerName } from '../utils/learnerName.js'
 import { RoadmapIcon, ClockIcon, BookIcon, GraduationIcon } from '../components/ui/Icons.jsx'
 import SEO from '../components/ui/SEO.jsx'
 import { getRoadmapMeta } from '../utils/seo'
@@ -20,7 +20,6 @@ export default function Roadmap() {
   const getRoadmapProgress = useProgressStore(s => s.getRoadmapProgress)
   const setActiveRoadmap = useProgressStore(s => s.setActiveRoadmap)
   const incrementInteractions = useProgressStore(s => s.incrementInteractions)
-  const userName = useAuthStore(s => s.userName)
 
   const roadmap = useMemo(() => roadmaps.find(r => r.slug === slug), [slug])
   const roadmapProgress = useMemo(() => getRoadmapProgress(roadmap), [roadmap, progress])
@@ -38,7 +37,7 @@ export default function Roadmap() {
     }
   }, [roadmapProgress?.percentage])
 
-  if (!roadmap) return <div className="p-20 text-center text-gray-500">Roadmap not found</div>
+  if (!roadmap) return <div className="p-20 text-center text-gray-400">Roadmap not found</div>
 
   const handleStartRoadmap = () => {
     setActiveRoadmap(roadmap.slug)
@@ -49,7 +48,7 @@ export default function Roadmap() {
 
   const handleDownloadCertificate = () => {
     const totalConcepts = roadmap.phases.reduce((acc, p) => acc + p.concepts.length, 0)
-    generateCertificate(roadmap.title, userName || 'Learner', totalConcepts, Date.now())
+    generateCertificate(roadmap.title, getLearnerName() || 'Learner', totalConcepts, Date.now())
   }
 
   return (
@@ -61,7 +60,7 @@ export default function Roadmap() {
           <div className="flex shrink-0"><RoadmapIcon id={roadmap.id} className="w-16 h-16 text-white" /></div>
           <div className="space-y-1">
              <div className="flex items-center gap-2">
-               <span className="bg-surface-800 text-gray-500 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{roadmap.category}</span>
+               <span className="bg-surface-800 text-gray-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{roadmap.category}</span>
                <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest bg-opacity-20 ${
                  roadmap.difficulty === 'beginner' ? 'bg-green-500 text-green-400' : 
                  roadmap.difficulty === 'intermediate' ? 'bg-yellow-500 text-yellow-400' : 'bg-red-500 text-red-400'
@@ -74,7 +73,7 @@ export default function Roadmap() {
         </div>
         <p className="text-gray-400 text-lg leading-relaxed max-w-2xl">{roadmap.description}</p>
         
-        <div className="flex items-center gap-6 text-sm font-bold text-gray-500 uppercase tracking-widest">
+        <div className="flex items-center gap-6 text-sm font-bold text-gray-400 uppercase tracking-widest">
            <div className="flex items-center gap-1.5"><ClockIcon className="w-4 h-4" /> {roadmap.estimated_weeks} Weeks</div>
            <div className="flex items-center gap-1.5"><BookIcon className="w-4 h-4" /> {roadmapProgress.total} Concepts</div>
         </div>
@@ -82,8 +81,8 @@ export default function Roadmap() {
         {/* Big Progress Bar */}
         <div className="space-y-3 pt-4">
            <div className="flex justify-between items-end">
-             <div className="text-2xl font-black text-white">{roadmapProgress.percentage}% <span className="text-sm text-gray-600 uppercase">Complete</span></div>
-             <div className="text-sm font-bold text-gray-500">{roadmapProgress.completed} / {roadmapProgress.total} Concepts Mastered</div>
+             <div className="text-2xl font-black text-white">{roadmapProgress.percentage}% <span className="text-sm text-gray-400 uppercase">Complete</span></div>
+             <div className="text-sm font-bold text-gray-400">{roadmapProgress.completed} / {roadmapProgress.total} Concepts Mastered</div>
            </div>
            <div className="h-3 w-full bg-surface-800 rounded-full overflow-hidden border border-surface-700">
              <motion.div 
@@ -133,7 +132,7 @@ export default function Roadmap() {
         {roadmap.phases.map((phase, idx) => (
           <div key={phase.id} className="relative md:pl-20 space-y-6">
             {/* Phase Node */}
-            <div className="absolute left-0 top-0 w-12 h-12 rounded-full bg-surface-900 border-2 border-surface-700 flex items-center justify-center font-black text-gray-500 hidden md:flex">
+            <div className="absolute left-0 top-0 w-12 h-12 rounded-full bg-surface-900 border-2 border-surface-700 flex items-center justify-center font-black text-gray-400 hidden md:flex">
               {idx + 1}
             </div>
 
@@ -141,7 +140,7 @@ export default function Roadmap() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h2 className="text-xl font-bold text-white">{phase.title}</h2>
-                  <span className="px-2 py-0.5 rounded bg-surface-800 text-gray-500 text-[10px] font-bold uppercase tracking-widest">{phase.duration}</span>
+                  <span className="px-2 py-0.5 rounded bg-surface-800 text-gray-400 text-[10px] font-bold uppercase tracking-widest">{phase.duration}</span>
                 </div>
                 {/* Start Phase Button */}
                 {phase.concepts.some(s => !progress[s]?.exercise_passed) && (
@@ -156,7 +155,7 @@ export default function Roadmap() {
                   </button>
                 )}
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed max-w-xl">{phase.description}</p>
+              <p className="text-sm text-gray-400 leading-relaxed max-w-xl">{phase.description}</p>
             </div>
 
             <div className="grid grid-cols-1 gap-2">
@@ -175,8 +174,8 @@ export default function Roadmap() {
                     <div className="flex items-center gap-4 min-w-0">
                       <div className={`w-2 h-2 rounded-full ${isPassed ? 'bg-green-500' : 'bg-surface-600'}`} />
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-gray-200 truncate">{concept.title}</div>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 uppercase">
+                        <div className="text-sm font-bold text-gray-300 truncate">{concept.title}</div>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase">
                            <span>{concept.domain}</span>
                            <span>•</span>
                            <span>{concept.difficulty}</span>
@@ -203,7 +202,7 @@ export default function Roadmap() {
           >
             <button 
               onClick={handleStartRoadmap}
-              className="w-full p-4 bg-white text-black rounded-2xl font-black shadow-2xl flex items-center justify-between group overflow-hidden relative"
+              className="w-full p-4 bg-surface-900 text-gray-100 rounded-2xl font-black shadow-2xl flex items-center justify-between group overflow-hidden relative"
             >
               <div className="relative z-10 flex flex-col items-start">
                 <span className="text-[10px] uppercase tracking-tighter opacity-60">Continue Roadmap</span>

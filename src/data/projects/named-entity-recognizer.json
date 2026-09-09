@@ -2,7 +2,7 @@
   "id": "named-entity-recognizer",
   "slug": "named-entity-recognizer",
   "title": "Named Entity Recognizer (NER)",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "beginner",
   "stack": [
     "Python",

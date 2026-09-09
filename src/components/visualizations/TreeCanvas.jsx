@@ -450,7 +450,7 @@ export default function TreeCanvas({ config = {} }) {
           </span>
         ))}
         {note && (
-          <span className="ml-auto text-gray-600 italic text-xs truncate max-w-xs">{note}</span>
+          <span className="ml-auto text-gray-400 italic text-xs truncate max-w-xs">{note}</span>
         )}
       </div>
 

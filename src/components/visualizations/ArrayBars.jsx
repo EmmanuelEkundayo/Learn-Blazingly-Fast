@@ -161,7 +161,7 @@ export default function ArrayBars({ config = {}, data }) {
         {pivot >= 0 && (
           <span>
             Pivot: <span className="text-ml-400 font-semibold">{current.array[pivot]}</span>
-            <span className="ml-1 text-gray-500">(idx {pivot})</span>
+            <span className="ml-1 text-gray-400">(idx {pivot})</span>
           </span>
         )}
         {lo >= 0 && hi >= 0 && lo !== hi && (

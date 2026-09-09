@@ -304,7 +304,7 @@ export default function NeuralNetDiagram({ config = {} }) {
 
       {/* Note */}
       {modeConfig.note && (
-        <div className="text-xs text-gray-600 font-mono truncate">{modeConfig.note}</div>
+        <div className="text-xs text-gray-400 font-mono truncate">{modeConfig.note}</div>
       )}
 
       <StepControls

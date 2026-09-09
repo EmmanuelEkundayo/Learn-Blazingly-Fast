@@ -2,7 +2,7 @@
   "id": "chatbot-openai",
   "slug": "chatbot-openai",
   "title": "Stateful AI Chatbot",
-  "category": "AI-ML",
+  "category": "AI",
   "difficulty": "intermediate",
   "stack": [
     "Python",
