@@ -555,7 +555,7 @@ app.use('/api/authenticated/', userLimiter)`, note: 'IP-based limits alone are b
       title: 'Input Validation and Sanitization',
       items: [
         { label: 'Allowlist vs denylist approach', language: 'text', code: `Allowlist (preferred): define exactly what IS valid, reject everything else
-  - Phone: must match /^\+?[1-9]\d{1,14}$/
+  - Phone: must match /^\\+?[1-9]\\d{1,14}$/
   - Status: must be one of ["active", "inactive", "pending"]
   - Filename: must match /^[a-zA-Z0-9._-]+$/
 

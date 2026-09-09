@@ -44,6 +44,19 @@
     ],
     "test_code": "r1 = knapsack([2,3,4,5],[3,4,5,7],8)\nassert r1 == 10, f'Expected 10, got {r1}'\nr2 = knapsack([1,2,3],[6,10,12],5)\nassert r2 == 22, f'Expected 22 (take w=2+w=3), got {r2}'\nr3 = knapsack([10],[100],5)\nassert r3 == 0,  f'Item too heavy: expected 0, got {r3}'\nr4 = knapsack([1],[1],1)\nassert r4 == 1,  f'Trivial case: expected 1, got {r4}'\nprint('PASS')"
   },
-  "related": ["dp-subset-sum-01", "dp-unbounded-knapsack-01", "dp-coin-change-01"],
-  "tags": ["dynamic-programming", "knapsack", "optimization", "subset", "tabulation"]
+  "related": [
+    "dp-subset-sum-01",
+    "dp-unbounded-knapsack-01",
+    "dp-coin-change-01"
+  ],
+  "tags": [
+    "dynamic-programming",
+    "knapsack",
+    "optimization",
+    "subset",
+    "tabulation"
+  ],
+  "prerequisites": [
+    "memoization-vs-tabulation"
+  ]
 }

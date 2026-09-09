@@ -40,6 +40,21 @@
     ],
     "test_code": "edges = [(2,0,1),(3,1,2),(5,1,4),(6,0,3),(7,2,4),(8,1,3),(9,3,4)]\nassert kruskals(5, edges) == 16  # (0,1,2)+(1,2,3)+(1,4,5)+(0,3,6)=16\n\n# Disconnected -> -1\nassert kruskals(4, [(1,0,1),(2,2,3)]) == -1\n\n# Single vertex\nassert kruskals(1, []) == 0\nprint('PASS')"
   },
-  "related": ["prims-01", "union-find-01", "dijkstra-01", "dfs-graph-01"],
-  "tags": ["kruskals", "MST", "minimum-spanning-tree", "union-find", "greedy", "sorting"]
+  "related": [
+    "prims-01",
+    "union-find-01",
+    "dijkstra-01",
+    "dfs-graph-01"
+  ],
+  "tags": [
+    "kruskals",
+    "MST",
+    "minimum-spanning-tree",
+    "union-find",
+    "greedy",
+    "sorting"
+  ],
+  "prerequisites": [
+    "union-find"
+  ]
 }

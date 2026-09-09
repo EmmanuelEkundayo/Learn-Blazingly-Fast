@@ -13,7 +13,18 @@ export const useProjectStore = create((set, get) => ({
   },
 
   getProjectBySlug(slug) {
-    return get().projects.find((p) => p.slug === slug) ?? null
+    if (!slug) return null
+    const normalized = slug.toLowerCase().trim()
+    const stripped = normalized.replace(/-\d+$/, '')
+    return (
+      get().projects.find(
+        (p) =>
+          p.slug?.toLowerCase() === normalized ||
+          p.id?.toLowerCase() === normalized ||
+          p.slug?.toLowerCase() === stripped ||
+          p.id?.toLowerCase() === stripped
+      ) ?? null
+    )
   },
 
   getProjectsByCategory(category) {

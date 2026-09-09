@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuthStore } from '../store/authStore.js'
 
 export default function Testimonials() {
   const [reviews, setReviews] = useState([])
@@ -10,10 +9,10 @@ export default function Testimonials() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch('/api/reviews')
+        const res = await fetch('/api/v1/reviews')
         const data = await res.json()
         setReviews(data)
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch reviews')
       } finally {
         setLoading(false)

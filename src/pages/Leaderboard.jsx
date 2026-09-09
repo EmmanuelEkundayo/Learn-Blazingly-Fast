@@ -3,6 +3,8 @@ import { useProgressStore } from '../store/progressStore.js'
 import { useAuthStore }     from '../store/authStore.js'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FlameIcon, TrophyIcon } from '../components/ui/Icons.jsx'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState([])
@@ -26,10 +28,10 @@ export default function Leaderboard() {
 
   async function fetchLeaderboard() {
     try {
-      const res = await fetch('/api/leaderboard')
+      const res = await fetch('/api/v1/leaderboard')
       const data = await res.json()
       setEntries(data)
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch leaderboard')
     } finally {
       setLoading(false)
@@ -53,11 +55,15 @@ export default function Leaderboard() {
 
   const handleOptOut = async () => {
     if (!window.confirm('Are you sure you want to remove yourself from the leaderboard?')) return
-    await fetch('/api/leaderboard/opt-out', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    })
+    try {
+      await fetch('/api/v1/leaderboard/opt-out', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+    } catch {
+      // silent — list will still refresh
+    }
     setOptIn(false)
     fetchLeaderboard()
   }
@@ -68,6 +74,7 @@ export default function Leaderboard() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 space-y-10">
+      <SEO {...getPageMeta('/leaderboard')} />
       <header className="text-center space-y-2">
         <h1 className="text-4xl font-extrabold text-white tracking-tight">Leaderboard</h1>
         <p className="text-gray-400">Top learners globally. Opt in to compete and track your progress.</p>

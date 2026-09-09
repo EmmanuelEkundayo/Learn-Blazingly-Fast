@@ -41,6 +41,19 @@
     ],
     "test_code": "def rotate_right(y):\n    x=y.left; T2=x.right; x.right=y; y.left=T2\n    update_height(y); update_height(x); return x\n\ndef insert_avl(root, val):\n    if not root: return AVLNode(val)\n    if val < root.val: root.left = insert_avl(root.left, val)\n    else: root.right = insert_avl(root.right, val)\n    update_height(root)\n    bf = balance_factor(root)\n    if bf > 1 and val < root.left.val:   return rotate_right(root)\n    if bf < -1 and val > root.right.val: return rotate_left(root)\n    if bf > 1 and val > root.left.val:   root.left=rotate_left(root.left); return rotate_right(root)\n    if bf < -1 and val < root.right.val: root.right=rotate_right(root.right); return rotate_left(root)\n    return root\n\ndef inorder(r):\n    if not r: return []\n    return inorder(r.left)+[r.val]+inorder(r.right)\n\nroot=None\nfor v in [30,20,10,25,40,50]: root=insert_avl(root,v)\nassert inorder(root)==[10,20,25,30,40,50],'In-order sorted'\nassert abs(balance_factor(root))<=1,'Root balanced'\nprint('PASS')"
   },
-  "related": ["bst-operations-01", "red-black-tree-01", "segment-tree-01"],
-  "tags": ["AVL-tree", "self-balancing", "BST", "rotations", "O(log-n)"]
+  "related": [
+    "bst-operations-01",
+    "red-black-tree-01",
+    "segment-tree-01"
+  ],
+  "tags": [
+    "AVL-tree",
+    "self-balancing",
+    "BST",
+    "rotations",
+    "O(log-n)"
+  ],
+  "prerequisites": [
+    "bst-operations"
+  ]
 }

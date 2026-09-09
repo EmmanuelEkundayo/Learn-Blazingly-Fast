@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProjectStore }  from '../store/projectStore.js'
 import { useProgressStore } from '../store/progressStore.js'
@@ -66,6 +68,7 @@ export default function Home() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 sm:py-16 space-y-12 sm:space-y-14">
+      <SEO {...getPageMeta('/')} />
 
       {/* ── Logo + Search ── */}
       <div className="flex flex-col items-center gap-6">
@@ -151,7 +154,6 @@ function ConceptSearch() {
   const [query,    setQuery]    = useState('')
   const [open,     setOpen]     = useState(false)
   const [selected, setSelected] = useState(-1)
-  const concepts  = useConceptStore(s => s.concepts)
   const navigate  = useNavigate()
   const wrapRef   = useRef(null)
   const inputRef  = useRef(null)
@@ -200,11 +202,6 @@ function ConceptSearch() {
     } else if (e.key === 'Escape') {
       setOpen(false); setSelected(-1)
     }
-  }
-
-  function pick(slug) {
-    navigate(`/concept/${slug}`)
-    setQuery(''); setOpen(false); setSelected(-1)
   }
 
   return (
@@ -504,11 +501,11 @@ function TestimonialsStrip() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch('/api/reviews')
+        const res = await fetch('/api/v1/reviews')
         if (!res.ok) throw new Error()
         const data = await res.json()
         setReviews(data)
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch reviews')
       } finally {
         setLoading(false)

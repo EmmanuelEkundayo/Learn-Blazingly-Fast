@@ -1,11 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router'
 import { motion } from 'framer-motion'
+import { Download } from 'lucide-react'
 import cheatsheets from '../data/cheatsheets/index.js'
 import { highlight } from '../utils/codeHighlight.js'
 import { SheetIcon, CheckIcon } from '../components/ui/Icons.jsx'
 import { useProgressStore } from '../store/progressStore.js'
+import { generateCheatsheetPdf } from '../utils/generateCheatsheetPdf.js'
+import SEO from '../components/ui/SEO.jsx'
+import { getCheatsheetMeta } from '../utils/seo'
 
 // ─── accent map (same as browse page) ────────────────────────────────────────
 const accentMap = {
@@ -70,7 +73,9 @@ export default function CheatSheet() {
   const [query, setQuery] = useState('')
   const [activeSection, setActiveSection] = useState(0)
   const [copiedAll, setCopiedAll] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const sectionRefs = useRef([])
+  const contentRef = useRef(null)
   const incrementInteractions = useProgressStore(s => s.incrementInteractions)
 
   useEffect(() => { incrementInteractions() }, [incrementInteractions])
@@ -109,6 +114,16 @@ export default function CheatSheet() {
     })
   }
 
+  async function handleExportPdf() {
+    if (!contentRef.current) return
+    setExporting(true)
+    try {
+      await generateCheatsheetPdf(contentRef.current, sheet.title)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   // ── scroll spy ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (query) return // disable spy during search
@@ -144,21 +159,9 @@ export default function CheatSheet() {
     )
   }
 
-  const sheetTitle = sheet?.title ?? id
-  const sheetDesc = sheet
-    ? `Quick-reference cheat sheet for ${sheet.title} — ${sheet.sections?.length ?? 0} sections of essential snippets and examples.`
-    : `${id} cheat sheet on Learn Blazingly Fast.`
-
   return (
     <>
-    <Helmet>
-      <title>{sheetTitle} Cheat Sheet — Learn Blazingly Fast</title>
-      <meta name="description" content={sheetDesc} />
-      <meta property="og:title" content={`${sheetTitle} Cheat Sheet — Learn Blazingly Fast`} />
-      <meta property="og:description" content={sheetDesc} />
-      <meta property="og:url" content={`https://learnblazinglyfast.tech/cheatsheets/${id}`} />
-      <link rel="canonical" href={`https://learnblazinglyfast.tech/cheatsheets/${id}`} />
-    </Helmet>
+    <SEO {...getCheatsheetMeta(sheet)} />
     <div className="min-h-screen bg-gray-950">
       {/* ── Header ── */}
       <div className="border-b border-gray-800 bg-gray-900/60 backdrop-blur px-4 py-4">
@@ -190,6 +193,14 @@ export default function CheatSheet() {
                 className={`text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg text-white transition-colors shrink-0 ${a.btn}`}
               >
                 {copiedAll ? 'Copied!' : 'Copy All'}
+              </button>
+              <button
+                onClick={handleExportPdf}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-600 rounded-xl text-sm text-gray-300 hover:text-white transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                {exporting ? 'Exporting…' : 'Export PDF'}
               </button>
             </div>
           </div>
@@ -239,7 +250,7 @@ export default function CheatSheet() {
         </div>
 
         {/* ── Main content ── */}
-        <main className="flex-1 min-w-0">
+        <main ref={contentRef} className="flex-1 min-w-0">
           {/* Mobile dropdown */}
           <div className="lg:hidden mb-4">
             <select

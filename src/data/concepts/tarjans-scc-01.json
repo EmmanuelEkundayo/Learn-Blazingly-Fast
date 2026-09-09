@@ -41,6 +41,21 @@
     ],
     "test_code": "# Graph: 0->1->2->0 (SCC {0,1,2}), 1->3 (SCC {3})\nadj = {0:[1], 1:[2,3], 2:[0], 3:[]}\nsccs = tarjans_scc(4, adj)\nassert len(sccs) == 2\nassert [0,1,2] in sccs\nassert [3] in sccs\n\n# All separate\nadj2 = {0:[1],1:[2],2:[]}\nsccs2 = tarjans_scc(3, adj2)\nassert len(sccs2) == 3\nassert all(len(s)==1 for s in sccs2)\nprint('PASS')"
   },
-  "related": ["kosarajus-01", "topological-sort-dfs-01", "cycle-detection-directed-01", "dfs-graph-01"],
-  "tags": ["tarjans", "SCC", "strongly-connected-components", "lowlink", "DFS", "directed-graph"]
+  "related": [
+    "kosarajus-01",
+    "topological-sort-dfs-01",
+    "cycle-detection-directed-01",
+    "dfs-graph-01"
+  ],
+  "tags": [
+    "tarjans",
+    "SCC",
+    "strongly-connected-components",
+    "lowlink",
+    "DFS",
+    "directed-graph"
+  ],
+  "prerequisites": [
+    "dfs-graph"
+  ]
 }

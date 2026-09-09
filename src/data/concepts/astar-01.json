@@ -40,6 +40,22 @@
     ],
     "test_code": "grid = [\n    [0,0,0,0,0],\n    [1,1,0,1,0],\n    [0,0,0,1,0],\n    [0,1,1,1,0],\n    [0,0,0,0,0],\n]\npath = astar(grid, (0,0), (4,4))\nassert path[0]  == (0,0)\nassert path[-1] == (4,4)\n# All cells on path must be open\nfor r,c in path:\n    assert grid[r][c] == 0, f'Wall in path at ({r},{c})'\n# Blocked grid\ngrid2 = [[0,1],[1,0]]\nassert astar(grid2,(0,0),(1,1)) == []\nprint('PASS')"
   },
-  "related": ["dijkstra-01", "bfs-01", "dfs-graph-01", "floyd-warshall-01"],
-  "tags": ["astar", "A*", "heuristic-search", "shortest-path", "pathfinding", "admissible"]
+  "related": [
+    "dijkstra-01",
+    "bfs-01",
+    "dfs-graph-01",
+    "floyd-warshall-01"
+  ],
+  "tags": [
+    "astar",
+    "A*",
+    "heuristic-search",
+    "shortest-path",
+    "pathfinding",
+    "admissible"
+  ],
+  "prerequisites": [
+    "breadth-first-search",
+    "dijkstra"
+  ]
 }

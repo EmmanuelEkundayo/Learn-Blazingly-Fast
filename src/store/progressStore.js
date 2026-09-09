@@ -1,10 +1,20 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-/**
- * Progress store — persisted to localStorage.
- * Shape per concept: { viewed, exercise_attempts, exercise_passed, last_seen, confidence }
- */
+async function getEmail() {
+  try {
+    const mod = await import('./authStore.js')
+    return mod.useAuthStore.getState().user?.email || null
+  } catch {
+    return null
+  }
+}
+
+let syncTimeout = null
+function debouncedSync(get) {
+  clearTimeout(syncTimeout)
+  syncTimeout = setTimeout(() => get().syncToServer(), 2000)
+}
 export const useProgressStore = create(
   persist(
     (set, get) => ({
@@ -47,6 +57,7 @@ export const useProgressStore = create(
             },
           }
         })
+        debouncedSync(get)
       },
 
       incrementInteractions() {
@@ -61,7 +72,6 @@ export const useProgressStore = create(
       },
 
       recordAttempt(slug, passed) {
-        // Count exercise run as an interaction
         get().incrementInteractions()
 
         set((state) => {
@@ -71,7 +81,6 @@ export const useProgressStore = create(
             newInteracted.push(slug)
           }
 
-          // Leaderboard logic
           const passedCount = Object.values(state.progress).filter(p => p.exercise_passed).length + (passed ? 1 : 0)
           const shouldPromptLeaderboard = state.leaderboard_opted_in === null && passedCount === 10
 
@@ -85,7 +94,6 @@ export const useProgressStore = create(
             },
           }
 
-          // Auto-sync
           if (state.leaderboard_opted_in === true && passed) {
             get().syncLeaderboard(nextProgress)
           }
@@ -96,6 +104,7 @@ export const useProgressStore = create(
             progress: nextProgress
           }
         })
+        debouncedSync(get)
       },
 
       setLeaderboardOptIn(optedIn, userData = {}) {
@@ -139,7 +148,7 @@ export const useProgressStore = create(
         if (!userData.email) return // skip if no info provided yet
 
         try {
-          fetch('/api/leaderboard/submit', {
+          fetch('/api/v1/leaderboard/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -156,6 +165,42 @@ export const useProgressStore = create(
 
       dismissSupportModal() {
         set({ show_support_modal: false })
+      },
+
+      async syncToServer() {
+        const email = await getEmail()
+        if (!email) return
+        const { progress, interacted_concepts, completion_dates, streak, leaderboard_opted_in, active_roadmap_slug } = get()
+        try {
+          await fetch('/api/v1/progress', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ progress, interacted_concepts, completion_dates, streak, leaderboard_opted_in, active_roadmap_slug })
+          })
+        } catch {}
+      },
+
+      async syncFromServer() {
+        const email = await getEmail()
+        if (!email) return
+        try {
+          const res = await fetch('/api/v1/progress')
+          if (res.ok) {
+            const serverData = await res.json()
+            const localPassed = Object.values(get().progress).filter(p => p.exercise_passed).length
+            const serverPassed = Object.values(serverData.progress || {}).filter(p => p.exercise_passed).length
+            if (serverPassed > localPassed) {
+              set({
+                progress: serverData.progress || {},
+                interacted_concepts: serverData.interacted_concepts || [],
+                completion_dates: serverData.completion_dates || {},
+                streak: serverData.streak || { count: 0, last_date: null },
+                leaderboard_opted_in: serverData.leaderboard_opted_in ?? null,
+                active_roadmap_slug: serverData.active_roadmap_slug || null,
+              })
+            }
+          }
+        } catch {}
       },
 
       setConfidence(slug, confidence) {

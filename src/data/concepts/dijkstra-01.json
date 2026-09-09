@@ -40,6 +40,20 @@
     ],
     "test_code": "g = {\n    0: [(1,4),(2,1)],\n    1: [(3,1)],\n    2: [(1,2),(3,5)],\n    3: []\n}\nd = dijkstra(g, 0)\nassert d[0] == 0\nassert d[1] == 3   # 0->2->1 = 1+2\nassert d[2] == 1   # 0->2\nassert d[3] == 4   # 0->2->1->3 = 1+2+1\n\n# Single node\ng2 = {0: []}\nassert dijkstra(g2, 0) == {0: 0}\nprint('PASS')"
   },
-  "related": ["bellman-ford-01", "astar-01", "prims-01", "johnsons-algorithm-01"],
-  "tags": ["dijkstra", "shortest-path", "greedy", "heap", "graph"]
+  "related": [
+    "bellman-ford-01",
+    "astar-01",
+    "prims-01",
+    "johnsons-algorithm-01"
+  ],
+  "tags": [
+    "dijkstra",
+    "shortest-path",
+    "greedy",
+    "heap",
+    "graph"
+  ],
+  "prerequisites": [
+    "breadth-first-search"
+  ]
 }

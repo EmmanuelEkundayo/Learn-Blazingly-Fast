@@ -226,10 +226,10 @@ export default function GraphCanvas({ config = {}, data }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         {/* Canvas */}
         <div className="relative flex-1 rounded-lg overflow-hidden border border-surface-600 bg-surface-800">
-          <svg ref={svgRef} className="w-full" style={{ height: 400 }} />
+          <svg ref={svgRef} className="w-full h-[280px] sm:h-[400px]" />
           {/* Legend */}
           <div className="absolute bottom-2 left-2 flex flex-wrap gap-x-3 gap-y-1">
             {[
@@ -248,7 +248,7 @@ export default function GraphCanvas({ config = {}, data }) {
 
         {/* Side panel — queue & visited */}
         {(config.show_queue !== false || config.show_visited !== false) && (
-          <div className="w-36 flex flex-col gap-2 shrink-0">
+          <div className="w-full sm:w-36 flex flex-col sm:flex-row gap-2 shrink-0">
             {config.show_queue !== false && (
               <SidePanel title="Queue" items={current?.queue ?? []} accent="dsa" />
             )}

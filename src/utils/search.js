@@ -7,7 +7,6 @@ let conceptFuseInstance = null;
 let projectFuseInstance = null;
 let cheatsheetFuseInstance = null;
 
-// Flatten cheatsheet items for search
 const cheatsheetItems = cheatsheets.flatMap(sheet =>
   sheet.sections.flatMap(sec =>
     sec.items.map(item => ({
@@ -21,9 +20,6 @@ const cheatsheetItems = cheatsheets.flatMap(sheet =>
   )
 );
 
-/**
- * Searches concepts using Fuse.js fuzzy matching.
- */
 export function searchConcepts(query) {
   const concepts = useConceptStore.getState().concepts;
   if (!concepts || concepts.length === 0) return [];
@@ -45,9 +41,6 @@ export function searchConcepts(query) {
   return conceptFuseInstance.search(query).map(r => r.item);
 }
 
-/**
- * Searches projects using Fuse.js fuzzy matching.
- */
 export function searchProjects(query) {
   const projects = useProjectStore.getState().projects;
   if (!projects || projects.length === 0) return [];
@@ -69,9 +62,6 @@ export function searchProjects(query) {
   return projectFuseInstance.search(query).map(r => r.item);
 }
 
-/**
- * Searches cheatsheet items using Fuse.js fuzzy matching.
- */
 export function searchCheatsheets(query) {
   if (!cheatsheetFuseInstance) {
     cheatsheetFuseInstance = new Fuse(cheatsheetItems, {
@@ -91,9 +81,6 @@ export function searchCheatsheets(query) {
   return cheatsheetFuseInstance.search(query).map(r => r.item);
 }
 
-/**
- * Searches concepts, projects, and cheatsheets.
- */
 export function searchAll(query) {
   if (!query.trim()) return { concepts: [], projects: [], cheatsheets: [] };
 
@@ -102,4 +89,26 @@ export function searchAll(query) {
     projects: searchProjects(query).slice(0, 4),
     cheatsheets: searchCheatsheets(query).slice(0, 5),
   };
+}
+
+export function highlightMatches(text, query) {
+  if (!query.trim() || !text) return [{ text, highlight: false }]
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  return parts.map(part => ({
+    text: part,
+    highlight: part.toLowerCase() === query.toLowerCase()
+  }))
+}
+
+export function searchAllFiltered(query, filters = {}) {
+  const results = searchAll(query)
+
+  if (filters.types?.length) {
+    if (!filters.types.includes('concept')) results.concepts = []
+    if (!filters.types.includes('project')) results.projects = []
+    if (!filters.types.includes('cheatsheet')) results.cheatsheets = []
+  }
+
+  return results
 }

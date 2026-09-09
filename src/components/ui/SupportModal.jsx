@@ -68,7 +68,7 @@ export default function SupportModal() {
     }
 
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch('/api/v1/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -80,7 +80,7 @@ export default function SupportModal() {
       localStorage.setItem('completed_support', 'true')
       toast.success(`Thank you, ${formData.name} — your review means a lot ✦`)
       dismiss()
-    } catch (err) {
+    } catch {
       toast.error('Failed to submit review. Please try again.')
     } finally {
       setIsSubmitting(false)

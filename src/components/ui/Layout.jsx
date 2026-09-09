@@ -1,12 +1,15 @@
-import { Outlet, NavLink, Link, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, Link, useLocation } from 'react-router'
 import SupportModal from './SupportModal'
 import SearchPalette from './SearchPalette.jsx'
-import { useState, useEffect } from 'react'
+import AuthModal from './AuthModal.jsx'
+import ThemeToggle from './ThemeToggle'
+import { useState, useEffect, Suspense } from 'react'
 import { toast } from 'react-hot-toast'
 import { useAuthStore } from '../../store/authStore.js'
 import { useProgressStore } from '../../store/progressStore.js'
+import { useThemeStore, applyTheme } from '../../store/themeStore'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail } from 'lucide-react'
+import { Mail, LogOut, User } from 'lucide-react'
 import {
   GridIcon, CodeIcon, MapIcon, BookIcon, RefreshIcon,
   ZapIcon, EditIcon, TrophyIcon, AwardIcon, MessageIcon, PartyIcon
@@ -37,15 +40,20 @@ const ALL_LINKS = [...PRIMARY_LINKS, ...MORE_LINKS]
 export default function Layout() {
   const [isSearchOpen, setIsSearchOpen]   = useState(false)
   const [isMobileOpen, setIsMobileOpen]   = useState(false)
+  const [isAuthOpen, setIsAuthOpen]       = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const location = useLocation()
   const userEmail = useAuthStore(s => s.userEmail)
   const userName  = useAuthStore(s => s.userName)
+  const user      = useAuthStore(s => s.user)
+  const logout    = useAuthStore(s => s.logout)
   const dismissModal = useProgressStore(s => s.dismissSupportModal)
   const leaderboardPromptPending = useProgressStore(s => s.leaderboard_prompt_pending)
   const setLeaderboardOptIn = useProgressStore(s => s.setLeaderboardOptIn)
+  const theme = useThemeStore(s => s.theme)
 
-  // Close mobile menu on route change
-  useEffect(() => { setIsMobileOpen(false) }, [location.pathname])
+  useEffect(() => { applyTheme(theme) }, [theme])
+  useEffect(() => { setIsMobileOpen(false); setIsUserMenuOpen(false) }, [location.pathname])
 
   // Close mobile menu on Escape
   useEffect(() => {
@@ -61,6 +69,15 @@ export default function Layout() {
   }, [isMobileOpen])
 
   useEffect(() => {
+    if (!isUserMenuOpen) return
+    function handler(e) {
+      if (!e.target.closest('[data-user-menu]')) setIsUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [isUserMenuOpen])
+
+  useEffect(() => {
     async function checkStatus() {
       if (!userEmail) return
       try {
@@ -70,7 +87,7 @@ export default function Layout() {
           localStorage.setItem('completed_support', 'true')
           dismissModal()
         }
-      } catch {}
+      } catch { /* offline or API error — keep current modal state */ }
     }
     checkStatus()
 
@@ -87,29 +104,29 @@ export default function Layout() {
   useEffect(() => {
     if (!leaderboardPromptPending) return
     toast((t) => (
-      <div className="flex flex-col gap-3 p-1">
-        <div className="space-y-1">
-          <p className="flex items-center gap-1.5 font-bold text-sm text-white">You've completed 10 concepts! <PartyIcon className="w-4 h-4 text-yellow-400" /></p>
-          <p className="text-xs text-gray-400">Join the public leaderboard to track your rank.</p>
+        <div className="flex flex-col gap-3 p-1">
+          <div className="space-y-1">
+            <p className="flex items-center gap-1.5 font-bold text-sm text-gray-900 dark:text-white">You've completed 10 concepts! <PartyIcon className="w-4 h-4 text-yellow-400" /></p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Join the public leaderboard to track your rank.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id)
+                setLeaderboardOptIn(true, { name: userName || 'Learner', email: userEmail, occupation: 'Learner' })
+              }}
+              className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs rounded-lg font-bold hover:bg-blue-500 transition-colors"
+            >
+              Join
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t.id); setLeaderboardOptIn(false) }}
+              className="flex-1 px-3 py-2 bg-gray-200 dark:bg-surface-700 text-gray-600 dark:text-gray-300 text-xs rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-surface-600"
+            >
+              No thanks
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              toast.dismiss(t.id)
-              setLeaderboardOptIn(true, { name: userName || 'Learner', email: userEmail, occupation: 'Learner' })
-            }}
-            className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs rounded-lg font-bold hover:bg-blue-500 transition-colors"
-          >
-            Join
-          </button>
-          <button
-            onClick={() => { toast.dismiss(t.id); setLeaderboardOptIn(false) }}
-            className="flex-1 px-3 py-2 bg-surface-700 text-gray-300 text-xs rounded-lg font-bold hover:bg-surface-600"
-          >
-            No thanks
-          </button>
-        </div>
-      </div>
     ), {
       duration: 20000,
       position: 'bottom-right',
@@ -120,14 +137,14 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b border-surface-700 bg-surface-900/95 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-surface-700 bg-white/95 dark:bg-surface-900/95 backdrop-blur-md">
         <nav className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
 
           {/* Logo */}
           <Link to="/" className="text-lg font-bold tracking-tight select-none shrink-0 mr-4">
             <span className="text-dsa-500">Learn</span>
             <span className="text-ml-500"> Blazingly</span>
-            <span className="text-white hidden sm:inline"> Fast</span>
+            <span className="text-gray-900 dark:text-white hidden sm:inline"> Fast</span>
           </Link>
 
           {/* Desktop nav - hidden on mobile */}
@@ -138,7 +155,9 @@ export default function Layout() {
                 to={to}
                 className={({ isActive }) =>
                   `px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                    isActive ? 'bg-surface-700 text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-surface-800'
+                    isActive
+                      ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-surface-800'
                   }`
                 }
               >
@@ -152,20 +171,68 @@ export default function Layout() {
 
           {/* Right controls */}
           <div className="flex items-center gap-1 ml-auto lg:ml-2">
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             {/* Search button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-800 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-surface-800 transition-colors"
               title="Search (Ctrl+K)"
             >
               <SearchIcon className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs text-gray-600 font-mono">Ctrl+K</span>
+              <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-600 font-mono">Ctrl+K</span>
             </button>
+
+            {user ? (
+              <div className="relative" data-user-menu>
+                <button
+                  onClick={() => setIsUserMenuOpen(v => !v)}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors"
+                >
+                  <span className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    {(userName || 'U').charAt(0).toUpperCase()}
+                  </span>
+                  <span className="hidden sm:inline text-gray-600 dark:text-gray-300 font-medium max-w-[100px] truncate">{userName || 'User'}</span>
+                </button>
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl shadow-2xl overflow-hidden z-50 p-1"
+                    >
+                      <div className="px-3 py-2.5 border-b border-gray-200 dark:border-surface-700 mb-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{userName || 'User'}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{userEmail}</p>
+                      </div>
+                      <button
+                        onClick={() => { setIsUserMenuOpen(false); logout() }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-surface-700/70 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors"
+              >
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
+            )}
 
             {/* Hamburger - mobile only */}
             <button
               onClick={() => setIsMobileOpen(v => !v)}
-              className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-surface-800 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-surface-800 transition-colors"
               aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileOpen}
             >
@@ -197,7 +264,7 @@ export default function Layout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="lg:hidden fixed top-14 left-0 right-0 z-40 bg-surface-900 border-b border-surface-700 shadow-2xl"
+              className="lg:hidden fixed top-14 left-0 right-0 z-40 bg-white dark:bg-surface-900 border-b border-gray-200 dark:border-surface-700 shadow-2xl"
             >
               <div className="max-w-7xl mx-auto px-4 py-4">
                 {/* Nav links in 2-column grid */}
@@ -209,8 +276,8 @@ export default function Layout() {
                       className={({ isActive }) =>
                         `flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                           isActive
-                            ? 'bg-surface-700 text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-surface-800'
+                            ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-surface-800'
                         }`
                       }
                     >
@@ -223,11 +290,11 @@ export default function Layout() {
                 {/* Search shortcut */}
                 <button
                   onClick={() => { setIsMobileOpen(false); setIsSearchOpen(true) }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-800 border border-surface-700 text-sm text-gray-400 hover:text-white transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-100 dark:bg-surface-800 border border-gray-200 dark:border-surface-700 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                 >
                   <SearchIcon className="w-4 h-4 shrink-0" />
                   <span className="flex-1 text-left">Search everything…</span>
-                  <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-surface-700 border border-surface-600 font-mono">Ctrl+K</kbd>
+                  <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-surface-700 border border-gray-300 dark:border-surface-600 font-mono">Ctrl+K</kbd>
                 </button>
               </div>
             </motion.div>
@@ -238,19 +305,22 @@ export default function Layout() {
       <main className="flex-1">
         <SearchPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         <SupportModal />
-        <Outlet />
+        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
 
-      <footer className="bg-surface-900 border-t border-surface-700 py-10 px-6 text-sm text-gray-400">
+      <footer className="bg-white dark:bg-surface-900 border-t border-gray-200 dark:border-surface-700 py-10 px-6 text-sm text-gray-500 dark:text-gray-400">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 md:gap-0 md:justify-between">
             {/* Left */}
             <div>
-              <p className="font-bold text-white text-sm mb-1">Learn Blazingly Fast</p>
-              <p className="text-gray-500 text-sm mb-2">Built for developers who learn fast.</p>
+              <p className="font-bold text-gray-900 dark:text-white text-sm mb-1">Learn Blazingly Fast</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mb-2">Built for developers who learn fast.</p>
               <a
                 href="https://learnblazinglyfast.tech"
-                className="text-gray-500 hover:text-white transition-colors text-sm"
+                className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
               >
                 learnblazinglyfast.tech
               </a>
@@ -258,7 +328,7 @@ export default function Layout() {
 
             {/* Center */}
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-3">Explore</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Explore</p>
               <div className="flex flex-col gap-1.5">
                 {[
                   ['/browse',       'Concepts'],
@@ -271,7 +341,7 @@ export default function Layout() {
                   ['/certificates', 'Certificates'],
                   ['/notes',        'Notes'],
                 ].map(([to, label]) => (
-                  <Link key={to} to={to} className="hover:text-white transition-colors">
+                  <Link key={to} to={to} className="hover:text-gray-900 dark:hover:text-white transition-colors">
                     {label}
                   </Link>
                 ))}
@@ -280,12 +350,12 @@ export default function Layout() {
 
             {/* Right */}
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-3">Get in touch</p>
-              <p className="text-gray-400 mb-3">Found a bug or have feedback?</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Get in touch</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-3">Found a bug or have feedback?</p>
               <div className="flex flex-col gap-2">
                 <a
                   href="mailto:emmanuelekundayo1234@gmail.com"
-                  className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                  className="flex items-center gap-2 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
                 >
                   <Mail size={14} />
                   emmanuelekundayo1234@gmail.com
@@ -294,7 +364,7 @@ export default function Layout() {
                   href="https://x.com/ekunday00"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                  className="flex items-center gap-2 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
                 >
                   <XSocialIcon />
                   @ekunday00
@@ -304,7 +374,7 @@ export default function Layout() {
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-surface-700 mt-6 pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+          <div className="border-t border-gray-200 dark:border-surface-700 mt-6 pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-gray-400 dark:text-gray-500">
             <span>© 2026 Learn Blazingly Fast. All rights reserved.</span>
             <span>
               Built with love by{' '}
@@ -312,7 +382,7 @@ export default function Layout() {
                 href="https://x.com/ekunday00"
                 target="_blank"
                 rel="noreferrer"
-                className="text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
               >
                 Emma
               </a>{' '}
@@ -321,6 +391,15 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+    </div>
+  )
+}
+
+// ─── Suspense fallback shown while a lazy route chunk loads ───────────────────
+function PageFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]" role="status" aria-label="Loading">
+      <div className="w-6 h-6 border-2 border-gray-300 dark:border-surface-600 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
     </div>
   )
 }
@@ -365,7 +444,9 @@ function MoreDropdown({ links }) {
       <button
         onClick={() => setOpen(v => !v)}
         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-          anyActive ? 'bg-surface-700 text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-surface-800'
+          anyActive
+            ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white'
+            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-surface-800'
         }`}
       >
         More
@@ -381,7 +462,7 @@ function MoreDropdown({ links }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-1.5 w-44 bg-surface-800 border border-surface-700 rounded-xl shadow-2xl overflow-hidden z-50 p-1"
+            className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl shadow-2xl overflow-hidden z-50 p-1"
           >
             {links.map(({ to, label }) => (
               <NavLink
@@ -389,7 +470,9 @@ function MoreDropdown({ links }) {
                 to={to}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive ? 'bg-surface-700 text-white' : 'text-gray-300 hover:text-white hover:bg-surface-700/70'
+                    isActive
+                      ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-surface-700/70'
                   }`
                 }
               >

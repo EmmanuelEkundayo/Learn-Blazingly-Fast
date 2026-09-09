@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { useParams, Link, useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import roadmaps from '../data/roadmaps/index.js'
@@ -8,6 +8,8 @@ import { useConceptStore }  from '../store/conceptStore.js'
 import { useAuthStore }     from '../store/authStore.js'
 import { generateCertificate } from '../utils/generateCertificate.js'
 import { RoadmapIcon, ClockIcon, BookIcon, GraduationIcon } from '../components/ui/Icons.jsx'
+import SEO from '../components/ui/SEO.jsx'
+import { getRoadmapMeta } from '../utils/seo'
 
 export default function Roadmap() {
   const { slug } = useParams()
@@ -52,6 +54,7 @@ export default function Roadmap() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 pb-32 space-y-12 relative">
+      <SEO {...getRoadmapMeta(roadmap)} />
       {/* Header */}
       <header className="space-y-6">
         <div className="flex items-center gap-4">

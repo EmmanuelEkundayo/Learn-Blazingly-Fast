@@ -40,6 +40,20 @@
     ],
     "test_code": "assert edit_distance('horse', 'ros') == 3\nassert edit_distance('intention', 'execution') == 5\nassert edit_distance('', 'abc') == 3\nassert edit_distance('abc', '') == 3\nassert edit_distance('abc', 'abc') == 0\nassert edit_distance('a', 'b') == 1\nprint('PASS')"
   },
-  "related": ["longest-common-subsequence-01", "palindrome-dp-01", "string-hashing-01", "memoization-vs-tabulation-01"],
-  "tags": ["edit-distance", "Levenshtein", "dynamic-programming", "string-dp", "insert-delete-replace"]
+  "related": [
+    "longest-common-subsequence-01",
+    "palindrome-dp-01",
+    "string-hashing-01",
+    "memoization-vs-tabulation-01"
+  ],
+  "tags": [
+    "edit-distance",
+    "Levenshtein",
+    "dynamic-programming",
+    "string-dp",
+    "insert-delete-replace"
+  ],
+  "prerequisites": [
+    "memoization-vs-tabulation"
+  ]
 }

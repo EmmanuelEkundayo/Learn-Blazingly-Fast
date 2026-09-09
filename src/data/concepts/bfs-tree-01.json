@@ -42,6 +42,19 @@
     ],
     "test_code": "class TreeNode:\n    def __init__(self,v,l=None,r=None): self.val=v;self.left=l;self.right=r\n\nroot=TreeNode(3,TreeNode(9),TreeNode(20,TreeNode(15),TreeNode(7)))\nassert level_order(root) == [[3],[9,20],[15,7]], 'Standard tree'\nassert level_order(TreeNode(1)) == [[1]], 'Single node'\nassert level_order(None) == [], 'Empty tree'\nroot2=TreeNode(1,TreeNode(2,TreeNode(4),TreeNode(5)),TreeNode(3))\nassert level_order(root2) == [[1],[2,3],[4,5]], 'Asymmetric tree'\nprint('PASS')"
   },
-  "related": ["dfs-preorder-01", "bfs-01", "tree-diameter-01"],
-  "tags": ["BFS", "level-order", "tree", "queue", "breadth-first"]
+  "related": [
+    "dfs-preorder-01",
+    "bfs-01",
+    "tree-diameter-01"
+  ],
+  "tags": [
+    "BFS",
+    "level-order",
+    "tree",
+    "queue",
+    "breadth-first"
+  ],
+  "prerequisites": [
+    "breadth-first-search"
+  ]
 }

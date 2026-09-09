@@ -74,5 +74,8 @@
     "scheduling",
     "concurrent",
     "frontend"
+  ],
+  "prerequisites": [
+    "virtual-dom-reconciliation"
   ]
 }

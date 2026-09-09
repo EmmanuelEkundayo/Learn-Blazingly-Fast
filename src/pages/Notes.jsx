@@ -1,6 +1,6 @@
 import { useNotesStore } from '../store/notesStore.js'
 import { useConceptStore } from '../store/conceptStore.js'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 
 export default function Notes() {

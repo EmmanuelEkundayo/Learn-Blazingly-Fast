@@ -232,7 +232,7 @@ type AdminUser = User & { role: 'admin'; permissions: string[] }`,
           label: 'Template literal types',
           language: 'typescript',
           code: `type Direction = 'left' | 'right' | 'up' | 'down'
-type Arrow = \`arrow-\${Direction\}\`
+type Arrow = \`arrow-\${Direction}\`
 // type Arrow = "arrow-left" | "arrow-right" | "arrow-up" | "arrow-down"
 
 type EventName = \`on\${Capitalize<string>}\`

@@ -44,6 +44,21 @@
     ],
     "test_code": "import numpy as np\nX = np.array([[1.,2.],[3.,4.],[5.,6.]])\ny = np.array([3.,7.,11.])\nw = np.array([0.5,0.5]); b = 0.\nw2,b2,loss = backward(X,y,w,b,lr=0.1)\nassert w2.shape==(2,), f'weights shape: {w2.shape}'\nassert float(loss)>0, 'initial loss must be positive'\nloss_after = ((X@w2+b2-y)**2).mean()\nassert loss_after < float(loss)+1e-6, f'Loss must decrease: {float(loss):.4f} -> {loss_after:.4f}'\nprint('PASS')"
   },
-  "related": ["gradient-descent-01", "neural-network-mlp-01", "activation-functions-01"],
-  "tags": ["backpropagation", "chain-rule", "gradients", "neural-network", "training", "autograd"]
+  "related": [
+    "gradient-descent-01",
+    "neural-network-mlp-01",
+    "activation-functions-01"
+  ],
+  "tags": [
+    "backpropagation",
+    "chain-rule",
+    "gradients",
+    "neural-network",
+    "training",
+    "autograd"
+  ],
+  "prerequisites": [
+    "gradient-descent",
+    "activation-functions"
+  ]
 }

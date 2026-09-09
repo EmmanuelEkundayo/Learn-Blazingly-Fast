@@ -39,6 +39,21 @@
     ],
     "test_code": "# Majority vote\npreds = [[1,0,1,0],[1,1,0,0],[1,0,0,0]]   # 3 trees\nresult = majority_vote(preds)\nassert result == [1,0,0,0]   # sample0: 1wins(3-0), s1: 0wins(2-1), s2: 0wins(2-1), s3: 0wins(3-0)\n\n# Bootstrap: same length, some duplicates\nX = [[i]*2 for i in range(10)]\ny = list(range(10))\nXb, yb = bootstrap_sample(X, y, seed=0)\nassert len(Xb) == 10\nassert len(set(tuple(x) for x in Xb)) < 10  # some duplicates\nprint('PASS')"
   },
-  "related": ["gradient-boosting-01", "bias-variance-tradeoff-01", "decision-tree-01", "cross-validation-01"],
-  "tags": ["random-forest", "bagging", "bootstrap", "ensemble", "decision-tree", "feature-importance"]
+  "related": [
+    "gradient-boosting-01",
+    "bias-variance-tradeoff-01",
+    "decision-tree-01",
+    "cross-validation-01"
+  ],
+  "tags": [
+    "random-forest",
+    "bagging",
+    "bootstrap",
+    "ensemble",
+    "decision-tree",
+    "feature-importance"
+  ],
+  "prerequisites": [
+    "decision-tree"
+  ]
 }

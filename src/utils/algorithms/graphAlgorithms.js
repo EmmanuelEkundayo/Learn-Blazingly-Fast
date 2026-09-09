@@ -143,7 +143,7 @@ export function generateDijkstraSteps(adjacency, startNode) {
       const weight = 1 
       const newDist = d + weight
       
-      if (!dist.hasOwnProperty(v) || newDist < dist[v]) {
+      if (!Object.prototype.hasOwnProperty.call(dist, v) || newDist < dist[v]) {
         dist[v] = newDist
         pq.push({ node: v, d: newDist })
         

@@ -39,6 +39,20 @@
     ],
     "test_code": "edges = [(0,1,3),(0,3,7),(1,0,8),(1,2,2),(2,0,5),(2,3,1),(3,0,2)]\ndist = floyd_warshall(4, edges)\nassert dist[0][0] == 0\nassert dist[0][2] == 5   # 0->1->2\nassert dist[0][3] == 6   # 0->1->2->3\nassert dist[3][0] == 2   # 3->0 direct\nassert dist[3][2] == 7   # 3->0->1->2\n# Unreachable\nedges2 = [(0,1,1)]\nd2 = floyd_warshall(3, edges2)\nassert d2[2][0] == float('inf')\nprint('PASS')"
   },
-  "related": ["dijkstra-01", "bellman-ford-01", "johnsons-algorithm-01", "dfs-graph-01"],
-  "tags": ["floyd-warshall", "all-pairs-shortest-paths", "dynamic-programming", "matrix", "O(V^3)"]
+  "related": [
+    "dijkstra-01",
+    "bellman-ford-01",
+    "johnsons-algorithm-01",
+    "dfs-graph-01"
+  ],
+  "tags": [
+    "floyd-warshall",
+    "all-pairs-shortest-paths",
+    "dynamic-programming",
+    "matrix",
+    "O(V^3)"
+  ],
+  "prerequisites": [
+    "dijkstra"
+  ]
 }

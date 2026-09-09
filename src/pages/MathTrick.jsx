@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Helmet } from 'react-helmet-async'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useParams, useNavigate, Link } from 'react-router'
 import Editor from '@monaco-editor/react'
-import { initPyodide, runPython, getPyodideStatus, subscribePyodideStatus } from '../utils/pyodide.js'
+import { runPython, getPyodideStatus, subscribePyodideStatus } from '../utils/pyodide.js'
 import { useProgressStore } from '../store/progressStore.js'
 import mathTricks from '../data/mathTricks/index.js'
+import SEO from '../components/ui/SEO.jsx'
 
 // ─── Category colours ─────────────────────────────────────────────────────────
 const CAT_BADGE = {
@@ -95,14 +94,12 @@ export default function MathTrick() {
 
   return (
     <>
-    <Helmet>
-      <title>{trick.title} — Learn Blazingly Fast</title>
-      <meta name="description" content={metaDesc} />
-      <meta property="og:title" content={`${trick.title} — Learn Blazingly Fast`} />
-      <meta property="og:description" content={metaDesc} />
-      <meta property="og:url" content={`https://learnblazinglyfast.tech/math/${slug}`} />
-      <link rel="canonical" href={`https://learnblazinglyfast.tech/math/${slug}`} />
-    </Helmet>
+    <SEO
+      title={`${trick.title} — Learn Blazingly Fast`}
+      description={metaDesc}
+      url={`https://learnblazinglyfast.tech/math/${slug}`}
+      type="article"
+    />
     <div className="min-h-screen bg-[#0d0d0f] flex flex-col lg:flex-row">
       <LeftPanel trick={trick} />
       <RightPanel trick={trick} navigate={navigate} />

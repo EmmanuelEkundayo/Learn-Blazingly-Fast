@@ -33,16 +33,14 @@
     }
   },
   "exercise": {
-    "type": "multiple-choice",
-    "prompt": "What is the key problem that historical markings (innovation numbers) solve in NEAT?",
-    "options": [
-      "They artificially determine the fitness score of an individual based on age.",
-      "They allow aligning structural genes during crossover to prevent corrupted offspring networks.",
-      "They make the neural network train faster using gradient descent algorithms.",
-      "They decide which species goes extinct due to stagnation."
+    "type": "fill-in-the-blank",
+    "prompt": "Complete the NEAT mutation function to insert a new node along an existing connection gene.",
+    "starter_code": "def split_connection(gene, new_node_id, next_innov_num):\n    gene.enabled = False  # Disable old connection\n    # Gene from in_node to new_node\n    gene1 = Connection(in_node=gene.in_node, out_node=new_node_id, weight=1.0, innov=next_innov_num)\n    # Gene from new_node to out_node with old weight\n    gene2 = Connection(in_node=new_node_id, out_node=gene.out_node, weight=___________, innov=next_innov_num + 1)\n    return gene1, gene2",
+    "solution": "gene.weight",
+    "hints": [
+      "To preserve existing functionality, the connection leading to the output node inherits the original gene's weight (gene.weight)."
     ],
-    "correct_index": 1,
-    "explanation": "Historical markings tell NEAT exactly which genes represent the same structural innovation across different topologies. This solves the 'competing conventions' problem during crossover, allowing us to merge two differently structured networks safely."
+    "test_code": "class Connection:\n    def __init__(self, in_node, out_node, weight, innov):\n        self.in_node = in_node\n        self.out_node = out_node\n        self.weight = weight\n        self.innov = innov\n        self.enabled = True\n\nold_gene = Connection(1, 2, 0.75, 10)\ng1, g2 = split_connection(old_gene, 3, 20)\nassert not old_gene.enabled\nassert g1.weight == 1.0\nassert g2.weight == 0.75\nprint('PASS')"
   },
   "related": [
     "genetic-algorithms-01",

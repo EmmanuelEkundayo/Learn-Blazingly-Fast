@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import roadmaps from '../data/roadmaps/index.js'
 import { useProgressStore } from '../store/progressStore.js'
 import { RoadmapIcon, ClockIcon, BookIcon } from '../components/ui/Icons.jsx'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 export default function Roadmaps() {
   const [filter, setFilter] = useState('All')
@@ -18,6 +20,7 @@ export default function Roadmaps() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
+      <SEO {...getPageMeta('/roadmaps')} />
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold text-white tracking-tight">Curated Learning Roadmaps</h1>
         <p className="text-gray-400 max-w-2xl">

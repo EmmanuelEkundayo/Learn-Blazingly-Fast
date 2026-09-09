@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import cheatsheets from '../data/cheatsheets/index.js'
 import { SheetIcon } from '../components/ui/Icons.jsx'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 const accentMap = {
   orange:  { bg: 'bg-orange-500/10',  border: 'border-orange-500/20',  text: 'text-orange-400',  btn: 'bg-orange-500 hover:bg-orange-400',  glow: 'shadow-orange-500/20' },
@@ -27,6 +29,7 @@ export default function CheatSheets() {
 
   return (
     <div className="min-h-screen bg-gray-950 px-4 py-16">
+      <SEO {...getPageMeta('/cheatsheets')} />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div

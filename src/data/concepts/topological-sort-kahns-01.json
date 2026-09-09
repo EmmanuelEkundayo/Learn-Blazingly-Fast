@@ -40,6 +40,21 @@
     ],
     "test_code": "adj  = {0:[1,2], 1:[3], 2:[3], 3:[], 4:[3]}\nresult = topological_sort_kahns(5, adj)\nassert len(result) == 5, 'All nodes in output'\n# Verify ordering: for every edge u->v, u appears before v\npos = {v:i for i,v in enumerate(result)}\nfor u in adj:\n    for v in adj[u]:\n        assert pos[u] < pos[v], f'{u} should come before {v}'\n\n# Cycle detection\nadj2 = {0:[1], 1:[2], 2:[0]}\nassert topological_sort_kahns(3, adj2) == []\nprint('PASS')"
   },
-  "related": ["topological-sort-dfs-01", "cycle-detection-directed-01", "dfs-graph-01", "bfs-01"],
-  "tags": ["topological-sort", "kahns", "BFS", "DAG", "cycle-detection", "in-degree"]
+  "related": [
+    "topological-sort-dfs-01",
+    "cycle-detection-directed-01",
+    "dfs-graph-01",
+    "bfs-01"
+  ],
+  "tags": [
+    "topological-sort",
+    "kahns",
+    "BFS",
+    "DAG",
+    "cycle-detection",
+    "in-degree"
+  ],
+  "prerequisites": [
+    "breadth-first-search"
+  ]
 }

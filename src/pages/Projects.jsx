@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useProjectStore } from '../store/projectStore.js'
 import { searchProjects } from '../utils/search.js'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 const CATEGORIES = [
   'All', 
@@ -35,7 +36,6 @@ const CAT_ACCENTS = {
 export default function Projects() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
-  const projects = useProjectStore(s => s.projects)
 
   const filtered = useMemo(() => {
     const searchResults = searchProjects(query)
@@ -45,6 +45,7 @@ export default function Projects() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <SEO {...getPageMeta('/projects')} />
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-white">Projects</h1>

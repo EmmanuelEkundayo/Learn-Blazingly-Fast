@@ -79,5 +79,8 @@
     "hooks",
     "scheduling",
     "frontend"
+  ],
+  "prerequisites": [
+    "react-fiber"
   ]
 }

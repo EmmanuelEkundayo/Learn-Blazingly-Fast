@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useProgressStore } from '../store/progressStore.js';
 import Editor from '@monaco-editor/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEO from '../components/ui/SEO.jsx';
+import { getPageMeta } from '../utils/seo';
 import { 
   Play, 
   Terminal as TerminalIcon, 
@@ -24,7 +26,9 @@ import {
   WrapText,
   Type
 } from 'lucide-react';
-import { initPyodide, runPython, getPyodideStatus, subscribePyodideStatus } from '../utils/pyodide';
+import { runPython, getPyodideStatus, subscribePyodideStatus } from '../utils/pyodide.js';
+import { runSandboxedJS } from '../utils/sandbox.js';
+import { monacoBeforeMount, EDITOR_OPTIONS } from '../utils/monacoConfig.js';
 import { playgroundTemplates } from '../data/playgroundTemplates';
 import { playgroundChallenges } from '../data/playgroundChallenges';
 import toast from 'react-hot-toast';
@@ -52,27 +56,6 @@ const DEFAULT_TEMPLATES = {
   java: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello World");\n  }\n}',
   cpp: '#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}'
 };
-
-// --- Monaco Theme Setup ---
-function monacoBeforeMount(monaco) {
-  monaco.editor.defineTheme('lbf-dark', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [
-      { token: 'comment', foreground: '6b7280' },
-      { token: 'keyword', foreground: '60a5fa' },
-      { token: 'string',  foreground: '86efac' },
-      { token: 'number',  foreground: 'fde68a' },
-    ],
-    colors: {
-      'editor.background':              '#0d0d0f',
-      'editor.lineHighlightBackground': '#1c1c22',
-      'editorLineNumber.foreground':    '#4b5563',
-      'editorCursor.foreground':        '#60a5fa',
-      'editor.selectionBackground':     '#1d4ed850',
-    },
-  });
-}
 
 // --- Sub-Components ---
 
@@ -228,21 +211,8 @@ export default function Playground() {
         if (result.stderr) log(result.stderr, 'error');
         if (result.stdout) log(result.stdout, 'output');
       } else if (language === 'javascript') {
-        const originalLog = console.log;
-        const captured = [];
-        console.log = (...args) => captured.push(args.map(a => 
-          typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
-        ).join(' '));
-
-        try {
-          const runner = new Function(targetCode);
-          runner();
-          captured.forEach(c => log(c, 'output'));
-        } catch (err) {
-          log(err.message, 'error');
-        } finally {
-          console.log = originalLog;
-        }
+        const lines = await runSandboxedJS(targetCode);
+        lines.forEach(c => log(c.text, c.kind));
       }
     } catch (err) {
       log(err.message, 'error');
@@ -279,19 +249,14 @@ export default function Playground() {
           passed = false;
         }
       } else if (language === 'javascript') {
-        let captured = '';
-        const originalLog = console.log;
-        console.log = (val) => captured = val;
+        const lines = await runSandboxedJS(wrapped);
+        const last = [...lines].reverse().find(l => l.kind === 'output');
         try {
-          const runner = new Function(wrapped);
-          runner();
-          actual = JSON.parse(captured);
+          actual = JSON.parse(last ? last.text : '');
           passed = JSON.stringify(actual) === JSON.stringify(test.expected);
-        } catch (err) {
-          actual = err.message;
+        } catch {
+          actual = last ? last.text : 'no output';
           passed = false;
-        } finally {
-          console.log = originalLog;
         }
       }
       results.push({ ...test, actual, passed });
@@ -333,6 +298,7 @@ export default function Playground() {
 
   return (
     <div className="flex flex-col bg-surface-950 text-white h-[calc(100vh-64px)] overflow-hidden">
+      <SEO {...getPageMeta('/playground')} />
       {/* --- Toolbar --- */}
       <div className="h-14 border-b border-surface-800 bg-surface-900/50 backdrop-blur flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-6">
@@ -695,18 +661,3 @@ export default function Playground() {
     </div>
   );
 }
-
-const EDITOR_OPTIONS = {
-  fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-  fontSize: 14,
-  lineHeight: 22,
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  padding: { top: 14, bottom: 14 },
-  wordWrap: 'on',
-  renderWhitespace: 'selection',
-  overviewRulerLanes: 0,
-  hideCursorInOverviewRuler: true,
-  scrollbar: { verticalScrollbarSize: 6, horizontalScrollbarSize: 6 },
-  renderLineHighlight: 'gutter',
-};

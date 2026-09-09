@@ -1,53 +1,71 @@
-import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Home       from './pages/Home.jsx'
-import Concept    from './pages/Concept.jsx'
-import Browse     from './pages/Browse.jsx'
-import Review     from './pages/Review.jsx'
-import Playground from './pages/Playground.jsx'
-import Layout     from './components/ui/Layout.jsx'
+import { useEffect, lazy } from 'react'
+import { Routes, Route } from 'react-router'
+import { Toaster } from 'react-hot-toast'
+import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
+import OnboardingTrigger from './components/ui/OnboardingTrigger.jsx'
+import Layout from './components/ui/Layout.jsx'
 import { useConceptStore } from './store/conceptStore.js'
 import { useProjectStore } from './store/projectStore.js'
-import concepts         from './data/concepts/index.js'
-import projects         from './data/projects/index.js'
-import Projects         from './pages/Projects.jsx'
-import Project          from './pages/Project.jsx'
-import Testimonials     from './pages/Testimonials.jsx'
-import Certificates     from './pages/Certificates.jsx'
-import Notes            from './pages/Notes.jsx'
-import Leaderboard from './pages/Leaderboard.jsx'
-import Roadmaps    from './pages/Roadmaps.jsx'
-import Roadmap     from './pages/Roadmap.jsx'
-import CheatSheets from './pages/CheatSheets.jsx'
-import CheatSheet  from './pages/CheatSheet.jsx'
-import MathTricks  from './pages/MathTricks.jsx'
-import MathTrick   from './pages/MathTrick.jsx'
-import { Toaster }      from 'react-hot-toast'
+import { useAuthStore } from './store/authStore.js'
+import { useProgressStore } from './store/progressStore.js'
+import concepts from './data/concepts/index.js'
+import projects from './data/projects/index.js'
+
+// Route components are lazy-loaded so heavy per-route deps (Monaco, D3) split
+// into their own chunks instead of bloating the initial bundle. The Suspense
+// boundary lives in Layout, around <Outlet />, so the nav/footer stay put.
+const Home         = lazy(() => import('./pages/Home.jsx'))
+const Concept      = lazy(() => import('./pages/Concept.jsx'))
+const Browse       = lazy(() => import('./pages/Browse.jsx'))
+const Review       = lazy(() => import('./pages/Review.jsx'))
+const Playground   = lazy(() => import('./pages/Playground.jsx'))
+const Projects     = lazy(() => import('./pages/Projects.jsx'))
+const Project      = lazy(() => import('./pages/Project.jsx'))
+const Testimonials = lazy(() => import('./pages/Testimonials.jsx'))
+const Certificates = lazy(() => import('./pages/Certificates.jsx'))
+const Notes        = lazy(() => import('./pages/Notes.jsx'))
+const Leaderboard  = lazy(() => import('./pages/Leaderboard.jsx'))
+const Roadmaps     = lazy(() => import('./pages/Roadmaps.jsx'))
+const Roadmap      = lazy(() => import('./pages/Roadmap.jsx'))
+const CheatSheets  = lazy(() => import('./pages/CheatSheets.jsx'))
+const CheatSheet   = lazy(() => import('./pages/CheatSheet.jsx'))
+const MathTricks   = lazy(() => import('./pages/MathTricks.jsx'))
+const MathTrick    = lazy(() => import('./pages/MathTrick.jsx'))
 
 export default function App() {
   const setConcepts = useConceptStore(s => s.setConcepts)
   const setProjects = useProjectStore(s => s.setProjects)
+  const initAuth = useAuthStore(s => s.init)
+  const syncProgressFromServer = useProgressStore(s => s.syncFromServer)
   useEffect(() => { 
     async function loadData() {
-      // 1. Load concepts
-      const conceptPromises = Object.values(concepts).map(load => load())
-      const conceptModules = await Promise.all(conceptPromises)
-      const conceptData = conceptModules.map(m => m.default ?? m)
-      setConcepts(conceptData)
+      try {
+        const conceptPromises = Object.values(concepts).map(load => load())
+        const conceptModules = await Promise.all(conceptPromises)
+        const conceptData = conceptModules.map(m => m.default ?? m)
+        setConcepts(conceptData)
 
-      // 2. Load projects
-      const projectPromises = Object.values(projects).map(load => load())
-      const projectModules = await Promise.all(projectPromises)
-      const projectData = projectModules.map(m => m.default ?? m)
-      setProjects(projectData)
+        const projectPromises = Object.values(projects).map(load => load())
+        const projectModules = await Promise.all(projectPromises)
+        const projectData = projectModules.map(m => m.default ?? m)
+        setProjects(projectData)
+      } catch (err) {
+        console.error('Failed to load data:', err)
+      }
     }
     
-    loadData()
-  }, [setConcepts, setProjects])
+    async function init() {
+      await loadData()
+      await initAuth()
+      syncProgressFromServer()
+    }
+    init()
+  }, [setConcepts, setProjects, initAuth, syncProgressFromServer])
 
   return (
-    <>
+    <ErrorBoundary>
       <Toaster position="top-center" />
+      <OnboardingTrigger />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/"                element={<Home />} />
@@ -69,6 +87,6 @@ export default function App() {
           <Route path="/math/:slug"      element={<MathTrick />} />
         </Route>
       </Routes>
-    </>
+    </ErrorBoundary>
   )
 }

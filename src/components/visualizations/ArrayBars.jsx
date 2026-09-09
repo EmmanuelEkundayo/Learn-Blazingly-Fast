@@ -169,7 +169,7 @@ export default function ArrayBars({ config = {}, data }) {
             Range: <span className="text-dsa-400">[{lo}…{hi}]</span>
           </span>
         )}
-        <span className="ml-auto flex gap-3">
+        <span className="sm:ml-auto flex flex-wrap gap-x-3 gap-y-1">
           {[
             { color: 'bg-blue-600',   label: 'Active' },
             { color: 'bg-amber-500',  label: 'Pivot' },
@@ -187,7 +187,7 @@ export default function ArrayBars({ config = {}, data }) {
 
       {/* Canvas */}
       <div className="rounded-lg overflow-hidden border border-surface-600 bg-surface-800">
-        <svg ref={svgRef} className="w-full" style={{ height: 300 }} />
+        <svg ref={svgRef} className="w-full h-[220px] sm:h-[300px]" />
       </div>
 
       <StepControls

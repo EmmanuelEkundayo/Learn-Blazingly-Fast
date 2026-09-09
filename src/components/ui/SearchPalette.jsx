@@ -1,15 +1,37 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
-import { searchAll } from '../../utils/search.js'
+import { searchAllFiltered, highlightMatches } from '../../utils/search.js'
+
+function HighlightedText({ text, query }) {
+  const parts = highlightMatches(text, query)
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.highlight
+          ? <mark key={i} className="bg-blue-500/30 text-blue-200 rounded px-0.5">{part.text}</mark>
+          : <span key={i}>{part.text}</span>
+      )}
+    </>
+  )
+}
+
+const FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'concept', label: 'Concepts' },
+  { key: 'project', label: 'Projects' },
+  { key: 'cheatsheet', label: 'Cheat Sheets' },
+]
 
 export default function SearchPalette({ isOpen, onClose }) {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [activeType, setActiveType] = useState('all')
   const navigate = useNavigate()
   const inputRef = useRef(null)
 
-  const results = searchAll(query)
+  const filters = activeType === 'all' ? {} : { types: [activeType] }
+  const results = searchAllFiltered(query, filters)
   const flatResults = [
     ...results.concepts.map(c => ({ ...c, type: 'concept' })),
     ...results.projects.map(p => ({ ...p, type: 'project' })),
@@ -19,18 +41,23 @@ export default function SearchPalette({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setQuery('')
+      setActiveType('all')
       setSelectedIndex(0)
       setTimeout(() => inputRef.current?.focus(), 50)
     }
   }, [isOpen])
 
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [query, activeType])
+
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setSelectedIndex(s => (s + 1) % flatResults.length)
+      setSelectedIndex(s => (s + 1) % Math.max(flatResults.length, 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setSelectedIndex(s => (s <= 0 ? flatResults.length - 1 : s - 1))
+      setSelectedIndex(s => (s <= 0 ? Math.max(flatResults.length - 1, 0) : s - 1))
     } else if (e.key === 'Enter') {
       e.preventDefault()
       if (flatResults[selectedIndex]) {
@@ -61,7 +88,6 @@ export default function SearchPalette({ isOpen, onClose }) {
           className="bg-surface-900 w-full sm:max-w-2xl sm:rounded-2xl shadow-2xl overflow-hidden border-b sm:border border-surface-700 sm:mx-4 h-[100dvh] sm:h-auto flex flex-col"
           onClick={e => e.stopPropagation()}
         >
-          {/* Input */}
           <div className="relative border-b border-surface-700 flex items-center">
             <SearchIcon className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
             <input
@@ -69,7 +95,7 @@ export default function SearchPalette({ isOpen, onClose }) {
               type="text"
               placeholder="Search concepts, projects, anything..."
               value={query}
-              onChange={e => { setQuery(e.target.value); setSelectedIndex(0); }}
+              onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               className="w-full bg-transparent py-5 px-4 pl-12 sm:pl-14 text-base sm:text-lg text-white outline-none placeholder-gray-500"
             />
@@ -85,65 +111,88 @@ export default function SearchPalette({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Results */}
-          <div className="flex-1 sm:flex-none sm:max-h-[60vh] overflow-y-auto p-2">
-            {query.trim() === '' ? (
-              <div className="py-10 text-center space-y-2">
-                <p className="text-gray-400 font-medium">Type to search the platform</p>
-                <p className="text-xs text-gray-600">Concepts · Projects · Cheat Sheets</p>
-              </div>
-            ) : flatResults.length === 0 ? (
-              <div className="py-10 text-center text-gray-500">
-                No results for "{query}"
-              </div>
-            ) : (
-              <div className="space-y-4 py-2">
-                {results.concepts.length > 0 && (
-                  <div>
-                    <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">Concepts</h4>
-                    {results.concepts.map((c, i) => (
-                      <ResultRow 
-                        key={c.slug}
-                        item={c}
-                        type="concept"
-                        isSelected={selectedIndex === i}
-                        onSelect={() => { navigate(`/concept/${c.slug}`); onClose(); }}
-                      />
-                    ))}
-                  </div>
-                )}
-                
-                {results.projects.length > 0 && (
-                  <div>
-                    <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Projects</h4>
-                    {results.projects.map((p, i) => (
-                      <ResultRow
-                        key={p.slug}
-                        item={p}
-                        type="project"
-                        isSelected={selectedIndex === (results.concepts.length + i)}
-                        onSelect={() => { navigate(`/project/${p.slug}`); onClose(); }}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {results.cheatsheets && results.cheatsheets.length > 0 && (
-                  <div>
-                    <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Cheat Sheets</h4>
-                    {results.cheatsheets.map((cs, i) => (
-                      <ResultRow
-                        key={`${cs.sheetId}-${cs.label}-${i}`}
-                        item={cs}
-                        type="cheatsheet"
-                        isSelected={selectedIndex === (results.concepts.length + results.projects.length + i)}
-                        onSelect={() => { navigate(`/cheatsheets/${cs.sheetId}`); onClose(); }}
-                      />
-                    ))}
-                  </div>
-                )}
+          <div className="flex-1 sm:flex-none sm:max-h-[60vh] overflow-y-auto">
+            {query.trim() && (
+              <div className="flex gap-2 px-4 pt-3 pb-2 overflow-x-auto">
+                {FILTERS.map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => setActiveType(f.key)}
+                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors
+                      ${activeType === f.key ? 'bg-blue-600 text-white' : 'bg-surface-800 text-gray-400 hover:text-gray-300'}`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
             )}
+
+            <div className="p-2">
+              {query.trim() === '' ? (
+                <div className="py-10 text-center space-y-2">
+                  <p className="text-gray-400 font-medium">Type to search the platform</p>
+                  <p className="text-xs text-gray-600">Concepts · Projects · Cheat Sheets</p>
+                </div>
+              ) : flatResults.length === 0 ? (
+                <div className="py-10 text-center space-y-3">
+                  <p className="text-gray-500">No results for &quot;{query}&quot;</p>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p>Try a different keyword or check the filter</p>
+                    <p>Search tips: try &quot;recursion&quot;, &quot;binary tree&quot;, &quot;react&quot;</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 py-2">
+                  {results.concepts.length > 0 && (
+                    <div>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">Concepts</h4>
+                      {results.concepts.map((c, i) => (
+                        <ResultRow
+                          key={c.slug}
+                          item={c}
+                          type="concept"
+                          query={query}
+                          isSelected={selectedIndex === i}
+                          onSelect={() => { navigate(`/concept/${c.slug}`); onClose(); }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {results.projects.length > 0 && (
+                    <div>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Projects</h4>
+                      {results.projects.map((p, i) => (
+                        <ResultRow
+                          key={p.slug}
+                          item={p}
+                          type="project"
+                          query={query}
+                          isSelected={selectedIndex === (results.concepts.length + i)}
+                          onSelect={() => { navigate(`/project/${p.slug}`); onClose(); }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {results.cheatsheets && results.cheatsheets.length > 0 && (
+                    <div>
+                      <h4 className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 border-t border-surface-800 mt-2 pt-4">Cheat Sheets</h4>
+                      {results.cheatsheets.map((cs, i) => (
+                        <ResultRow
+                          key={`${cs.sheetId}-${cs.label}-${i}`}
+                          item={cs}
+                          type="cheatsheet"
+                          query={query}
+                          isSelected={selectedIndex === (results.concepts.length + results.projects.length + i)}
+                          onSelect={() => { navigate(`/cheatsheets/${cs.sheetId}`); onClose(); }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="hidden sm:flex bg-surface-800/50 px-6 py-3 border-t border-surface-700 justify-between items-center text-[10px] text-gray-500 font-medium">
@@ -159,7 +208,7 @@ export default function SearchPalette({ isOpen, onClose }) {
   )
 }
 
-function ResultRow({ item, type, isSelected, onSelect }) {
+function ResultRow({ item, type, query, isSelected, onSelect }) {
   const DOMAIN_COLORS = {
     DSA: 'bg-dsa-600/20 text-dsa-400',
     ML: 'bg-ml-500/20 text-ml-400',
@@ -175,6 +224,8 @@ function ResultRow({ item, type, isSelected, onSelect }) {
     'Full-stack': 'bg-dsa-500/20 text-dsa-400'
   }
 
+  const title = type === 'cheatsheet' ? item.label : item.title
+
   return (
     <button
       onClick={onSelect}
@@ -188,7 +239,7 @@ function ResultRow({ item, type, isSelected, onSelect }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-bold text-sm text-gray-100 truncate">
-            {type === 'cheatsheet' ? item.label : item.title}
+            <HighlightedText text={title} query={query} />
           </span>
           {type !== 'cheatsheet' && (
             <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter

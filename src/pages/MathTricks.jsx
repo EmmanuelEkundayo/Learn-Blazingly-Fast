@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import mathTricks from '../data/mathTricks/index.js'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 // ─── Category / type accent colours ──────────────────────────────────────────
 const CAT_COLORS = {
@@ -54,6 +56,7 @@ export default function MathTricks() {
 
   return (
     <div className="min-h-screen bg-[#0d0d0f] px-4 py-12 sm:py-16">
+      <SEO {...getPageMeta('/math')} />
       <div className="max-w-7xl mx-auto">
 
         {/* ── Hero ── */}

@@ -39,6 +39,21 @@
     ],
     "test_code": "import heapq\narr1 = [9,4,7,1,6,3,8,2,5]\nheapify(arr1)\n# Verify min-heap property\ndef is_min_heap(a):\n    for i in range(len(a)):\n        l, r = 2*i+1, 2*i+2\n        if l < len(a) and a[i] > a[l]: return False\n        if r < len(a) and a[i] > a[r]: return False\n    return True\nassert is_min_heap(arr1)\nassert arr1[0] == 1  # min at root\n\n# Compare with Python's heapq\narr2 = [9,4,7,1,6,3,8,2,5]\nheapq.heapify(arr2)\nassert is_min_heap(arr2)\nprint('PASS')"
   },
-  "related": ["max-min-heap-01", "heap-operations-01", "k-way-merge-01", "quicksort-01"],
-  "tags": ["heapify", "build-heap", "O(n)", "in-place", "sift-down", "heapsort"]
+  "related": [
+    "max-min-heap-01",
+    "heap-operations-01",
+    "k-way-merge-01",
+    "quicksort-01"
+  ],
+  "tags": [
+    "heapify",
+    "build-heap",
+    "O(n)",
+    "in-place",
+    "sift-down",
+    "heapsort"
+  ],
+  "prerequisites": [
+    "heap-operations"
+  ]
 }

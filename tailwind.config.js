@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     './index.html',
     './src/**/*.{js,jsx}',
@@ -7,48 +8,49 @@ export default {
   theme: {
     extend: {
       colors: {
-        // DSA accent: blue
         dsa: {
           50:  '#eff6ff',
           400: '#60a5fa',
           500: '#3b82f6',
           600: '#2563eb',
         },
-        // ML accent: amber
         ml: {
           50:  '#fffbeb',
           400: '#fbbf24',
           500: '#f59e0b',
           600: '#d97706',
         },
-        // Frontend accent: violet
         frontend: {
           300: '#c4b5fd',
           400: '#a78bfa',
           500: '#8b5cf6',
           600: '#7c3aed',
         },
-        // Backend accent: emerald
         backend: {
           300: '#6ee7b7',
           400: '#34d399',
           500: '#10b981',
           600: '#059669',
         },
-        // Software Engineering accent: rose
         se: {
           300: '#fda4af',
           400: '#fb7185',
           500: '#f43f5e',
           600: '#e11d48',
         },
-        // Dark theme surface colors
         surface: {
-          900: '#0d0d0f',
-          800: '#141418',
-          700: '#1c1c22',
-          600: '#26262e',
-          500: '#32323c',
+          900: 'var(--surface-900)',
+          800: 'var(--surface-800)',
+          700: 'var(--surface-700)',
+          600: 'var(--surface-600)',
+          500: 'var(--surface-500)',
+        },
+        light: {
+          900: '#ffffff',
+          800: '#f8f9fa',
+          700: '#e9ecef',
+          600: '#dee2e6',
+          500: '#ced4da',
         },
       },
       fontFamily: {

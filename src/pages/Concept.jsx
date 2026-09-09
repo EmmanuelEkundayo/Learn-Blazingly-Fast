@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { useParams, Link, useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateShareCard } from '../utils/shareCard.js'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
+import SEO from '../components/ui/SEO.jsx'
+import { getConceptMeta } from '../utils/seo'
 import roadmaps           from '../data/roadmaps/index.js'
 import GraphCanvas       from '../components/visualizations/GraphCanvas.jsx'
 import ArrayBars         from '../components/visualizations/ArrayBars.jsx'
@@ -20,7 +21,13 @@ import NeuralNetDiagram  from '../components/visualizations/NeuralNetDiagram.jsx
 import VectorSpace       from '../components/visualizations/VectorSpace.jsx'
 import ArchDiagram       from '../components/visualizations/ArchDiagram.jsx'
 import StateDiagram      from '../components/visualizations/StateDiagram.jsx'
-import FillInBlank       from '../components/exercises/FillInBlank.jsx'
+import {
+  FillInBlank,
+  SpotTheBug,
+  ComplexityQuiz,
+  OrderSteps,
+  TraceOutput,
+} from '../components/exercises/index.js'
 import { complexityColor } from '../utils/complexity.js'
 import { useNotesStore } from '../store/notesStore.js'
 import { ImageIcon, LinkIcon } from '../components/ui/Icons.jsx'
@@ -48,6 +55,13 @@ const VIZ_MAP = {
 // ─── exercise registry ─────────────────────────────────────────────────────────
 const EXERCISE_MAP = {
   'fill-in-the-blank': FillInBlank,
+  'spot-the-bug':      SpotTheBug,
+  'complexity-quiz':   ComplexityQuiz,
+  'order-the-steps':   OrderSteps,
+  'order-steps':       OrderSteps,
+  'trace-the-output':  TraceOutput,
+  'trace-output':      TraceOutput,
+  'multiple-choice':   ComplexityQuiz,
 }
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
@@ -86,6 +100,7 @@ export default function Concept() {
   const setConfidence       = useProgressStore(s => s.setConfidence)
   const activeRoadmapSlug   = useProgressStore(s => s.active_roadmap_slug)
   const getRoadmapProgress  = useProgressStore(s => s.getRoadmapProgress)
+  const getProgress          = useProgressStore(s => s.getProgress)
   const incrementInteractions = useProgressStore(s => s.incrementInteractions)
 
   const activeRoadmap = useMemo(() => roadmaps.find(r => r.slug === activeRoadmapSlug), [activeRoadmapSlug])
@@ -133,7 +148,7 @@ export default function Concept() {
     )
   }
 
-  const { id, title, domain, category, difficulty, card, visualization, exercise, related, tags } = concept
+  const { id, title, domain, category, difficulty, card, visualization, exercise, related, tags, prerequisites } = concept
   const accent       = domainAccent(domain)
   const VizComp      = VIZ_MAP[visualization?.type]
   const ExComp       = EXERCISE_MAP[exercise?.type]
@@ -150,20 +165,9 @@ export default function Concept() {
     setConfidence(slug, level)
   }
 
-  const metaDescription = card?.intuition
-    ? card.intuition.slice(0, 155)
-    : `Learn ${title} — an interactive ${domain} concept with visualizations and exercises on Learn Blazingly Fast.`
-
   return (
     <>
-    <Helmet>
-      <title>{title} — Learn Blazingly Fast</title>
-      <meta name="description" content={metaDescription} />
-      <meta property="og:title" content={`${title} — Learn Blazingly Fast`} />
-      <meta property="og:description" content={metaDescription} />
-      <meta property="og:url" content={`https://learnblazinglyfast.tech/concept/${slug}`} />
-      <link rel="canonical" href={`https://learnblazinglyfast.tech/concept/${slug}`} />
-    </Helmet>
+    <SEO {...getConceptMeta(concept)} />
     <motion.div
       key={slug}
       initial={{ opacity: 0, y: 8 }}
@@ -311,7 +315,7 @@ export default function Concept() {
           <ExerciseTypeBadge type={exercise?.type} />
         </div>
 
-        <div className="px-5 py-5">
+        <div className="px-3 py-3 sm:px-5 sm:py-5">
           {ExComp ? (
             <ExComp
               exercise={exercise}
@@ -333,6 +337,24 @@ export default function Concept() {
           ROW 2.5 — PERSONAL NOTES
       ══════════════════════════════════════════ */}
       <PersonalNotes slug={slug} />
+
+      {/* ══════════════════════════════════════════
+          ROW 2.5 — PREREQUISITES
+      ══════════════════════════════════════════ */}
+      {prerequisites?.length > 0 && (
+        <section className="mb-8">
+          <SectionLabel className="mb-3">Prerequisites</SectionLabel>
+          <div className="space-y-2">
+            {prerequisites.map((prereqSlug) => (
+              <PrerequisiteCard
+                key={prereqSlug}
+                slug={prereqSlug}
+                getProgress={getProgress}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════
           ROW 3 — RELATED + TAGS
@@ -665,6 +687,45 @@ function TrashIcon({ className }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
     </svg>
+  )
+}
+
+// ─── Prerequisite card ──────────────────────────────────────────────────────────
+
+function PrerequisiteCard({ slug, getProgress }) {
+  const navigate    = useNavigate()
+  const concept     = useConceptStore(s => s.getBySlug(slug))
+  const completed   = !!getProgress(slug)?.exercise_passed
+  const accent      = domainAccent(concept?.domain)
+
+  return (
+    <button
+      onClick={() => navigate(`/concept/${slug}`)}
+      className={`w-full text-left bg-surface-800 border border-surface-700 rounded-xl p-4 flex items-center gap-3 transition-colors ${accent.ring} ${concept ? '' : 'opacity-50 pointer-events-none'}`}
+    >
+      <div className="w-8 h-8 shrink-0 rounded-lg bg-surface-700/60 flex items-center justify-center">
+        {completed ? (
+          <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-100 truncate">
+          {concept?.title ?? prettifySlug(slug)}
+        </p>
+        <p className={`text-xs font-medium mt-0.5 ${accent.text}`}>
+          {concept?.domain ?? 'Unknown'}
+        </p>
+      </div>
+      <span className="text-gray-600 text-xs shrink-0">
+        {completed ? 'Completed' : 'Not done'}
+      </span>
+    </button>
   )
 }
 

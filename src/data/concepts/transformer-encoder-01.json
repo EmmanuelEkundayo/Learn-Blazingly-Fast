@@ -39,6 +39,21 @@
     ],
     "test_code": "import math\nPE = positional_encoding(10, 8)\nassert len(PE) == 10 and len(PE[0]) == 8\n# PE[0][0] = sin(0) = 0\nassert abs(PE[0][0]) < 1e-9\n# PE[0][1] = cos(0) = 1\nassert abs(PE[0][1] - 1.0) < 1e-9\n# Values in [-1, 1]\nassert all(-1 <= PE[p][i] <= 1 for p in range(10) for i in range(8))\n# Different positions have different encodings\nassert PE[1] != PE[2]\nprint('PASS')"
   },
-  "related": ["attention-mechanism-01", "transformer-decoder-01", "bert-01", "batch-normalization-01"],
-  "tags": ["transformer", "encoder", "multi-head-attention", "positional-encoding", "layer-norm", "BERT"]
+  "related": [
+    "attention-mechanism-01",
+    "transformer-decoder-01",
+    "bert-01",
+    "batch-normalization-01"
+  ],
+  "tags": [
+    "transformer",
+    "encoder",
+    "multi-head-attention",
+    "positional-encoding",
+    "layer-norm",
+    "BERT"
+  ],
+  "prerequisites": [
+    "attention-mechanism"
+  ]
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router'
+import { motion } from 'framer-motion'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
 import { useAuthStore }     from '../store/authStore.js'

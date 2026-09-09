@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
 import { searchConcepts } from '../utils/search.js'
+import SEO from '../components/ui/SEO.jsx'
+import { getPageMeta } from '../utils/seo'
 
 // ─── constants ─────────────────────────────────────────────────────────────
 
@@ -55,6 +57,7 @@ export default function Browse() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <SEO {...getPageMeta('/browse')} />
 
       {/* ── Page title ── */}
       <div className="flex items-baseline gap-3">

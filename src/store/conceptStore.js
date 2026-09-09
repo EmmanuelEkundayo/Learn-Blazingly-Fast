@@ -13,7 +13,18 @@ export const useConceptStore = create((set, get) => ({
   },
 
   getBySlug(slug) {
-    return get().concepts.find((c) => c.slug === slug) ?? null
+    if (!slug) return null
+    const normalized = slug.toLowerCase().trim()
+    const stripped = normalized.replace(/-\d+$/, '')
+    return (
+      get().concepts.find(
+        (c) =>
+          c.slug?.toLowerCase() === normalized ||
+          c.id?.toLowerCase() === normalized ||
+          c.slug?.toLowerCase() === stripped ||
+          c.id?.toLowerCase() === stripped
+      ) ?? null
+    )
   },
 
   getByDomain(domain) {

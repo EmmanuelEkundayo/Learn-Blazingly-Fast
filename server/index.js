@@ -1,29 +1,74 @@
 import express from 'express';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import authRoutes from './auth.js';
+import { optionalAuth, requireAuth } from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json());
+
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cookieParser());
+app.use(express.json({ limit: '10kb' }));
 
 const DATA_DIR = path.join(__dirname, 'data');
 const REVIEWS_FILE = path.join(DATA_DIR, 'reviews.json');
 const LEADERBOARD_FILE = path.join(DATA_DIR, 'leaderboard.json');
+const PROGRESS_DIR = path.join(DATA_DIR, 'progress');
 
-// Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR);
 }
+if (!fs.existsSync(PROGRESS_DIR)) {
+  fs.mkdirSync(PROGRESS_DIR);
+}
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3001')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+const writeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many submissions, please slow down.' }
+});
 
 function readJSON(file) {
   if (!fs.existsSync(file)) return [];
   try {
     const data = fs.readFileSync(file, 'utf8');
     return JSON.parse(data);
-  } catch (err) {
+  } catch {
     return [];
   }
 }
@@ -38,12 +83,26 @@ function writeJSON(file, data) {
   }
 }
 
-// ─── Reviews ───────
-app.get('/api/reviews', (req, res) => {
+function sanitizeString(value, maxLength = 200) {
+  return typeof value === 'string'
+    ? value.trim().slice(0, maxLength)
+    : '';
+}
+
+function sanitizeInt(value, max) {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n) || n < 0) return 0;
+  return Math.min(n, max);
+}
+
+app.use('/api/v1/auth', authRoutes);
+
+app.use('/api/v1', apiLimiter);
+
+app.get('/api/v1/reviews', (req, res) => {
   const reviews = readJSON(REVIEWS_FILE);
-  // Anonymize reviews: only first_name, occupation, text, concepts_count
   const anon = reviews.map(r => ({
-    first_name: r.name ? r.name.split(' ')[0] : 'Anonymous',
+    first_name: r.name ? String(r.name).split(' ')[0] : 'Anonymous',
     occupation: r.occupation || 'Learner',
     review_text: r.review_text,
     concepts_seen_count: r.concepts_seen_count || 10,
@@ -52,9 +111,31 @@ app.get('/api/reviews', (req, res) => {
   res.json(anon);
 });
 
-app.post('/api/reviews', (req, res) => {
+app.post('/api/v1/reviews', writeLimiter, requireAuth, (req, res) => {
+  const { name, occupation, review_text, concepts_seen_count, rating, concepts_seen } = req.body || {};
+
+  const cleaned = {
+    name: sanitizeString(name, 100),
+    occupation: sanitizeString(occupation, 100),
+    review_text: sanitizeString(review_text, 2000),
+    concepts_seen_count: sanitizeInt(concepts_seen_count, 9999),
+    rating: Math.min(Math.max(sanitizeInt(rating, 5), 0), 5)
+  };
+
+  if (Array.isArray(concepts_seen)) {
+    cleaned.concepts_seen = concepts_seen
+      .filter(c => typeof c === 'string')
+      .slice(0, 50)
+      .map(c => c.trim().slice(0, 100))
+      .filter(Boolean);
+  }
+
+  if (!cleaned.name || !cleaned.review_text || !cleaned.name.length || !cleaned.review_text.length) {
+    return res.status(400).json({ error: 'name and review_text are required' });
+  }
+
   const reviews = readJSON(REVIEWS_FILE);
-  reviews.push({ ...req.body, submitted_at: new Date().toISOString() });
+  reviews.push({ ...cleaned, submitted_at: new Date().toISOString() });
   if (writeJSON(REVIEWS_FILE, reviews)) {
     res.status(201).json({ message: 'Review saved' });
   } else {
@@ -62,29 +143,41 @@ app.post('/api/reviews', (req, res) => {
   }
 });
 
-// ─── Support Status ───────
-app.get('/api/support-status', (req, res) => {
+app.get('/api/v1/support-status', (req, res) => {
   const { email } = req.query;
+  if (!email || typeof email !== 'string' || email.length > 320) {
+    return res.status(400).json({ error: 'email query param is required' });
+  }
   const reviews = readJSON(REVIEWS_FILE);
   const completed = reviews.some(r => r.email === email);
   res.json({ completed });
 });
 
-// ─── Leaderboard ───────
-app.post('/api/leaderboard/submit', (req, res) => {
-  const { name, email, occupation, concepts_passed, domains_completed, streak, opted_in } = req.body;
+app.post('/api/v1/leaderboard/submit', writeLimiter, optionalAuth, (req, res) => {
+  const { name, email, occupation, concepts_passed, domains_completed, streak, opted_in } = req.body || {};
   if (!opted_in) return res.status(400).json({ error: 'User did not opt in' });
 
+  const cleanName = sanitizeString(name, 100);
+  const cleanEmail = sanitizeString(email, 320);
+  const cleanOccupation = sanitizeString(occupation, 100);
+
+  if (!cleanName || !cleanEmail) {
+    return res.status(400).json({ error: 'name and email are required' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    return res.status(400).json({ error: 'Invalid email address' });
+  }
+
   let leaderboard = readJSON(LEADERBOARD_FILE);
-  const entryIndex = leaderboard.findIndex(e => e.email === email);
+  const entryIndex = leaderboard.findIndex(e => e.email === cleanEmail);
 
   const entry = {
-    name: name.split(' ')[0], // only first name
-    email, // stored for upserting, filtered on GET
-    occupation: occupation || 'Learner',
-    concepts_passed,
-    domains_completed,
-    streak: streak || 0,
+    name: cleanName.split(' ')[0],
+    email: cleanEmail,
+    occupation: cleanOccupation || 'Learner',
+    concepts_passed: sanitizeInt(concepts_passed, 10000),
+    domains_completed: sanitizeInt(domains_completed, 100),
+    streak: sanitizeInt(streak, 10000),
     last_updated: new Date().toISOString()
   };
 
@@ -101,7 +194,7 @@ app.post('/api/leaderboard/submit', (req, res) => {
   }
 });
 
-app.get('/api/leaderboard', (req, res) => {
+app.get('/api/v1/leaderboard', (req, res) => {
   const leaderboard = readJSON(LEADERBOARD_FILE);
   const sorted = leaderboard
     .sort((a, b) => b.concepts_passed - a.concepts_passed)
@@ -117,10 +210,13 @@ app.get('/api/leaderboard', (req, res) => {
   res.json(sorted);
 });
 
-app.post('/api/leaderboard/opt-out', (req, res) => {
-  const { email } = req.body;
+app.post('/api/v1/leaderboard/opt-out', writeLimiter, (req, res) => {
+  const { email } = req.body || {};
+  const cleanEmail = sanitizeString(email, 320);
+  if (!cleanEmail) return res.status(400).json({ error: 'email is required' });
+
   let leaderboard = readJSON(LEADERBOARD_FILE);
-  leaderboard = leaderboard.filter(e => e.email !== email);
+  leaderboard = leaderboard.filter(e => e.email !== cleanEmail);
   if (writeJSON(LEADERBOARD_FILE, leaderboard)) {
     res.json({ message: 'Removed from leaderboard' });
   } else {
@@ -128,7 +224,49 @@ app.post('/api/leaderboard/opt-out', (req, res) => {
   }
 });
 
-const PORT = 3001;
+function sanitizeEmail(email) {
+  return typeof email === 'string'
+    ? email.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '').slice(0, 320)
+    : '';
+}
+
+function getProgressFile(email) {
+  const safe = sanitizeEmail(email);
+  if (!safe || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe)) return null;
+  return path.join(PROGRESS_DIR, `${safe.replace(/@/g, '_at_').replace(/\./g, '_dot_')}.json`);
+}
+
+app.get('/api/v1/progress', requireAuth, (req, res) => {
+  const file = getProgressFile(req.user.email);
+  if (!file) return res.status(400).json({ error: 'Invalid email' });
+  const data = readJSON(file);
+  res.json(data && typeof data === 'object' && !Array.isArray(data) ? data : {});
+});
+
+app.put('/api/v1/progress', requireAuth, writeLimiter, (req, res) => {
+  const file = getProgressFile(req.user.email);
+  if (!file) return res.status(400).json({ error: 'Invalid email' });
+  const payload = req.body || {};
+  const safe = {
+    progress: payload.progress && typeof payload.progress === 'object' && !Array.isArray(payload.progress) ? payload.progress : {},
+    interacted_concepts: Array.isArray(payload.interacted_concepts) ? payload.interacted_concepts.slice(0, 500) : [],
+    completion_dates: payload.completion_dates && typeof payload.completion_dates === 'object' && !Array.isArray(payload.completion_dates) ? payload.completion_dates : {},
+    streak: payload.streak && typeof payload.streak === 'object' ? { count: sanitizeInt(payload.streak.count, 10000), last_date: payload.streak.last_date || null } : { count: 0, last_date: null },
+    leaderboard_opted_in: typeof payload.leaderboard_opted_in === 'boolean' ? payload.leaderboard_opted_in : null,
+    active_roadmap_slug: typeof payload.active_roadmap_slug === 'string' ? payload.active_roadmap_slug.slice(0, 200) : null,
+  };
+  if (writeJSON(file, safe)) {
+    res.json({ message: 'Progress saved' });
+  } else {
+    res.status(500).json({ error: 'Failed to save progress' });
+  }
+});
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
 });
