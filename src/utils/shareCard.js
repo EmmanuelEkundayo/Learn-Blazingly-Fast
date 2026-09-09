@@ -1,31 +1,112 @@
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas'
 
 /**
- * Generates a share card PNG from a DOM element.
- * @param {HTMLElement} element - The hidden card element to capture.
+ * Render the share card element to a high-resolution canvas.
+ */
+export async function renderCardCanvas(element) {
+  if (!element) return null
+
+  return await html2canvas(element, {
+    backgroundColor: '#0c0e14',
+    scale: 2, // 2x Retina resolution
+    logging: false,
+    useCORS: true,
+    width: element.offsetWidth || 600,
+    height: element.offsetHeight || 315,
+  })
+}
+
+/**
+ * Generates and downloads a share card PNG.
+ * @param {HTMLElement} element - The card element to capture.
  * @param {string} slug - The concept slug for the filename.
  */
 export async function generateShareCard(element, slug) {
-  if (!element) return;
-  
   try {
-    const canvas = await html2canvas(element, {
-      backgroundColor: null,
-      scale: 2, // High resolution
-      logging: false,
-      useCORS: true,
-      width: 600,
-      height: 315
-    });
-    
-    const image = canvas.toDataURL('image/png', 1.0);
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = `${slug}-lbf.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const canvas = await renderCardCanvas(element)
+    if (!canvas) return false
+
+    const image = canvas.toDataURL('image/png', 1.0)
+    const link = document.createElement('a')
+    link.href = image
+    link.download = `${slug}-learnblazinglyfast.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    return true
   } catch (err) {
-    console.error('Failed to generate share card:', err);
+    console.error('Failed to generate share card:', err)
+    return false
   }
 }
+
+/**
+ * Copies the share card image directly to the system clipboard as a PNG blob.
+ * @param {HTMLElement} element - The card element to capture.
+ * @returns {Promise<boolean>} True if copied successfully.
+ */
+export async function copyShareCardImage(element) {
+  try {
+    const canvas = await renderCardCanvas(element)
+    if (!canvas) return false
+
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return resolve(false)
+        try {
+          if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob }),
+            ])
+            resolve(true)
+          } else {
+            resolve(false)
+          }
+        } catch (clipErr) {
+          console.warn('Direct image clipboard copy not supported or denied:', clipErr)
+          resolve(false)
+        }
+      }, 'image/png')
+    })
+  } catch (err) {
+    console.error('Failed to copy card image to clipboard:', err)
+    return false
+  }
+}
+
+/**
+ * Native OS share sheet with attached PNG card file (for iOS Safari & Android Chrome).
+ * @param {HTMLElement} element - The card element to capture.
+ * @param {object} concept - Concept metadata.
+ * @returns {Promise<boolean>} True if native share succeeded.
+ */
+export async function shareCardViaNative(element, concept) {
+  if (!navigator.share || !navigator.canShare) return false
+
+  try {
+    const canvas = await renderCardCanvas(element)
+    if (!canvas) return false
+
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'))
+    if (!blob) return false
+
+    const file = new File([blob], `${concept.slug}-card.png`, { type: 'image/png' })
+    const shareData = {
+      title: `${concept.title} — Learn Blazingly Fast`,
+      text: `Mastering ${concept.title} on Learn Blazingly Fast ⚡️`,
+      url: `https://learnblazinglyfast.tech/concept/${concept.slug}`,
+      files: [file],
+    }
+
+    if (navigator.canShare({ files: [file] })) {
+      await navigator.share(shareData)
+      return true
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.warn('Native file share failed:', err)
+    }
+  }
+  return false
+}
+

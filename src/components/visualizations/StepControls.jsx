@@ -44,67 +44,72 @@ export default function StepControls({
       </div>
 
       {/* Controls row */}
-      <div className="flex items-center gap-2">
-        {/* Reset */}
-        <button
-          onClick={onReset}
-          className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors"
-          title="Reset"
-        >
-          <ResetIcon />
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-1 sm:gap-2">
+        {/* Left: Playback controls + Step counter */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Reset */}
+          <button
+            onClick={onReset}
+            className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors"
+            title="Reset"
+          >
+            <ResetIcon />
+          </button>
 
-        {/* Prev */}
-        <button
-          onClick={onPrev}
-          disabled={step === 0}
-          className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Previous step"
-        >
-          <PrevIcon />
-        </button>
+          {/* Prev */}
+          <button
+            onClick={onPrev}
+            disabled={step === 0}
+            className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Previous step"
+          >
+            <PrevIcon />
+          </button>
 
-        {/* Play / Pause */}
-        <button
-          onClick={playing ? onPause : onPlay}
-          disabled={step === totalSteps - 1}
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-dsa-600 hover:bg-dsa-500 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title={playing ? 'Pause' : 'Play'}
-        >
-          {playing ? <PauseIcon /> : <PlayIcon />}
-        </button>
+          {/* Play / Pause */}
+          <button
+            onClick={playing ? onPause : onPlay}
+            disabled={step === totalSteps - 1}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-dsa-600 hover:bg-dsa-500 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title={playing ? 'Pause' : 'Play'}
+          >
+            {playing ? <PauseIcon /> : <PlayIcon />}
+          </button>
 
-        {/* Next */}
-        <button
-          onClick={onNext}
-          disabled={step === totalSteps - 1}
-          className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Next step"
-        >
-          <NextIcon />
-        </button>
+          {/* Next */}
+          <button
+            onClick={onNext}
+            disabled={step === totalSteps - 1}
+            className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-surface-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Next step"
+          >
+            <NextIcon />
+          </button>
 
-        {/* Step counter */}
-        <span className="ml-1 text-xs text-gray-400 font-mono tabular-nums">
-          {step + 1} / {totalSteps}
-        </span>
+          {/* Step counter */}
+          <span className="ml-1 text-xs text-gray-400 font-mono tabular-nums">
+            {step + 1} / {totalSteps}
+          </span>
+        </div>
 
-        {/* Speed picker */}
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-xs text-gray-400">Speed</span>
-          {SPEEDS.map((s) => (
-            <button
-              key={s}
-              onClick={() => onSpeedChange(s)}
-              className={`text-xs px-1.5 py-0.5 rounded font-mono transition-colors ${
-                speed === s
-                  ? 'bg-dsa-600 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-surface-600'
-              }`}
-            >
-              {s}×
-            </button>
-          ))}
+        {/* Right: Speed picker */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <span className="hidden sm:inline text-xs text-gray-400">Speed</span>
+          <div className="flex items-center bg-surface-700/60 p-0.5 rounded-lg border border-surface-600/50">
+            {SPEEDS.map((s) => (
+              <button
+                key={s}
+                onClick={() => onSpeedChange(s)}
+                className={`text-[11px] sm:text-xs px-1.5 py-0.5 rounded font-mono transition-colors ${
+                  speed === s
+                    ? 'bg-dsa-600 text-white font-bold'
+                    : 'text-gray-400 hover:text-white hover:bg-surface-600'
+                }`}
+              >
+                {s}×
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

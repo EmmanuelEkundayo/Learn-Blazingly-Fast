@@ -172,7 +172,7 @@ export default function ArchDiagram({ config = {} }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-lg border border-surface-600 bg-surface-800 p-4 overflow-x-auto">
+      <div className="rounded-lg border border-surface-600 bg-surface-800 p-4 overflow-x-auto touch-pan-x">
         <div className="flex items-start gap-0 min-w-max">
           {layers.map((layer, li) => {
             const isActive = activeLayer === li
@@ -230,6 +230,13 @@ export default function ArchDiagram({ config = {} }) {
           })}
         </div>
       </div>
+
+      {layers.length > 2 && (
+        <div className="sm:hidden flex items-center justify-end gap-1 -mt-2 text-[10px] text-gray-500 font-mono">
+          <span>Swipe tiers horizontally</span>
+          <span>→</span>
+        </div>
+      )}
 
       <StepControls
         step={idx} totalSteps={steps.length} playing={playing} speed={speed}

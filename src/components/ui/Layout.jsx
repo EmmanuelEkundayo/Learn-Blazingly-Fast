@@ -114,10 +114,10 @@ export default function Layout() {
         <nav className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
 
           {/* Logo */}
-          <Link to="/" className="text-lg font-bold tracking-tight select-none shrink-0 mr-4">
+          <Link to="/" className="text-base sm:text-lg font-bold tracking-tight select-none shrink-0 mr-4 flex items-center">
             <span className="text-dsa-500">Learn</span>
-            <span className="text-ml-500"> Blazingly</span>
-            <span className="text-white hidden sm:inline"> Fast</span>
+            <span className="text-ml-500">&nbsp;Blazingly</span>
+            <span className="text-white">&nbsp;Fast</span>
           </Link>
 
           {/* Desktop nav - hidden on mobile */}
