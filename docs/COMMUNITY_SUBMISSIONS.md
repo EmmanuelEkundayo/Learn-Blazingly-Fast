@@ -27,7 +27,7 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
    ```text
    Resource: Learn Blazingly Fast
    URL: https://learnblazinglyfast.tech/
-   Source Code: https://github.com/EmmanuelEkundayo/Learning-Platform
+   Source Code: https://github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
    Category: Educational / Algorithms & Data Structures
    Description: Free, open-source visual learning platform with 550+ interactive simulations, canvas animations, and exercises for DSA, Machine Learning, System Design, and Frontend concepts. No paywall, no ads, cookie-free open analytics.
    ```
