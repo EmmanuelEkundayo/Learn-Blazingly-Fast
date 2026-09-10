@@ -15,3 +15,4 @@ Thumbs.db
 test-results/
 playwright-report/
 server/data/
+.submissions/
