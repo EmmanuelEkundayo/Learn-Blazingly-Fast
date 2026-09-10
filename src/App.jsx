@@ -6,6 +6,7 @@ import OnboardingTrigger from './components/ui/OnboardingTrigger.jsx'
 import Layout from './components/ui/Layout.jsx'
 import { useConceptStore } from './store/conceptStore.js'
 import { useProjectStore } from './store/projectStore.js'
+import { initAnalytics } from './services/analytics.js'
 import concepts from './data/concepts/index.js'
 import projects from './data/projects/index.js'
 
@@ -29,10 +30,15 @@ const CheatSheets  = lazy(() => import('./pages/CheatSheets.jsx'))
 const CheatSheet   = lazy(() => import('./pages/CheatSheet.jsx'))
 const MathTricks   = lazy(() => import('./pages/MathTricks.jsx'))
 const MathTrick    = lazy(() => import('./pages/MathTrick.jsx'))
+const Stats        = lazy(() => import('./pages/Stats.jsx'))
 
 export default function App() {
   const setConcepts = useConceptStore(s => s.setConcepts)
   const setProjects = useProjectStore(s => s.setProjects)
+  useEffect(() => {
+    initAnalytics()
+  }, [])
+
   useEffect(() => { 
     async function loadData() {
       try {
@@ -77,6 +83,8 @@ export default function App() {
           <Route path="/cheatsheets/:id" element={<CheatSheet />} />
           <Route path="/math"            element={<MathTricks />} />
           <Route path="/math/:slug"      element={<MathTrick />} />
+          <Route path="/stats"           element={<Stats />} />
+          <Route path="/analytics"       element={<Navigate to="/stats" replace />} />
           <Route path="*"                element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

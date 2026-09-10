@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateShareCard, copyShareCardImage, shareCardViaNative } from '../utils/shareCard.js'
 import { toast } from 'react-hot-toast'
+import { trackConceptView, trackExerciseAttempt, trackShare } from '../services/analytics.js'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
 import SEO from '../components/ui/SEO.jsx'
@@ -120,7 +121,10 @@ export default function Concept() {
       markViewed(slug)
       incrementInteractions()
     }
-  }, [slug, markViewed, incrementInteractions])
+    if (concept) {
+      trackConceptView(concept)
+    }
+  }, [slug, concept, markViewed, incrementInteractions])
 
   // ── loading / not found ──
   if (!concept) {
@@ -158,10 +162,24 @@ export default function Concept() {
 
   function handlePass() {
     recordAttempt(slug, true)
+    trackExerciseAttempt({
+      slug,
+      title: concept?.title,
+      domain: concept?.domain,
+      passed: true,
+      exerciseType: concept?.exercise?.type
+    })
   }
 
   function handleFail() {
     recordAttempt(slug, false)
+    trackExerciseAttempt({
+      slug,
+      title: concept?.title,
+      domain: concept?.domain,
+      passed: false,
+      exerciseType: concept?.exercise?.type
+    })
   }
 
   function handleConfidence(level) {
@@ -423,6 +441,7 @@ function ShareMenu({ concept, accent }) {
     setTimeout(() => setCopied(false), 2000)
     setOpen(false)
     toast.success('Link copied to clipboard!', { duration: 2500 })
+    trackShare({ slug: concept.slug, title: concept.title, platform: 'clipboard', method: 'copy_url' })
   }
 
   const handleXShare = async () => {
@@ -439,6 +458,7 @@ function ShareMenu({ concept, accent }) {
     // 2. Short, punchy tweet copy without @BlazinglyFast tag and without full paragraph
     const text = encodeURIComponent(`Mastering ${concept.title} ⚡️\n\nhttps://learnblazinglyfast.tech/concept/${concept.slug}\nvia Learn Blazingly Fast`)
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank')
+    trackShare({ slug: concept.slug, title: concept.title, platform: 'x_twitter', method: 'web_intent' })
     setSharing(false)
     setOpen(false)
   }
@@ -448,9 +468,11 @@ function ShareMenu({ concept, accent }) {
     const success = await copyShareCardImage(cardRef.current)
     if (success) {
       toast.success('📸 Card image copied to clipboard! Ready to paste.', { duration: 3500 })
+      trackShare({ slug: concept.slug, title: concept.title, platform: 'clipboard', method: 'copy_image' })
     } else {
       await generateShareCard(cardRef.current, concept.slug)
       toast('Card downloaded as image!', { icon: '💾', duration: 3000 })
+      trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'fallback_download' })
     }
     setSharing(false)
     setOpen(false)
@@ -460,6 +482,7 @@ function ShareMenu({ concept, accent }) {
     setSharing(true)
     await generateShareCard(cardRef.current, concept.slug)
     toast.success('Downloaded share card!', { duration: 2500 })
+    trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'png_download' })
     setSharing(false)
     setOpen(false)
   }
@@ -468,6 +491,7 @@ function ShareMenu({ concept, accent }) {
     setSharing(true)
     const shared = await shareCardViaNative(cardRef.current, concept)
     if (shared) {
+      trackShare({ slug: concept.slug, title: concept.title, platform: 'native', method: 'web_share_api' })
       setOpen(false)
     } else {
       handleXShare()

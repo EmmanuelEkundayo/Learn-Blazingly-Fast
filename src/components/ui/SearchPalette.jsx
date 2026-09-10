@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { searchAllFiltered, highlightMatches } from '../../utils/search.js'
+import { trackSearch } from '../../services/analytics.js'
 
 function HighlightedText({ text, query }) {
   const parts = highlightMatches(text, query)
@@ -51,6 +52,14 @@ export default function SearchPalette({ isOpen, onClose }) {
     setSelectedIndex(0)
   }, [query, activeType])
 
+  const handleSelect = (type, targetId) => {
+    trackSearch({ query, resultsCount: flatResults.length, selectedItem: targetId })
+    if (type === 'concept') navigate(`/concept/${targetId}`)
+    else if (type === 'project') navigate(`/project/${targetId}`)
+    else if (type === 'cheatsheet') navigate(`/cheatsheets/${targetId}`)
+    onClose()
+  }
+
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -62,10 +71,7 @@ export default function SearchPalette({ isOpen, onClose }) {
       e.preventDefault()
       if (flatResults[selectedIndex]) {
         const item = flatResults[selectedIndex]
-        if (item.type === 'concept') navigate(`/concept/${item.slug}`)
-        else if (item.type === 'project') navigate(`/project/${item.slug}`)
-        else if (item.type === 'cheatsheet') navigate(`/cheatsheets/${item.sheetId}`)
-        onClose()
+        handleSelect(item.type, item.type === 'cheatsheet' ? item.sheetId : item.slug)
       }
     } else if (e.key === 'Escape') {
       onClose()
@@ -153,7 +159,7 @@ export default function SearchPalette({ isOpen, onClose }) {
                           type="concept"
                           query={query}
                           isSelected={selectedIndex === i}
-                          onSelect={() => { navigate(`/concept/${c.slug}`); onClose(); }}
+                          onSelect={() => handleSelect('concept', c.slug)}
                         />
                       ))}
                     </div>
@@ -169,7 +175,7 @@ export default function SearchPalette({ isOpen, onClose }) {
                           type="project"
                           query={query}
                           isSelected={selectedIndex === (results.concepts.length + i)}
-                          onSelect={() => { navigate(`/project/${p.slug}`); onClose(); }}
+                          onSelect={() => handleSelect('project', p.slug)}
                         />
                       ))}
                     </div>
@@ -185,7 +191,7 @@ export default function SearchPalette({ isOpen, onClose }) {
                           type="cheatsheet"
                           query={query}
                           isSelected={selectedIndex === (results.concepts.length + results.projects.length + i)}
-                          onSelect={() => { navigate(`/cheatsheets/${cs.sheetId}`); onClose(); }}
+                          onSelect={() => handleSelect('cheatsheet', cs.sheetId)}
                         />
                       ))}
                     </div>

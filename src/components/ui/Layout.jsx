@@ -6,7 +6,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { toast } from 'react-hot-toast'
 import { useProgressStore } from '../../store/progressStore.js'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail } from 'lucide-react'
+import { Mail, BarChart3 } from 'lucide-react'
+import { trackPageView } from '../../services/analytics.js'
 import {
   GridIcon, CodeIcon, MapIcon, BookIcon, RefreshIcon,
   ZapIcon, EditIcon, TrophyIcon, AwardIcon, MessageIcon, PartyIcon
@@ -30,6 +31,7 @@ const MORE_LINKS = [
   { to: '/leaderboard',  label: 'Leaderboard'  },
   { to: '/certificates', label: 'Certificates' },
   { to: '/testimonials', label: 'Testimonials' },
+  { to: '/stats',        label: 'Open Stats'   },
 ]
 
 const ALL_LINKS = [...PRIMARY_LINKS, ...MORE_LINKS]
@@ -43,7 +45,10 @@ export default function Layout() {
   const leaderboardPromptPending = useProgressStore(s => s.leaderboard_prompt_pending)
   const setLeaderboardOptIn = useProgressStore(s => s.setLeaderboardOptIn)
 
-  useEffect(() => { setIsMobileOpen(false) }, [location.pathname])
+  useEffect(() => {
+    setIsMobileOpen(false)
+    trackPageView(location.pathname + location.search)
+  }, [location.pathname, location.search])
 
   // Close mobile menu on Escape
   useEffect(() => {
@@ -265,6 +270,7 @@ export default function Layout() {
                   ['/leaderboard',  'Leaderboard'],
                   ['/certificates', 'Certificates'],
                   ['/notes',        'Notes'],
+                  ['/stats',        'Open Analytics'],
                 ].map(([to, label]) => (
                   <Link key={to} to={to} className="hover:text-white transition-colors">
                     {label}
@@ -342,6 +348,7 @@ const NAV_ICON_COMPONENT = {
   '/leaderboard':  <TrophyIcon  className="w-4 h-4" />,
   '/certificates': <AwardIcon   className="w-4 h-4" />,
   '/testimonials': <MessageIcon className="w-4 h-4" />,
+  '/stats':        <BarChart3   className="w-4 h-4" />,
 }
 
 // ─── More dropdown (desktop) ─────────────────────────────────────────────────
