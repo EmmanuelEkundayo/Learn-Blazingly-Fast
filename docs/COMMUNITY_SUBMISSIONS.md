@@ -16,9 +16,10 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
 
 ## 1. FreeMediaHeckYeah (FMHY)
 
-- **Target Category**: Educational → [Algorithms & Data Structures](https://fmhy.net/educational#algorithms-data-structures) (listed alongside Visualgo and Algorithm Visualizer) or [Programming Lessons](https://fmhy.net/educational#programming-lessons).
-- **Repo**: [`fmhy/edit`](https://github.com/fmhy/edit) (File: `Educational.md`)
+- **Target Category**: Educational → [Algorithms & Data Structures](https://fmhy.net/educational#algorithms-data-structures) (listed alongside Visualgo and Algorithm Visualizer).
+- **Repo**: [`fmhy/edit`](https://github.com/fmhy/edit) (File: `docs/educational.md`)
 - **Website**: [fmhy.net](https://fmhy.net)
+- **Status**: ✅ **Submitted! Pull Request [#6289](https://github.com/fmhy/edit/pull/6289)**
 
 ### Method A: FMHY Discord (Fastest Review)
 1. Join the [FMHY Discord](https://discord.gg/fmhy).
@@ -33,21 +34,16 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
    ```
 
 ### Method B: GitHub Pull Request
-1. Fork [`fmhy/edit`](https://github.com/fmhy/edit).
-2. Edit `Educational.md` under `### Algorithms & Data Structures`.
-3. Add:
-   ```markdown
-   * [Learn Blazingly Fast](https://learnblazinglyfast.tech/) - Free, open-source interactive platform with visual step-by-step simulations and quizzes for 550+ CS, DSA, and ML topics.
-   ```
+- **PR Link**: [https://github.com/fmhy/edit/pull/6289](https://github.com/fmhy/edit/pull/6289)
 
 ---
 
 ## 2. Free Programming Books (`EbookFoundation/free-programming-books`) — ⭐ 340k+
 
 - **Repo**: [`EbookFoundation/free-programming-books`](https://github.com/EbookFoundation/free-programming-books)
-- **Target File**: `docs/free-programming-interactive-tutorials-en.md`
-- **Target Section**: `### Algorithms & Data Structures` or `### Computer Science`
-- **Rules**: Must follow alphabetical order and match linting schema.
+- **Target File**: `more/free-programming-interactive-tutorials-en.md`
+- **Target Section**: `### Language Agnostic` (alphabetical under L)
+- **Status**: ✅ **Submitted! Pull Request [#13455](https://github.com/EbookFoundation/free-programming-books/pull/13455)**
 
 ### Exact Markdown Entry:
 ```markdown
@@ -72,7 +68,8 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
 
 - **Repo**: [`tayllan/awesome-algorithms`](https://github.com/tayllan/awesome-algorithms)
 - **Target File**: `README.md`
-- **Target Section**: `## Websites` or `## Visualizers`
+- **Target Section**: `### Interactive Learning & Visualization`
+- **Status**: ✅ **Submitted! Pull Request [#1179](https://github.com/tayllan/awesome-algorithms/pull/1179)**
 
 ### Exact Markdown Entry:
 ```markdown
@@ -81,15 +78,16 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
 
 ---
 
-## 4. Awesome Computer Science (`ayush-raj-13/awesome-computer-science`)
+## 4. Awesome LeetCode Resources (`ashishps1/awesome-leetcode-resources`) — ⭐ 17.8k+
 
-- **Repo**: [`ayush-raj-13/awesome-computer-science`](https://github.com/ayush-raj-13/awesome-computer-science)
+- **Repo**: [`ashishps1/awesome-leetcode-resources`](https://github.com/ashishps1/awesome-leetcode-resources)
 - **Target File**: `README.md`
-- **Target Section**: `Interactive Learning` / `Online Practice`
+- **Target Section**: `## 🔎 Visualization`
+- **Status**: ✅ **Submitted! Pull Request [#48](https://github.com/ashishps1/awesome-leetcode-resources/pull/48)**
 
 ### Exact Markdown Entry:
 ```markdown
-* [Learn Blazingly Fast](https://learnblazinglyfast.tech) - Visual learning platform covering 550+ computer science topics across algorithms, architecture, machine learning, and web development.
+- [Learn Blazingly Fast](https://learnblazinglyfast.tech/) - Interactive step-by-step visual simulations and exercises for 550+ DSA and computer science concepts
 ```
 
 ---
