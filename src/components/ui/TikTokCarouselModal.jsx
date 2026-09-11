@@ -6,6 +6,8 @@ import {
   downloadSlidePNG,
   copySlideImageToClipboard,
   exportCarouselZip,
+  exportVideoClip,
+  isVideoExportSupported,
   getTikTokCaption,
   openTikTokUpload
 } from '../../utils/tiktokExport.js'
@@ -23,8 +25,14 @@ const SLIDE_NAMES = [
 
 export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }) {
   const [activeSlide, setActiveSlide] = useState(0)
+  const [exportMode, setExportMode] = useState('video') // 'video' | 'carousel'
   const [exportingZip, setExportingZip] = useState(false)
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 7 })
+  const [exportingVideo, setExportingVideo] = useState(false)
+  const [videoProgress, setVideoProgress] = useState({ percent: 0, currentSec: 0, totalSec: 15, message: '' })
+  const [videoResult, setVideoResult] = useState(null)
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false)
+  const [previewTimer, setPreviewTimer] = useState(0)
   const [copiedCaption, setCopiedCaption] = useState(false)
   const [capturedVisualUrl, setCapturedVisualUrl] = useState(null)
 
@@ -80,12 +88,95 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     return () => { active = false }
   }, [isOpen])
 
+  // 15-second slideshow preview playback
+  useEffect(() => {
+    if (!isPlayingPreview) return
+    const SCHEDULE = [
+      { start: 0, end: 2.0, idx: 0 },
+      { start: 2.0, end: 5.0, idx: 1 },
+      { start: 5.0, end: 7.0, idx: 2 },
+      { start: 7.0, end: 9.0, idx: 3 },
+      { start: 9.0, end: 11.0, idx: 4 },
+      { start: 11.0, end: 13.0, idx: 5 },
+      { start: 13.0, end: 15.0, idx: 6 },
+    ]
+
+    const interval = setInterval(() => {
+      setPreviewTimer((prev) => {
+        const next = Math.round((prev + 0.1) * 10) / 10
+        if (next >= 15.0) {
+          setIsPlayingPreview(false)
+          setActiveSlide(0)
+          return 0
+        }
+        const currentSlot = SCHEDULE.find((s) => next >= s.start && next < s.end)
+        if (currentSlot && currentSlot.idx !== activeSlide) {
+          setActiveSlide(currentSlot.idx)
+        }
+        return next
+      })
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [isPlayingPreview, activeSlide])
+
   if (!isOpen || !concept) return null
 
   const domain = concept.domain || 'Computer Science'
   const card = concept.card || {}
   const exercise = concept.exercise || {}
   const totalSlides = SLIDE_NAMES.length
+
+  const togglePlayPreview = () => {
+    if (isPlayingPreview) {
+      setIsPlayingPreview(false)
+    } else {
+      setPreviewTimer(0)
+      setActiveSlide(0)
+      setIsPlayingPreview(true)
+    }
+  }
+
+  const handleExportVideoClipAndOpenTikTok = async () => {
+    const elements = slideRefs.map(r => r.current).filter(Boolean)
+    if (elements.length < totalSlides) {
+      toast.error('Preparing slide frames, please try again in a moment.')
+      return
+    }
+
+    if (!isVideoExportSupported()) {
+      toast.error('Video recording is not supported in this browser. Please use the 7-Slide Carousel ZIP export.', { duration: 5000 })
+      setExportMode('carousel')
+      return
+    }
+
+    setExportingVideo(true)
+    setVideoProgress({ percent: 0, currentSec: 0, totalSec: 15, message: 'Starting video engine...' })
+
+    const caption = getTikTokCaption(concept)
+    try {
+      await navigator.clipboard.writeText(caption)
+    } catch {
+      // ignore
+    }
+
+    const result = await exportVideoClip(elements, concept.slug, (prog) => {
+      setVideoProgress(prog)
+    })
+
+    setExportingVideo(false)
+
+    if (result && result.success) {
+      setVideoResult(result)
+      toast.success('15-Second video downloaded & caption copied! Opening TikTok Studio...', { duration: 4500 })
+      trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_video_15s', method: 'export_video' })
+      setTimeout(() => {
+        openTikTokUpload()
+      }, 800)
+    } else {
+      toast.error(result?.error || 'Failed to generate video clip')
+    }
+  }
 
   const handleDownloadActive = async () => {
     const el = slideRefs[activeSlide]?.current
@@ -181,13 +272,13 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white tracking-tight">TikTok Carousel Exporter</h2>
+                <h2 className="text-sm font-bold text-white tracking-tight">TikTok & Shorts Exporter</h2>
                 <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
-                  4:5 Carousel
+                  {exportMode === 'video' ? '15s Video Clip' : '4:5 Photo Carousel'}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Marketing carousel for {concept.title} • Hook, simulation image, definition, gotchas, quiz & CTA.
+                Export {concept.title} as a 15-second motion video or 7-slide swipe carousel.
               </p>
             </div>
           </div>
@@ -203,14 +294,17 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
         {/* Body: Preview Box & Controls */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col lg:flex-row gap-6 items-center lg:items-start justify-center">
 
-          {/* Left: 4:5 Carousel Preview */}
+          {/* Left: 4:5 Carousel & Video Preview */}
           <div className="flex flex-col items-center gap-3">
             {/* Slide Navigation Buttons */}
             <div className="flex items-center gap-1.5 p-1 bg-[#111622] border border-[#1e2638] rounded-xl overflow-x-auto max-w-full">
               {SLIDE_NAMES.map((name, i) => (
                 <button
                   key={name}
-                  onClick={() => setActiveSlide(i)}
+                  onClick={() => {
+                    setIsPlayingPreview(false)
+                    setActiveSlide(i)
+                  }}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                     activeSlide === i
                       ? 'bg-blue-600 text-white'
@@ -224,6 +318,38 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
 
             {/* 4:5 Card Mockup Frame */}
             <div className="relative rounded-2xl border border-[#1e2638] shadow-2xl p-1 bg-[#0b0e14] overflow-hidden">
+              {/* Story Segment Progress Bar Overlay when in Video Mode */}
+              {exportMode === 'video' && (
+                <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex flex-col gap-1 pointer-events-none">
+                  <div className="grid grid-cols-7 gap-1">
+                    {SLIDE_NAMES.map((_, i) => {
+                      const isPast = i < activeSlide
+                      const isCurrent = i === activeSlide
+                      return (
+                        <div key={i} className="h-1 rounded-full bg-white/20 overflow-hidden">
+                          <div
+                            className={`h-full bg-[#38bdf8] transition-all ${
+                              isPast ? 'w-full' : isCurrent ? 'w-full duration-1000' : 'w-0'
+                            }`}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between text-[8px] font-mono text-slate-400 px-0.5">
+                    <span className="text-blue-400 font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                      15s Video Clip Mode
+                    </span>
+                    <span className="text-slate-300 font-semibold">
+                      {isPlayingPreview
+                        ? `${previewTimer.toFixed(1)}s / 15.0s`
+                        : `Slide 0${activeSlide + 1} / 07`}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Preview Window (360x450 in 4:5 ratio) */}
               <div className="w-[320px] sm:w-[360px] aspect-[4/5] overflow-hidden rounded-xl relative bg-[#0b0e14]">
                 <SlideContent
@@ -239,14 +365,20 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
 
               {/* Prev / Next Chevrons */}
               <button
-                onClick={() => setActiveSlide((s) => (s > 0 ? s - 1 : totalSlides - 1))}
+                onClick={() => {
+                  setIsPlayingPreview(false)
+                  setActiveSlide((s) => (s > 0 ? s - 1 : totalSlides - 1))
+                }}
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/70 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition-transform hover:scale-105"
                 title="Previous Slide"
               >
                 ←
               </button>
               <button
-                onClick={() => setActiveSlide((s) => (s < totalSlides - 1 ? s + 1 : 0))}
+                onClick={() => {
+                  setIsPlayingPreview(false)
+                  setActiveSlide((s) => (s < totalSlides - 1 ? s + 1 : 0))
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/70 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition-transform hover:scale-105"
                 title="Next Slide"
               >
@@ -254,79 +386,206 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
               </button>
             </div>
 
-            <div className="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
-              <span>Slide {String(activeSlide + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}</span>
-              <span>•</span>
-              <span className="text-blue-400">learnblazinglyfast.tech</span>
+            {/* Bottom Preview Controls Row */}
+            <div className="flex items-center justify-between w-full max-w-[360px] px-1">
+              <button
+                onClick={togglePlayPreview}
+                className="py-1.5 px-3 rounded-lg bg-[#111622] hover:bg-[#1a2234] border border-[#1e2638] text-xs font-semibold text-white flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                {isPlayingPreview ? (
+                  <>
+                    <PauseIcon className="w-3 h-3 text-amber-400" />
+                    <span>Pause Preview</span>
+                  </>
+                ) : (
+                  <>
+                    <PlayIcon className="w-3 h-3 text-blue-400" />
+                    <span>Play 15s Preview</span>
+                  </>
+                )}
+              </button>
+
+              <div className="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
+                <span>Slide {String(activeSlide + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}</span>
+                <span>•</span>
+                <span className="text-blue-400">learnblazinglyfast.tech</span>
+              </div>
             </div>
           </div>
 
           {/* Right: Export & Sharing Actions */}
           <div className="w-full lg:w-80 flex flex-col gap-3.5">
 
-            {/* Primary Action: Download All & Open TikTok */}
-            <div className="p-4 rounded-xl bg-[#111622] border border-blue-500/30 space-y-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white">Export & Publish</h3>
-                  <span className="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                    Auto-Open TikTok
-                  </span>
+            {/* Export Mode Switcher */}
+            <div className="flex items-center p-1 bg-[#0d121c] border border-[#1e2638] rounded-xl w-full">
+              <button
+                onClick={() => setExportMode('video')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  exportMode === 'video'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <VideoIcon className="w-3.5 h-3.5" />
+                <span>15s Video Clip</span>
+              </button>
+              <button
+                onClick={() => setExportMode('carousel')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  exportMode === 'carousel'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <LayersIcon className="w-3.5 h-3.5" />
+                <span>7-Slide Carousel</span>
+              </button>
+            </div>
+
+            {/* Mode A: 15s Video Clip Export */}
+            {exportMode === 'video' && (
+              <div className="p-4 rounded-xl bg-[#111622] border border-blue-500/30 space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white">15-Second Motion Video</h3>
+                    <span className="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                      MP4 / WebM
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Combines all 7 slides into a continuous 15-second video clip with smooth cross-fades, live visualizer frame, and story timer.
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Downloads all 7 slides at 1080×1350, copies caption, and opens TikTok Studio upload.
-                </p>
-              </div>
 
-              <button
-                onClick={handleExportZipAndOpenTikTok}
-                disabled={exportingZip}
-                className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
-              >
-                {exportingZip ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Rendering ({exportProgress.current}/{exportProgress.total})...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadIcon className="w-4 h-4" />
-                    <span>Download All & Open TikTok ↗</span>
-                  </>
+                {/* Encoding Progress Bar */}
+                {exportingVideo && (
+                  <div className="p-3 rounded-lg bg-[#0b0e14] border border-[#1e2638] space-y-2">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-300">{videoProgress.message || 'Encoding...'}</span>
+                      <span className="text-blue-400 font-bold">{videoProgress.percent}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-[#161d2d] overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-200"
+                        style={{ width: `${videoProgress.percent}%` }}
+                      />
+                    </div>
+                  </div>
                 )}
-              </button>
 
-              <button
-                onClick={openTikTokUpload}
-                className="w-full py-1.5 text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 transition-colors"
-              >
-                <span>Just open TikTok Studio</span>
-                <span className="text-[10px]">↗</span>
-              </button>
-            </div>
+                {/* Generated Video Player */}
+                {videoResult && !exportingVideo && (
+                  <div className="space-y-2">
+                    <div className="relative rounded-lg overflow-hidden border border-[#1e2638] bg-black aspect-[4/5] max-h-48">
+                      <video
+                        src={videoResult.url}
+                        controls
+                        loop
+                        autoPlay
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-emerald-400 font-semibold">✓ {videoResult.filename}</span>
+                      <a
+                        href={videoResult.url}
+                        download={videoResult.filename}
+                        className="text-blue-400 hover:underline"
+                      >
+                        Download Again
+                      </a>
+                    </div>
+                  </div>
+                )}
 
-            {/* Quick Actions for Current Slide */}
-            <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-2">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Current Slide Actions</h4>
-
-              <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={handleDownloadActive}
-                  className="py-2 px-2.5 rounded-lg text-xs font-medium bg-[#161d2d] hover:bg-[#1f283d] text-white transition-colors flex items-center justify-center gap-1.5"
+                  onClick={handleExportVideoClipAndOpenTikTok}
+                  disabled={exportingVideo}
+                  className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
                 >
-                  <DownloadIcon className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Download PNG</span>
+                  {exportingVideo ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Encoding ({videoProgress.currentSec || 0}s / 15.0s)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <VideoIcon className="w-4 h-4" />
+                      <span>{videoResult ? 'Re-Export 15s Video Clip ↗' : 'Export 15s Video Clip & Open TikTok ↗'}</span>
+                    </>
+                  )}
                 </button>
 
                 <button
-                  onClick={handleCopyActiveImage}
-                  className="py-2 px-2.5 rounded-lg text-xs font-medium bg-[#161d2d] hover:bg-[#1f283d] text-white transition-colors flex items-center justify-center gap-1.5"
+                  onClick={openTikTokUpload}
+                  className="w-full py-1.5 text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 transition-colors"
                 >
-                  <CopyIcon className="w-3.5 h-3.5 text-slate-300" />
-                  <span>Copy Image</span>
+                  <span>Just open TikTok Studio</span>
+                  <span className="text-[10px]">↗</span>
                 </button>
               </div>
-            </div>
+            )}
+
+            {/* Mode B: 7-Slide Carousel ZIP Export */}
+            {exportMode === 'carousel' && (
+              <div className="p-4 rounded-xl bg-[#111622] border border-blue-500/30 space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white">7-Slide Photo Carousel</h3>
+                    <span className="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                      ZIP Bundle
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Downloads all 7 slides at 1080×1350 for swipeable TikTok / Instagram Photo Mode.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleExportZipAndOpenTikTok}
+                  disabled={exportingZip}
+                  className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  {exportingZip ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Rendering ({exportProgress.current}/{exportProgress.total})...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadIcon className="w-4 h-4" />
+                      <span>Download All Slides & Open TikTok ↗</span>
+                    </>
+                  )}
+                </button>
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={handleDownloadActive}
+                    className="py-2 px-2 rounded-lg text-xs font-medium bg-[#161d2d] hover:bg-[#1f283d] text-white transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <DownloadIcon className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Slide PNG</span>
+                  </button>
+
+                  <button
+                    onClick={handleCopyActiveImage}
+                    className="py-2 px-2 rounded-lg text-xs font-medium bg-[#161d2d] hover:bg-[#1f283d] text-white transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <CopyIcon className="w-3.5 h-3.5 text-slate-300" />
+                    <span>Copy Image</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={openTikTokUpload}
+                  className="w-full py-1 text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 transition-colors"
+                >
+                  <span>Just open TikTok Studio</span>
+                  <span className="text-[10px]">↗</span>
+                </button>
+              </div>
+            )}
 
             {/* Caption Generator */}
             <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-2">
@@ -348,9 +607,19 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
             {/* Strategy Notes */}
             <div className="p-3 rounded-xl bg-[#0d121c] border border-[#1e2638] text-[11px] text-slate-400 space-y-1">
               <p className="font-semibold text-slate-300">Format Strategy:</p>
-              <p>• Post as **Photo Mode (Swipe Carousel)**.</p>
-              <p>• Pin comment: *"What's your solution to Slide 6?"*</p>
-              <p>• Clean dark theme • Zero emojis • Directs viewers to website.</p>
+              {exportMode === 'video' ? (
+                <>
+                  <p>• Post as **Video (15 Seconds)**.</p>
+                  <p>• Fast-paced algorithm demo with zero textbook fluff.</p>
+                  <p>• Ask viewers in comments: *"Did you solve the quiz at 0:11?"*</p>
+                </>
+              ) : (
+                <>
+                  <p>• Post as **Photo Mode (Swipe Carousel)**.</p>
+                  <p>• Swipe through 7 cards at viewer's own pace.</p>
+                  <p>• Pin comment: *"What's your solution to Slide 6?"*</p>
+                </>
+              )}
             </div>
 
           </div>
@@ -1324,6 +1593,42 @@ function CloseIcon({ className }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+function VideoIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </svg>
+  )
+}
+
+function PlayIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="6 4 20 12 6 20 6 4" />
+    </svg>
+  )
+}
+
+function PauseIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="4" width="4" height="16" rx="1" />
+      <rect x="14" y="4" width="4" height="16" rx="1" />
+    </svg>
+  )
+}
+
+function LayersIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
     </svg>
   )
 }
