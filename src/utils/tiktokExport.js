@@ -2,14 +2,21 @@ import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
 
 /**
- * Renders a slide element to a high-resolution canvas formatted for TikTok (9:16).
+ * Open TikTok Web Upload studio in a new tab.
+ */
+export function openTikTokUpload() {
+  window.open('https://www.tiktok.com/upload?from=webapp', '_blank', 'noopener,noreferrer')
+}
+
+/**
+ * Renders a slide element to a high-resolution canvas formatted in 4:5 vertical carousel ratio (1080x1350).
  */
 export async function renderSlideCanvas(element) {
   if (!element) return null
 
   return await html2canvas(element, {
-    backgroundColor: '#0a0d14',
-    scale: 2.5, // Crisp 1080x1920 equivalent
+    backgroundColor: '#0b0e14',
+    scale: 2.0, // 540x675 * 2 = 1080x1350 crisp native resolution
     logging: false,
     useCORS: true,
     allowTaint: true,
@@ -27,7 +34,7 @@ export async function downloadSlidePNG(element, filename) {
     const image = canvas.toDataURL('image/png', 1.0)
     const link = document.createElement('a')
     link.href = image
-    link.download = filename || 'tiktok-slide.png'
+    link.download = filename || 'carousel-slide.png'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -72,28 +79,14 @@ export async function copySlideImageToClipboard(element) {
 
 /**
  * Exports all slides bundled as a single ZIP file containing:
- * - 01-cover.png
- * - 02-simulation.png
- * - 03-intuition.png
- * - 04-gotchas.png
- * - 05-terminal-exercise.png
- * - 06-call-to-action.png
- * - caption.txt (pre-formatted TikTok caption & hashtags)
+ * - 01-*.png through 0N-*.png
+ * - caption.txt (clean, developer-tailored TikTok/LinkedIn caption with zero emojis)
  */
-export async function exportCarouselZip(slideElements, concept, onProgress) {
+export async function exportCarouselZip(slideElements, slug, filenames, captionText, onProgress) {
   try {
     const zip = new JSZip()
-    const folderName = `${concept.slug}-tiktok-carousel`
+    const folderName = `${slug}-carousel-slides`
     const folder = zip.folder(folderName)
-
-    const filenames = [
-      '01-cover.png',
-      '02-visual-simulation.png',
-      '03-intuition-analogy.png',
-      '04-gotchas-pro-tips.png',
-      '05-terminal-exercise.png',
-      '06-call-to-action.png',
-    ]
 
     for (let i = 0; i < slideElements.length; i++) {
       if (onProgress) {
@@ -106,13 +99,13 @@ export async function exportCarouselZip(slideElements, concept, onProgress) {
       if (canvas) {
         const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'))
         if (blob) {
-          folder.file(filenames[i] || `slide-0${i + 1}.png`, blob)
+          const fname = filenames?.[i] || `slide-0${i + 1}.png`
+          folder.file(fname, blob)
         }
       }
     }
 
-    // Include pre-written viral TikTok caption file
-    const captionText = getTikTokCaption(concept)
+    // Include caption file
     folder.file('caption.txt', captionText)
 
     const zipContent = await zip.generateAsync({ type: 'blob' })
@@ -132,25 +125,42 @@ export async function exportCarouselZip(slideElements, concept, onProgress) {
 }
 
 /**
- * Generates an engaging, algorithm-optimized TikTok caption.
+ * Generates a clean, developer-tailored TikTok caption without emojis.
  */
-export function getTikTokCaption(concept) {
-  const title = concept.title || 'Tech Concept'
-  const domain = concept.domain || 'Computer Science'
+export function getTikTokCaption(concept, mode = 'concept') {
+  if (mode === 'manifesto') {
+    return `The Visual Dictionary Modern Developers Are Missing.
 
-  return `Master ${title} in 60 seconds ⚡️ (Swipe for the breakdown)
+Why 45-minute tutorials and static documentation do not cut it in the age of AI.
 
-💡 Tech Concept of the Day: ${title}
-📚 Domain: ${domain}
-🧠 Can you spot the answer in Slide 5? Drop your solution in the comments! 👇
+Algorithms are living systems. Explore 550+ interactive step-by-step visualizers:
+learnblazinglyfast.tech
 
-Learn 550+ concepts with interactive step-by-step simulators:
-🔗 learnblazinglyfast.tech (Link in bio)
+100% Free & Open Source on GitHub:
+github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
 
-⭐ 100% Free & Open Source on GitHub:
-EmmanuelEkundayo/Learn-Blazingly-Fast
+Save this post for your technical interview prep and drop a comment if you would like to contribute.
 
-Like & share to help another developer level up! 🚀
+#coding #programming #developer #softwareengineer #computerscience #algorithms #learnblazinglyfast #webdev #frontend #systemdesign #codinginterview`
+  }
 
-#coding #programming #developer #softwareengineer #tech #computerscience #algorithms #learnblazinglyfast #webdev #frontend #systemdesign #codinginterview`
+  const title = concept?.title || 'Tech Concept'
+  const domain = concept?.domain || 'Computer Science'
+
+  return `The Visual Guide to ${title}.
+
+Domain: ${domain}
+Category: Visual Tech Dictionary for Developers
+
+Can you solve the coding challenge on Slide 06? Drop your answer in the comments.
+
+Explore 550+ interactive step-by-step visualizers:
+learnblazinglyfast.tech
+
+100% Free & Open Source on GitHub:
+github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
+
+Like and share to support open-source developer tooling.
+
+#coding #programming #developer #softwareengineer #computerscience #algorithms #learnblazinglyfast #webdev #frontend #systemdesign #codinginterview`
 }

@@ -7,12 +7,12 @@ export async function renderCardCanvas(element) {
   if (!element) return null
 
   return await html2canvas(element, {
-    backgroundColor: '#0c0e14',
-    scale: 2, // 2x Retina resolution
+    backgroundColor: '#0b0e14',
+    scale: 1.5, // 1200x630 * 1.5 = 1800x945 ultra-crisp output
     logging: false,
     useCORS: true,
-    width: element.offsetWidth || 600,
-    height: element.offsetHeight || 315,
+    width: element.offsetWidth || 1200,
+    height: element.offsetHeight || 630,
   })
 }
 
@@ -93,7 +93,7 @@ export async function shareCardViaNative(element, concept) {
     const file = new File([blob], `${concept.slug}-card.png`, { type: 'image/png' })
     const shareData = {
       title: `${concept.title} — Learn Blazingly Fast`,
-      text: `Mastering ${concept.title} on Learn Blazingly Fast ⚡️`,
+      text: `The Visual Guide to ${concept.title} on Learn Blazingly Fast`,
       url: `https://learnblazinglyfast.tech/concept/${concept.slug}`,
       files: [file],
     }
@@ -102,11 +102,11 @@ export async function shareCardViaNative(element, concept) {
       await navigator.share(shareData)
       return true
     }
+    return false
   } catch (err) {
     if (err.name !== 'AbortError') {
-      console.warn('Native file share failed:', err)
+      console.warn('Native share failed, falling back:', err)
     }
+    return false
   }
-  return false
 }
-

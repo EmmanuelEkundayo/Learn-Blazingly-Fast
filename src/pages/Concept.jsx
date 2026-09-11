@@ -451,14 +451,13 @@ function ShareMenu({ concept, accent }) {
     // 1. Automatically copy the high-res card image to clipboard
     const imageCopied = await copyShareCardImage(cardRef.current)
     if (imageCopied) {
-      toast.success('📸 Card image copied! Paste (Cmd+V) directly into your tweet.', {
-        duration: 4500,
-        icon: '⚡️',
+      toast.success('Card image copied to clipboard. Ready to paste.', {
+        duration: 4000,
       })
     }
 
-    // 2. Short, punchy tweet copy without @BlazinglyFast tag and without full paragraph
-    const text = encodeURIComponent(`Mastering ${concept.title} ⚡️\n\nhttps://learnblazinglyfast.tech/concept/${concept.slug}\nvia Learn Blazingly Fast`)
+    // 2. Short, punchy tweet copy without emojis
+    const text = encodeURIComponent(`The Visual Guide to ${concept.title}\n\nhttps://learnblazinglyfast.tech/concept/${concept.slug}\nvia Learn Blazingly Fast`)
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank')
     trackShare({ slug: concept.slug, title: concept.title, platform: 'x_twitter', method: 'web_intent' })
     setSharing(false)
@@ -469,11 +468,11 @@ function ShareMenu({ concept, accent }) {
     setSharing(true)
     const success = await copyShareCardImage(cardRef.current)
     if (success) {
-      toast.success('📸 Card image copied to clipboard! Ready to paste.', { duration: 3500 })
+      toast.success('Card image copied to clipboard', { duration: 3000 })
       trackShare({ slug: concept.slug, title: concept.title, platform: 'clipboard', method: 'copy_image' })
     } else {
       await generateShareCard(cardRef.current, concept.slug)
-      toast('Card downloaded as image!', { icon: '💾', duration: 3000 })
+      toast('Card downloaded as image', { duration: 3000 })
       trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'fallback_download' })
     }
     setSharing(false)
@@ -483,7 +482,7 @@ function ShareMenu({ concept, accent }) {
   const handleDownload = async () => {
     setSharing(true)
     await generateShareCard(cardRef.current, concept.slug)
-    toast.success('Downloaded share card!', { duration: 2500 })
+    toast.success('Downloaded share card', { duration: 2500 })
     trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'png_download' })
     setSharing(false)
     setOpen(false)
@@ -556,13 +555,13 @@ function ShareMenu({ concept, accent }) {
               disabled={sharing}
               className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
             >
-              <TikTokIcon className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+              <TikTokIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-white">Export TikTok Carousel</span>
-                  <span className="text-[9px] bg-pink-500/20 text-pink-300 px-1 py-0.2 rounded font-mono font-bold">VIRAL</span>
+                  <span className="font-semibold text-white">Export Carousel</span>
+                  <span className="text-[9px] bg-blue-500/15 text-blue-400 border border-blue-500/30 px-1.5 py-0.2 rounded font-mono font-bold">4:5</span>
                 </div>
-                <span className="text-[10px] text-gray-400">9:16 slides + clip + quiz + CTA</span>
+                <span className="text-[10px] text-gray-400">TikTok & IG slides + auto-open</span>
               </div>
             </button>
 
@@ -571,7 +570,7 @@ function ShareMenu({ concept, accent }) {
               disabled={sharing}
               className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
             >
-              <CopyImageIcon className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+              <CopyImageIcon className="w-3.5 h-3.5 text-slate-300 shrink-0" />
               <div className="flex flex-col">
                 <span className="text-gray-200">Copy Card Image</span>
                 <span className="text-[10px] text-gray-400">Paste anywhere (Cmd+V)</span>
@@ -583,7 +582,7 @@ function ShareMenu({ concept, accent }) {
               disabled={sharing}
               className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
             >
-              <ImageIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <ImageIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="text-gray-200">Download Card (PNG)</span>
             </button>
 
@@ -611,14 +610,14 @@ function ShareMenu({ concept, accent }) {
         )}
       </AnimatePresence>
 
-      {/* Hidden Share Card for html2canvas rendering */}
+      {/* Hidden Share Card for html2canvas rendering (1200x630 high-res format matching PDF theme) */}
       <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', pointerEvents: 'none' }}>
         <div ref={cardRef}>
           <HiddenShareCard concept={concept} />
         </div>
       </div>
 
-      {/* TikTok 9:16 Carousel Modal */}
+      {/* TikTok & Carousel Exporter Modal */}
       <TikTokCarouselModal
         isOpen={isTikTokOpen}
         onClose={() => setIsTikTokOpen(false)}
@@ -630,22 +629,15 @@ function ShareMenu({ concept, accent }) {
 }
 
 function HiddenShareCard({ concept }) {
-  const DOMAIN_COLORS = {
-    DSA: '#3b82f6',
-    ML: '#f59e0b',
-    AI: '#06b6d4',
-    Frontend: '#8b5cf6',
-    Backend: '#10b981',
-    'Software Engineering': '#f43f5e',
-  }
-  const accentColor = DOMAIN_COLORS[concept.domain] || '#3b82f6'
+  const domain = (concept.domain || 'Computer Science').toUpperCase()
+  const category = (concept.category || 'Algorithms').toUpperCase()
 
   return (
     <div style={{
-      width: '600px',
-      height: '315px',
-      background: 'linear-gradient(145deg, #0b0d13 0%, #131722 55%, #181d2a 100%)',
-      padding: '26px 36px',
+      width: '1200px',
+      height: '630px',
+      backgroundColor: '#0b0e14',
+      padding: '48px 56px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
@@ -653,95 +645,140 @@ function HiddenShareCard({ concept }) {
       fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       position: 'relative',
       overflow: 'hidden',
-      border: '1px solid #2a3142',
+      border: '1px solid #1e2638',
+      boxSizing: 'border-box',
     }}>
-      {/* Decorative background glow */}
-      <div style={{
-        position: 'absolute',
-        top: '-40px',
-        right: '-40px',
-        width: '200px',
-        height: '200px',
-        background: `radial-gradient(circle, ${accentColor}33 0%, transparent 70%)`,
-        borderRadius: '50%',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Header bar: Brand + Domain */}
+      {/* Top Header Row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>⚡️</span>
-          <span style={{ color: '#e5e7eb', fontSize: '13px', fontWeight: '800', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
-            Learn Blazingly Fast
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{
+            color: '#38bdf8',
+            fontSize: '13px',
+            fontWeight: '700',
+            letterSpacing: '2px',
+            fontFamily: 'monospace',
+          }}>
+            {domain} · {category}
+          </span>
+          <span style={{
+            background: 'rgba(56, 189, 248, 0.1)',
+            color: '#38bdf8',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            padding: '3px 10px',
+            borderRadius: '16px',
+            fontSize: '11px',
+            fontWeight: '600',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}>
+            Open Source & Free
           </span>
         </div>
         <span style={{
-          background: `${accentColor}22`,
-          color: accentColor,
-          border: `1px solid ${accentColor}66`,
-          padding: '4px 12px',
-          borderRadius: '20px',
-          fontSize: '11px',
-          fontWeight: '700',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
+          color: '#64748b',
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          fontWeight: '600',
         }}>
-          {concept.domain}
+          learnblazinglyfast.tech
         </span>
       </div>
 
-      {/* Main Content: Title + Intuition */}
-      <div style={{ textAlign: 'left', margin: '8px 0' }}>
-        <h1 style={{
-          fontSize: concept.title.length > 28 ? '26px' : '32px',
-          fontWeight: '800',
-          margin: '0 0 8px 0',
-          lineHeight: '1.15',
-          color: '#ffffff',
-          letterSpacing: '-0.5px',
+      {/* Main Content Area */}
+      <div style={{ margin: 'auto 0', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{
+          fontSize: '22px',
+          fontWeight: '600',
+          color: '#94a3b8',
+          letterSpacing: '-0.3px',
         }}>
-          {concept.title}
+          The Visual Guide to
+        </div>
+        <h1 style={{
+          fontSize: concept.title.length > 24 ? '44px' : '52px',
+          fontWeight: '800',
+          margin: 0,
+          lineHeight: '1.1',
+          color: '#ffffff',
+          letterSpacing: '-0.8px',
+        }}>
+          <span style={{ color: '#38bdf8' }}>{concept.title}</span>.
         </h1>
         <p style={{
-          color: '#9ca3af',
-          fontSize: '13px',
-          margin: 0,
-          lineHeight: '1.45',
-          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          color: '#94a3b8',
+          fontSize: '18px',
+          margin: '4px 0 0 0',
+          lineHeight: '1.5',
+          maxWidth: '960px',
+          fontWeight: '400',
         }}>
-          {(concept.card?.intuition || 'Master software engineering and system architecture with interactive visualizations.').slice(0, 130)}
-          {(concept.card?.intuition?.length || 0) > 130 ? '…' : ''}
+          {concept.card?.intuition || 'Master core computational models, memory boundaries, and algorithms with interactive visual logic.'}
         </p>
       </div>
 
-      {/* Footer bar: Complexity + Domain URL */}
+      {/* Bottom Metadata Bar */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: '12px',
-        borderTop: '1px solid #1f2937',
+        paddingTop: '20px',
+        borderTop: '1px solid #1e2638',
       }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {concept.card?.time_complexity && (
-            <div style={{ background: '#111827', border: '1px solid #374151', padding: '4px 10px', borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center', height: '26px', whiteSpace: 'nowrap' }}>
-              <span style={{ color: '#6b7280', fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', lineHeight: '1', whiteSpace: 'nowrap' }}>Time</span>
-              <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', lineHeight: '1', whiteSpace: 'nowrap' }}>
+            <div style={{
+              background: '#111622',
+              border: '1px solid #1e2638',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+            }}>
+              <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'monospace' }}>Time</span>
+              <span style={{ color: '#10b981', fontSize: '13px', fontWeight: '700', fontFamily: 'monospace' }}>
                 {concept.card.time_complexity}
               </span>
             </div>
           )}
           {concept.card?.space_complexity && (
-            <div style={{ background: '#111827', border: '1px solid #374151', padding: '4px 10px', borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center', height: '26px', whiteSpace: 'nowrap' }}>
-              <span style={{ color: '#6b7280', fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', lineHeight: '1', whiteSpace: 'nowrap' }}>Space</span>
-              <span style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', lineHeight: '1', whiteSpace: 'nowrap' }}>
+            <div style={{
+              background: '#111622',
+              border: '1px solid #1e2638',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+            }}>
+              <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'monospace' }}>Space</span>
+              <span style={{ color: '#38bdf8', fontSize: '13px', fontWeight: '700', fontFamily: 'monospace' }}>
                 {concept.card.space_complexity}
               </span>
             </div>
           )}
+          <div style={{
+            background: '#111622',
+            border: '1px solid #1e2638',
+            padding: '6px 14px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#94a3b8',
+            fontWeight: '600',
+            textTransform: 'capitalize',
+          }}>
+            {concept.difficulty || 'intermediate'}
+          </div>
         </div>
-        <span style={{ color: '#9ca3af', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-          learnblazinglyfast.tech
+
+        <span style={{
+          color: '#64748b',
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          fontWeight: '500',
+        }}>
+          github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
         </span>
       </div>
     </div>
