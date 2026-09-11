@@ -127,25 +127,13 @@ export async function exportCarouselZip(slideElements, slug, filenames, captionT
 /**
  * Generates a clean, developer-tailored TikTok caption without emojis.
  */
-export function getTikTokCaption(concept, mode = 'concept') {
-  if (mode === 'manifesto') {
-    return `The Visual Dictionary Modern Developers Are Missing.
-
-Why 45-minute tutorials and static documentation do not cut it in the age of AI.
-
-Algorithms are living systems. Explore 550+ interactive step-by-step visualizers:
-learnblazinglyfast.tech (Visit site for GitHub repo link)
-
-Save this post for your technical interview prep and drop a comment if you would like to contribute.
-
-#coding #programming #developer #softwareengineer #computerscience #algorithms #learnblazinglyfast #webdev #frontend #systemdesign #codinginterview`
-  }
-
+export function getTikTokCaption(concept) {
   const title = concept?.title || 'Tech Concept'
   const domain = concept?.domain || 'Computer Science'
 
   return `The Visual Guide to ${title}.
 
+Tech Concept of the Day: ${title}
 Domain: ${domain}
 Category: Visual Tech Dictionary for Developers
 
@@ -153,6 +141,8 @@ Can you solve the coding challenge on Slide 06? Drop your answer in the comments
 
 Explore 550+ interactive step-by-step visualizers:
 learnblazinglyfast.tech (Visit site for GitHub repo link)
+
+100% Free & Open Source developer education.
 
 Like and share to support open-source developer tooling.
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import {
   downloadSlidePNG,
@@ -10,19 +10,28 @@ import {
 } from '../../utils/tiktokExport.js'
 import { trackShare } from '../../services/analytics.js'
 
+const SLIDE_NAMES = [
+  '01. Cover Hook',
+  '02. Visualization',
+  '03. Definition',
+  '04. Complexity & Use Case',
+  '05. Traps & Gotchas',
+  '06. Terminal Challenge',
+  '07. Platform & Open Source',
+]
+
 export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }) {
-  const [mode, setMode] = useState('concept') // 'concept' (7 slides) or 'manifesto' (9 slides)
   const [activeSlide, setActiveSlide] = useState(0)
   const [exportingZip, setExportingZip] = useState(false)
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 7 })
   const [copiedCaption, setCopiedCaption] = useState(false)
   const [capturedVisualUrl, setCapturedVisualUrl] = useState(null)
 
-  // 9 slide references for export rendering
+  // 7 slide references for export rendering
   const slideRefs = [
     useRef(null), useRef(null), useRef(null),
     useRef(null), useRef(null), useRef(null),
-    useRef(null), useRef(null), useRef(null)
+    useRef(null)
   ]
 
   // Capture canvas visualizer if present on the page
@@ -38,47 +47,18 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     }
   }, [isOpen])
 
-  // Reset active slide if switching modes
-  useEffect(() => {
-    setActiveSlide(0)
-  }, [mode])
-
   if (!isOpen || !concept) return null
 
   const domain = concept.domain || 'Computer Science'
   const card = concept.card || {}
   const exercise = concept.exercise || {}
-
-  const CONCEPT_SLIDES = [
-    '01. Cover',
-    '02. The Dilemma',
-    '03. Live Simulation',
-    '04. Mental Model',
-    '05. Traps & Gotchas',
-    '06. Terminal Quiz',
-    '07. Open Source CTA',
-  ]
-
-  const MANIFESTO_SLIDES = [
-    '01. Cover',
-    '02. The Problem',
-    '03. The Insight',
-    '04. The Solution',
-    '05. What\'s Inside 1',
-    '06. What\'s Inside 2',
-    '07. Philosophy',
-    '08. Contributors',
-    '09. Get Started',
-  ]
-
-  const currentSlideList = mode === 'concept' ? CONCEPT_SLIDES : MANIFESTO_SLIDES
-  const totalSlides = currentSlideList.length
+  const totalSlides = SLIDE_NAMES.length
 
   const handleDownloadActive = async () => {
     const el = slideRefs[activeSlide]?.current
     if (!el) return
     toast.loading('Rendering slide PNG...', { id: 'slide-dl' })
-    const filename = `${concept.slug}-${mode}-slide-0${activeSlide + 1}.png`
+    const filename = `${concept.slug}-slide-0${activeSlide + 1}.png`
     const success = await downloadSlidePNG(el, filename)
     if (success) {
       toast.success(`Downloaded Slide ${activeSlide + 1}!`, { id: 'slide-dl' })
@@ -102,7 +82,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
   }
 
   const handleExportZipAndOpenTikTok = async () => {
-    const elements = slideRefs.slice(0, totalSlides).map(r => r.current).filter(Boolean)
+    const elements = slideRefs.map(r => r.current).filter(Boolean)
     if (elements.length < totalSlides) {
       toast.error('Preparing slides, please try again in a moment.')
       return
@@ -111,17 +91,17 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     setExportingZip(true)
     toast.loading(`Rendering ${totalSlides} slides (1080x1350)...`, { id: 'zip-dl' })
 
-    const caption = getTikTokCaption(concept, mode)
+    const caption = getTikTokCaption(concept)
     try {
       await navigator.clipboard.writeText(caption)
     } catch {
       // ignore clipboard error if unfocused
     }
 
-    const filenames = currentSlideList.map((_, i) => `slide-0${i + 1}.png`)
+    const filenames = SLIDE_NAMES.map((_, i) => `slide-0${i + 1}.png`)
     const success = await exportCarouselZip(
       elements,
-      `${concept.slug}-${mode}`,
+      concept.slug,
       filenames,
       caption,
       (current, total) => setExportProgress({ current, total })
@@ -131,7 +111,6 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     if (success) {
       toast.success('ZIP downloaded & caption copied! Opening TikTok Studio...', { id: 'zip-dl', duration: 4000 })
       trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_carousel_zip', method: 'download_and_open' })
-      // Automatically open TikTok web upload
       setTimeout(() => {
         openTikTokUpload()
       }, 700)
@@ -141,7 +120,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
   }
 
   const handleCopyCaption = () => {
-    const caption = getTikTokCaption(concept, mode)
+    const caption = getTikTokCaption(concept)
     navigator.clipboard.writeText(caption)
     setCopiedCaption(true)
     toast.success('Caption and hashtags copied to clipboard')
@@ -169,13 +148,13 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white tracking-tight">Carousel Exporter</h2>
+                <h2 className="text-sm font-bold text-white tracking-tight">TikTok Carousel Exporter</h2>
                 <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
-                  4:5 Clean Theme
+                  4:5 Carousel
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                High-density developer carousel matching the platform's visual dictionary aesthetic.
+                Marketing carousel for {concept.title} • Hook, simulation, definition, gotchas, quiz & CTA.
               </p>
             </div>
           </div>
@@ -188,41 +167,6 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
           </button>
         </div>
 
-        {/* Mode Selector Tabs */}
-        <div className="flex items-center justify-between px-5 py-2.5 bg-[#090c12] border-b border-[#1e2638] text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium">Carousel Type:</span>
-            <div className="inline-flex rounded-lg bg-[#111622] p-0.5 border border-[#1e2638]">
-              <button
-                onClick={() => setMode('concept')}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                  mode === 'concept'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Concept Deep Dive ({CONCEPT_SLIDES.length} Slides)
-              </button>
-              <button
-                onClick={() => setMode('manifesto')}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                  mode === 'manifesto'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Platform Manifesto ({MANIFESTO_SLIDES.length} Slides)
-              </button>
-            </div>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-            <span className="font-mono text-blue-400 font-semibold">1080 × 1350</span>
-            <span>•</span>
-            <span>TikTok & Instagram Ready</span>
-          </div>
-        </div>
-
         {/* Body: Preview Box & Controls */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col lg:flex-row gap-6 items-center lg:items-start justify-center">
 
@@ -230,7 +174,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
           <div className="flex flex-col items-center gap-3">
             {/* Slide Navigation Buttons */}
             <div className="flex items-center gap-1.5 p-1 bg-[#111622] border border-[#1e2638] rounded-xl overflow-x-auto max-w-full">
-              {currentSlideList.map((name, i) => (
+              {SLIDE_NAMES.map((name, i) => (
                 <button
                   key={name}
                   onClick={() => setActiveSlide(i)}
@@ -250,7 +194,6 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
               {/* Preview Window (360x450 in 4:5 ratio) */}
               <div className="w-[320px] sm:w-[360px] aspect-[4/5] overflow-hidden rounded-xl relative bg-[#0b0e14]">
                 <SlideContent
-                  mode={mode}
                   index={activeSlide}
                   concept={concept}
                   card={card}
@@ -298,7 +241,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Downloads all {totalSlides} slides at 1080×1350, copies your caption, and opens TikTok upload directly.
+                  Downloads all 7 slides at 1080×1350, copies caption, and opens TikTok Studio upload.
                 </p>
               </div>
 
@@ -352,7 +295,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
               </div>
             </div>
 
-            {/* Caption Generator (No Emojis) */}
+            {/* Caption Generator */}
             <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Post Caption</h4>
@@ -365,16 +308,16 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
               </div>
 
               <div className="p-2.5 rounded-lg bg-[#0b0e14] border border-[#1e2638] text-[11px] text-slate-300 font-mono leading-relaxed max-h-24 overflow-y-auto select-all">
-                {getTikTokCaption(concept, mode)}
+                {getTikTokCaption(concept)}
               </div>
             </div>
 
-            {/* Format Notes */}
+            {/* Strategy Notes */}
             <div className="p-3 rounded-xl bg-[#0d121c] border border-[#1e2638] text-[11px] text-slate-400 space-y-1">
-              <p className="font-semibold text-slate-300">Format details:</p>
-              <p>• Standard 4:5 vertical carousel (1080 × 1350 px).</p>
-              <p>• Clean dark slate aesthetic with zero emojis or gradients.</p>
-              <p>• Upload as Photo Mode on TikTok or multi-image carousel on LinkedIn.</p>
+              <p className="font-semibold text-slate-300">Format Strategy:</p>
+              <p>• Post as **Photo Mode (Swipe Carousel)**.</p>
+              <p>• Pin comment: *"What's your solution to Slide 6?"*</p>
+              <p>• Clean dark theme • Zero emojis • Directs viewers to website.</p>
             </div>
 
           </div>
@@ -390,7 +333,6 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
               style={{ width: '540px', height: '675px' }}
             >
               <SlideContent
-                mode={mode}
                 index={idx}
                 concept={concept}
                 card={card}
@@ -409,10 +351,9 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
   )
 }
 
-// ─── Slide Content Router (Concept vs Manifesto) ───────────────────────────────
+// ─── Slide Content Router ─────────────────────────────────────────────────────
 
 function SlideContent({
-  mode,
   index,
   concept,
   card,
@@ -423,39 +364,11 @@ function SlideContent({
   isExportResolution = false,
 }) {
   const scaleClass = isExportResolution ? 'p-10 text-sm' : 'p-5 text-xs'
-
-  return (
-    <div className={`w-full h-full flex flex-col justify-between select-none bg-[#0b0e14] text-white font-sans ${scaleClass}`}>
-      {mode === 'concept' ? (
-        <ConceptSlideDispatcher
-          index={index}
-          concept={concept}
-          card={card}
-          exercise={exercise}
-          domain={domain}
-          capturedVisualUrl={capturedVisualUrl}
-          totalSlides={totalSlides}
-          isExportResolution={isExportResolution}
-        />
-      ) : (
-        <ManifestoSlideDispatcher
-          index={index}
-          totalSlides={totalSlides}
-          isExportResolution={isExportResolution}
-        />
-      )}
-    </div>
-  )
-}
-
-// ─── Mode 1: Concept Deep Dive Slides ─────────────────────────────────────────
-
-function ConceptSlideDispatcher({ index, concept, card, exercise, domain, capturedVisualUrl, totalSlides, isExportResolution }) {
   const currentStr = String(index + 1).padStart(2, '0')
   const totalStr = String(totalSlides).padStart(2, '0')
 
   return (
-    <>
+    <div className={`w-full h-full flex flex-col justify-between select-none bg-[#0b0e14] text-white font-sans ${scaleClass}`}>
       {/* Top Header Row */}
       <div className="flex items-center justify-between pb-2">
         <span className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-blue-400 font-mono">
@@ -469,25 +382,25 @@ function ConceptSlideDispatcher({ index, concept, card, exercise, domain, captur
       {/* Main Body */}
       <div className="flex-1 flex flex-col justify-center my-auto py-2">
         {index === 0 && (
-          <ConceptSlide1Cover concept={concept} domain={domain} capturedVisualUrl={capturedVisualUrl} />
+          <Slide1Cover concept={concept} domain={domain} capturedVisualUrl={capturedVisualUrl} />
         )}
         {index === 1 && (
-          <ConceptSlide2Dilemma concept={concept} />
+          <Slide2Visualization concept={concept} card={card} capturedVisualUrl={capturedVisualUrl} />
         )}
         {index === 2 && (
-          <ConceptSlide3Simulation concept={concept} card={card} capturedVisualUrl={capturedVisualUrl} />
+          <Slide3Definition concept={concept} card={card} />
         )}
         {index === 3 && (
-          <ConceptSlide4MentalModel concept={concept} card={card} />
+          <Slide4ComplexityAndUseCases concept={concept} card={card} />
         )}
         {index === 4 && (
-          <ConceptSlide5Gotchas concept={concept} card={card} />
+          <Slide5Gotchas concept={concept} card={card} />
         )}
         {index === 5 && (
-          <ConceptSlide6TerminalQuiz concept={concept} exercise={exercise} />
+          <Slide6TerminalChallenge concept={concept} exercise={exercise} />
         )}
         {index === 6 && (
-          <ConceptSlide7CallToAction />
+          <Slide7PlatformAndCTA concept={concept} />
         )}
       </div>
 
@@ -496,24 +409,33 @@ function ConceptSlideDispatcher({ index, concept, card, exercise, domain, captur
         <span>learnblazinglyfast.tech</span>
         <span>{index === 0 ? 'Swipe to explore →' : currentStr}</span>
       </div>
-    </>
+    </div>
   )
 }
 
-function ConceptSlide1Cover({ concept, domain, capturedVisualUrl }) {
+// ─── 01. Hook / Cover ─────────────────────────────────────────────────────────
+
+function Slide1Cover({ concept, domain, capturedVisualUrl }) {
   return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-medium w-fit">
-        <ForkIcon className="w-3 h-3" />
-        <span>Open Source & Free</span>
+    <div className="flex flex-col gap-3.5 my-auto text-left">
+      <div className="flex items-center gap-2">
+        <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-bold tracking-wider uppercase">
+          Tech Concept of the Day
+        </span>
+        <span className="px-2 py-0.5 rounded-full bg-[#111622] border border-[#1e2638] text-slate-400 text-[10px] font-medium">
+          Open Source
+        </span>
       </div>
 
       <div className="space-y-1.5">
+        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          Learn Blazingly Fast · The Visual Tech Dictionary
+        </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
           The Visual Guide to <span className="text-[#38bdf8]">{concept.title}</span>.
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed">
-          Why 45-minute tutorials and static documentation don't cut it in the age of AI.
+        <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
+          Master this fundamental in 60 seconds with zero textbook fluff.
         </p>
       </div>
 
@@ -529,101 +451,67 @@ function ConceptSlide1Cover({ concept, domain, capturedVisualUrl }) {
   )
 }
 
-function ConceptSlide2Dilemma({ concept }) {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        The Modern Developer's Dilemma
-      </h2>
+// ─── 02. The Visualization (How It Works) ─────────────────────────────────────
 
-      {/* Two Metric Cards Side by Side */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
-            <LightningIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-lg font-bold text-blue-400">2 seconds</div>
-          <div className="text-[11px] text-slate-400">for AI to write your boilerplate</div>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-slate-300">
-            <ClockIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-lg font-bold text-white">45 minutes</div>
-          <div className="text-[11px] text-slate-400">to explain ONE concept on video</div>
-        </div>
-      </div>
-
-      {/* Dilemma Bullet Points */}
-      <div className="space-y-2.5 pt-1">
-        <div className="flex items-center gap-2.5 text-xs text-slate-300">
-          <span className="w-4 h-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-            ×
-          </span>
-          <span>45-minute YouTube lectures for a 30-second answer</span>
-        </div>
-
-        <div className="flex items-center gap-2.5 text-xs text-slate-300">
-          <span className="w-4 h-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-            ×
-          </span>
-          <span>3,000-word walls of dry academic documentation</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ConceptSlide3Simulation({ concept, card, capturedVisualUrl }) {
+function Slide2Visualization({ concept, card, capturedVisualUrl }) {
   return (
     <div className="flex flex-col gap-3 my-auto text-left">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Why Static Docs Fail Dynamic Logic
+          Watch How It Works
         </h2>
-        <p className="text-xs text-blue-400 font-semibold mt-1">
-          Algorithms are living systems:
+        <p className="text-xs text-blue-400 font-semibold mt-0.5">
+          Algorithms are living systems. State changes in real time:
         </p>
       </div>
 
-      <div className="space-y-1.5 text-xs text-slate-300">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Memory changes dynamically</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Signals propagate across layers</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Pointers shift in real time</span>
+      {/* Frame Preview */}
+      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-3 relative overflow-hidden">
+        {capturedVisualUrl ? (
+          <img src={capturedVisualUrl} alt={concept.title} className="max-h-full object-contain" />
+        ) : (
+          <MinimalSimulationFlow concept={concept} />
+        )}
+
+        <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-mono">
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            <span>Step 01: Initial State</span>
+          </span>
+          <span className="text-blue-400 font-mono text-[9px]">Interactive simulator on site</span>
         </div>
       </div>
 
-      {/* Simulation Frame or Quote */}
-      <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] text-xs text-slate-300 leading-relaxed italic">
-        "Reading about {concept.title} in a textbook is like learning how an engine works — from a still photo."
+      {/* Core Flow Annotation */}
+      <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] text-xs text-slate-300 leading-relaxed">
+        <span className="font-bold text-white">What's happening: </span>
+        {card?.intuition?.slice(0, 150) || 'Data transitions through states step-by-step to optimize execution path and memory boundaries.'}...
       </div>
     </div>
   )
 }
 
-function ConceptSlide4MentalModel({ concept, card }) {
+// ─── 03. The Definition & Intuition ───────────────────────────────────────────
+
+function Slide3Definition({ concept, card }) {
   return (
     <div className="flex flex-col gap-3.5 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        The Mental Model & Intuition
-      </h2>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          The Definition & Intuition
+        </h2>
+        <p className="text-xs text-slate-400 mt-0.5">
+          What is {concept.title} and why do we use it?
+        </p>
+      </div>
 
-      {/* Intuition Box */}
+      {/* Definition Box */}
       <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block font-mono">
-          The Intuition
+          The Definition
         </span>
         <p className="text-xs text-slate-200 leading-relaxed">
-          {card?.intuition || 'A foundational computing concept solving computational boundaries and memory trade-offs.'}
+          {card?.intuition || 'A core computational structure solving performance and memory constraints.'}
         </p>
       </div>
 
@@ -638,40 +526,77 @@ function ConceptSlide4MentalModel({ concept, card }) {
           </p>
         </div>
       )}
+    </div>
+  )
+}
 
-      {/* Complexity Stats */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="p-2.5 rounded-xl bg-[#111622] border border-[#1e2638] text-center">
+// ─── 04. Complexity & Use Cases ───────────────────────────────────────────────
+
+function Slide4ComplexityAndUseCases({ concept, card }) {
+  return (
+    <div className="flex flex-col gap-3.5 my-auto text-left">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          Complexity & Use Cases
+        </h2>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Performance guarantees and real-world application
+        </p>
+      </div>
+
+      {/* Complexity Cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
           <span className="text-[9px] text-slate-400 font-bold uppercase block font-mono">Time Complexity</span>
-          <span className="text-sm font-mono font-bold text-emerald-400">
-            {card?.time_complexity || 'O(N)'}
-          </span>
+          <div className="text-lg font-mono font-bold text-emerald-400">
+            {card?.time_complexity || 'O(log N)'}
+          </div>
+          <span className="text-[10px] text-slate-400 block">Worst & Average runtime</span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#111622] border border-[#1e2638] text-center">
+
+        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
           <span className="text-[9px] text-slate-400 font-bold uppercase block font-mono">Space Complexity</span>
-          <span className="text-sm font-mono font-bold text-blue-400">
+          <div className="text-lg font-mono font-bold text-blue-400">
             {card?.space_complexity || 'O(1)'}
-          </span>
+          </div>
+          <span className="text-[10px] text-slate-400 block">Auxiliary memory footprint</span>
         </div>
+      </div>
+
+      {/* When to Use It */}
+      <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block font-mono">
+          When to Use It
+        </span>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          {card?.use_cases || 'Ideal when searching large datasets, optimizing lookup latency, or operating under strict space constraints in system architecture.'}
+        </p>
       </div>
     </div>
   )
 }
 
-function ConceptSlide5Gotchas({ concept, card }) {
+// ─── 05. The Gotchas & Traps ──────────────────────────────────────────────────
+
+function Slide5Gotchas({ concept, card }) {
   return (
     <div className="flex flex-col gap-3.5 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        Common Interview Traps
-      </h2>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          Common Interview Traps
+        </h2>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Mistakes 90% of candidates make under pressure
+        </p>
+      </div>
 
       <div className="space-y-2.5">
         <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
           <div className="text-xs font-bold text-slate-200">
-            Trap 1: Edge Cases & Boundary Conditions
+            Trap 1: Edge Cases & Off-by-One Boundaries
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Failing to test empty collections, boundary limits, or potential integer overflow on large bounds.
+            Failing to test empty collections, single-element arrays, or potential integer overflow when computing midpoints.
           </p>
         </div>
 
@@ -680,7 +605,7 @@ function ConceptSlide5Gotchas({ concept, card }) {
             Trap 2: State Mutation & Invariant Drift
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Mutating state across recursive frames instead of preserving immutability.
+            Mutating state across frames instead of preserving clean loop invariants and base conditions.
           </p>
         </div>
 
@@ -693,15 +618,22 @@ function ConceptSlide5Gotchas({ concept, card }) {
   )
 }
 
-function ConceptSlide6TerminalQuiz({ concept, exercise }) {
+// ─── 06. Terminal Coding Challenge ────────────────────────────────────────────
+
+function Slide6TerminalChallenge({ concept, exercise }) {
   const prompt = exercise?.prompt || 'Test your understanding of this concept:'
   const starterCode = exercise?.starter_code || 'function solution(input) {\n  // What goes here?\n  return result;\n}'
 
   return (
     <div className="flex flex-col gap-3 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        Terminal Challenge
-      </h2>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          Terminal Challenge
+        </h2>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Can you spot the solution in your head?
+        </p>
+      </div>
 
       {/* Terminal Window */}
       <div className="w-full rounded-xl bg-[#080b11] border border-[#1e2638] overflow-hidden shadow-xl">
@@ -730,7 +662,7 @@ function ConceptSlide6TerminalQuiz({ concept, exercise }) {
             {starterCode}
           </div>
 
-          <div className="text-[10px] text-slate-400 font-sans pt-1">
+          <div className="text-[10px] text-blue-400 font-sans font-semibold pt-1">
             ❯ Drop your solution in the comments below!
           </div>
         </div>
@@ -739,15 +671,17 @@ function ConceptSlide6TerminalQuiz({ concept, exercise }) {
   )
 }
 
-function ConceptSlide7CallToAction() {
+// ─── 07. Platform & Open Source CTA ───────────────────────────────────────────
+
+function Slide7PlatformAndCTA({ concept }) {
   return (
     <div className="flex flex-col gap-4 my-auto text-left">
       <div className="space-y-1">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Join the Movement.
+          Level Up on Learn Blazingly Fast
         </h2>
         <p className="text-xs text-slate-400">
-          Developer tooling shouldn't sit behind a paywall or sponsored gatekeeping.
+          The interactive visual dictionary for developers. 100% free & open source.
         </p>
       </div>
 
@@ -755,7 +689,7 @@ function ConceptSlide7CallToAction() {
       <div className="space-y-2.5">
         <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">01 Explore</span>
+            <span className="text-[10px] text-slate-400 font-mono">01 Explore Visual Simulators</span>
             <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
           </div>
           <span className="text-slate-400">→</span>
@@ -763,444 +697,45 @@ function ConceptSlide7CallToAction() {
 
         <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">02 Open Source</span>
-            <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
+            <span className="text-[10px] text-slate-400 font-mono">02 Open Source Project</span>
+            <div className="text-sm font-bold text-white">Free & Community Driven</div>
           </div>
           <span className="text-slate-400">→</span>
         </div>
       </div>
 
-      {/* Footer Instructions */}
+      {/* Feature Checkmarks */}
+      <div className="space-y-1.5 text-xs text-slate-300">
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-[10px] font-bold">✓</span>
+          <span>550+ interactive step-by-step visual simulators</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-[10px] font-bold">✓</span>
+          <span>100% free • No ads • No paywall</span>
+        </div>
+      </div>
+
+      {/* Footer Prompts */}
       <div className="space-y-1.5 pt-1 text-xs text-slate-400">
         <div className="flex items-center gap-2">
           <BookmarkIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-          <span>Save this post for your next technical interview or study session.</span>
+          <span>Save this post for your technical interview prep.</span>
         </div>
         <div className="flex items-center gap-2">
           <ChatIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-          <span>Drop a comment if you'd like to contribute!</span>
+          <span>Like & share to help another developer learn!</span>
         </div>
       </div>
     </div>
   )
 }
 
-// ─── Mode 2: Platform Manifesto (The 9 Slides from PDF) ───────────────────────
-
-function ManifestoSlideDispatcher({ index, totalSlides, isExportResolution }) {
-  const currentStr = String(index + 1).padStart(2, '0')
-  const totalStr = String(totalSlides).padStart(2, '0')
-
-  const titles = [
-    'OPEN SOURCE · DEV TOOLING',
-    'THE PROBLEM',
-    'THE INSIGHT',
-    'THE SOLUTION',
-    'WHAT\'S INSIDE · 01',
-    'WHAT\'S INSIDE · 02',
-    'THE PHILOSOPHY',
-    'JOIN THE BUILD',
-    'GET STARTED',
-  ]
-
-  return (
-    <>
-      {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-2">
-        <span className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-blue-400 font-mono">
-          {titles[index] || 'LEARN BLAZINGLY FAST'}
-        </span>
-        <span className="text-[10px] sm:text-[11px] font-mono text-slate-500 font-semibold">
-          {currentStr} / {totalStr}
-        </span>
-      </div>
-
-      {/* Main Body */}
-      <div className="flex-1 flex flex-col justify-center my-auto py-2">
-        {index === 0 && <ManifestoSlide1 />}
-        {index === 1 && <ManifestoSlide2 />}
-        {index === 2 && <ManifestoSlide3 />}
-        {index === 3 && <ManifestoSlide4 />}
-        {index === 4 && <ManifestoSlide5 />}
-        {index === 5 && <ManifestoSlide6 />}
-        {index === 6 && <ManifestoSlide7 />}
-        {index === 7 && <ManifestoSlide8 />}
-        {index === 8 && <ManifestoSlide9 />}
-      </div>
-
-      {/* Bottom Footer Row */}
-      <div className="pt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 font-medium">
-        <span>learnblazinglyfast.tech</span>
-        <span>{index === 0 ? 'Swipe to explore →' : currentStr}</span>
-      </div>
-    </>
-  )
-}
-
-function ManifestoSlide1() {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-medium w-fit">
-        <ForkIcon className="w-3 h-3" />
-        <span>Open Source & Free</span>
-      </div>
-
-      <div className="space-y-1.5">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-          The Visual Dictionary <br />
-          <span className="text-[#38bdf8]">Modern Developers</span> <br />
-          Are Missing.
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed">
-          Why 45-minute tutorials and static documentation don't cut it in the age of AI.
-        </p>
-      </div>
-
-      <div className="w-full aspect-[16/9] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-3 relative overflow-hidden">
-        <MinimalTreeGraphic />
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide2() {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        The Modern Developer's Dilemma
-      </h2>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
-            <LightningIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-lg font-bold text-blue-400">2 seconds</div>
-          <div className="text-[11px] text-slate-400">for AI to write your boilerplate</div>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-slate-300">
-            <ClockIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-lg font-bold text-white">45 minutes</div>
-          <div className="text-[11px] text-slate-400">to explain ONE concept on video</div>
-        </div>
-      </div>
-
-      <div className="space-y-2.5 pt-1">
-        <div className="flex items-center gap-2.5 text-xs text-slate-300">
-          <span className="w-4 h-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-            ×
-          </span>
-          <span>45-minute YouTube lectures for a 30-second answer</span>
-        </div>
-
-        <div className="flex items-center gap-2.5 text-xs text-slate-300">
-          <span className="w-4 h-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-            ×
-          </span>
-          <span>3,000-word walls of dry academic documentation</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide3() {
-  return (
-    <div className="flex flex-col gap-3.5 my-auto text-left">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Why Static Docs Fail Dynamic Logic
-        </h2>
-        <p className="text-xs text-blue-400 font-semibold mt-1">
-          Algorithms are living systems:
-        </p>
-      </div>
-
-      <div className="space-y-2 text-xs text-slate-300">
-        <div className="flex items-center gap-2.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Memory changes dynamically</span>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Signals propagate across layers</span>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          <span>Pointers shift in real time</span>
-        </div>
-      </div>
-
-      <div className="p-4 rounded-xl bg-[#111622] border border-[#1e2638] text-xs text-slate-300 leading-relaxed italic">
-        "Reading about Tree BFS or Transformer Activations in a textbook is like learning how an engine works — from a still photo."
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide4() {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          A Visual Dictionary for Developers
-        </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          What if documentation worked like a dictionary?
-        </p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] text-center space-y-1">
-          <span className="text-[10px] font-mono text-blue-400 font-bold block">01</span>
-          <span className="text-[11px] text-slate-200 block font-medium leading-snug">Look up any concept</span>
-        </div>
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] text-center space-y-1">
-          <span className="text-[10px] font-mono text-blue-400 font-bold block">02</span>
-          <span className="text-[11px] text-slate-200 block font-medium leading-snug">Absorb model in &lt; 5 min</span>
-        </div>
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] text-center space-y-1">
-          <span className="text-[10px] font-mono text-blue-400 font-bold block">03</span>
-          <span className="text-[11px] text-slate-200 block font-medium leading-snug">Get back to building</span>
-        </div>
-      </div>
-
-      <div className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs text-center shadow-lg shadow-blue-500/20">
-        That's why I built learnblazinglyfast.tech
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide5() {
-  return (
-    <div className="flex flex-col gap-3.5 my-auto text-left">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Zero Fluff. Pure Visual Intuition.
-        </h2>
-        <p className="text-xs text-blue-400 font-semibold mt-1">
-          550+ CS & ML concepts
-        </p>
-      </div>
-
-      <div className="space-y-2.5">
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center font-mono font-bold text-blue-400 text-xs shrink-0">
-            #
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">Activation functions</div>
-            <div className="text-[11px] text-slate-400">See them act like circuit switches, live.</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center font-mono font-bold text-blue-400 text-xs shrink-0">
-            &lt;&gt;
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">Data structures</div>
-            <div className="text-[11px] text-slate-400">Watch them shift, step by step.</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center font-mono font-bold text-blue-400 text-xs shrink-0">
-            @
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">Applied math & fractals</div>
-            <div className="text-[11px] text-slate-400">Explore them right in your browser.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide6() {
-  return (
-    <div className="flex flex-col gap-3.5 my-auto text-left">
-      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-        Engineered for High-Density Utility
-      </h2>
-
-      <div className="space-y-2.5">
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 shrink-0">
-            <CodeIcon className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">28+ syntax cheat sheets</div>
-            <div className="text-[11px] text-slate-400">SQL, Node.js, C++, React Hooks.</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 shrink-0">
-            <BookIcon className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">Structured roadmaps</div>
-            <div className="text-[11px] text-slate-400">FAANG interview prep & system design.</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 shrink-0">
-            <PlayIcon className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">Multi-language IDE</div>
-            <div className="text-[11px] text-slate-400">Run Python, JS, Java, C++ — zero setup.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide7() {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <div className="space-y-1">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          100% Free. <br />
-          100% Open Source.
-        </h2>
-        <p className="text-xs text-slate-400">
-          Developer tooling shouldn't sit behind a paywall or sponsored gatekeeping.
-        </p>
-      </div>
-
-      <div className="my-1 flex justify-center text-blue-400">
-        <ForkIcon className="w-12 h-12" />
-      </div>
-
-      <div className="space-y-2 text-xs text-slate-300">
-        <div className="flex items-center gap-2.5">
-          <span className="w-4 h-4 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-[10px] font-bold">
-            ✓
-          </span>
-          <span>Built with modern web standards</span>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <span className="w-4 h-4 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-[10px] font-bold">
-            ✓
-          </span>
-          <span>Community-focused from day one</span>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <span className="w-4 h-4 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-[10px] font-bold">
-            ✓
-          </span>
-          <span>Free for every engineer, everywhere</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide8() {
-  return (
-    <div className="flex flex-col gap-3.5 my-auto text-left">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Calling All Contributors
-        </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          We're turning this into the web's definitive interactive CS dictionary — and we need you.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-blue-400">
-            <CodeIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-xs font-bold text-white">React / Tailwind engineers</div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-blue-400">
-            <CanvasIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-xs font-bold text-white">Canvas / Three.js / WebGL</div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-blue-400">
-            <BookIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-xs font-bold text-white">System design writers</div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-[#111622] border border-[#1e2638] space-y-1">
-          <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-blue-400">
-            <ForkIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-xs font-bold text-white">ML explorers</div>
-        </div>
-      </div>
-
-      <div className="text-xs text-slate-400 pt-1">
-        First PR or fiftieth — everyone's welcome.
-      </div>
-    </div>
-  )
-}
-
-function ManifestoSlide9() {
-  return (
-    <div className="flex flex-col gap-4 my-auto text-left">
-      <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-        Join the Movement.
-      </h2>
-
-      <div className="space-y-2.5">
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
-          <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">01 Explore</span>
-            <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
-          </div>
-          <span className="text-slate-400">→</span>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
-          <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">02 Open Source</span>
-            <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
-          </div>
-          <span className="text-slate-400">→</span>
-        </div>
-      </div>
-
-      <div className="space-y-1.5 pt-1 text-xs text-slate-400">
-        <div className="flex items-center gap-2">
-          <BookmarkIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-          <span>Save this post for your next technical interview or study session.</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <ChatIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-          <span>Drop a comment if you'd like to contribute!</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Minimal Vector Graphics (Matching PDF) ──────────────────────────────────
+// ─── Minimal Vector Graphics ──────────────────────────────────────────────────
 
 function MinimalTreeGraphic() {
   return (
     <svg className="w-48 h-32" viewBox="0 0 200 120" fill="none">
-      {/* Edges */}
       <line x1="100" y1="20" x2="60" y2="70" stroke="#1e293b" strokeWidth="1.5" />
       <line x1="100" y1="20" x2="140" y2="70" stroke="#1e293b" strokeWidth="1.5" />
       <line x1="100" y1="20" x2="100" y2="70" stroke="#1e293b" strokeWidth="1.5" />
@@ -1209,7 +744,6 @@ function MinimalTreeGraphic() {
       <line x1="140" y1="70" x2="120" y2="105" stroke="#1e293b" strokeWidth="1.5" />
       <line x1="140" y1="70" x2="160" y2="105" stroke="#1e293b" strokeWidth="1.5" />
 
-      {/* Nodes */}
       <circle cx="100" cy="20" r="7" fill="#38bdf8" />
       <circle cx="100" cy="70" r="6" fill="#38bdf8" />
       <circle cx="60" cy="70" r="6" fill="#38bdf8" />
@@ -1223,7 +757,25 @@ function MinimalTreeGraphic() {
   )
 }
 
-// ─── SVG Icons (Clean Line/Solid, Zero Emojis) ───────────────────────────────
+function MinimalSimulationFlow({ concept }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-12 h-12 rounded-xl bg-[#161d2d] border border-blue-500/30 flex items-center justify-center font-mono font-bold text-xs text-blue-400">
+        IN
+      </div>
+      <span className="text-slate-500 text-sm">➔</span>
+      <div className="px-3 py-2 rounded-xl bg-[#161d2d] border border-[#1e2638] font-mono text-[10px] text-slate-300">
+        {concept.title} Logic
+      </div>
+      <span className="text-slate-500 text-sm">➔</span>
+      <div className="w-12 h-12 rounded-xl bg-[#161d2d] border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-xs text-emerald-400">
+        OUT
+      </div>
+    </div>
+  )
+}
+
+// ─── SVG Icons ───────────────────────────────────────────────────────────────
 
 function ForkIcon({ className }) {
   return (
@@ -1232,59 +784,6 @@ function ForkIcon({ className }) {
       <circle cx="18" cy="6" r="3" />
       <circle cx="6" cy="18" r="3" />
       <path d="M18 9a9 9 0 0 1-9 9" />
-    </svg>
-  )
-}
-
-function LightningIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-    </svg>
-  )
-}
-
-function ClockIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  )
-}
-
-function CodeIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  )
-}
-
-function BookIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-  )
-}
-
-function PlayIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  )
-}
-
-function CanvasIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 9h18" />
-      <path d="M9 21V9" />
     </svg>
   )
 }
