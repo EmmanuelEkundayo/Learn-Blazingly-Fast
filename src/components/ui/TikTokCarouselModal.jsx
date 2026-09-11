@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
+import html2canvas from 'html2canvas'
 import {
   downloadSlidePNG,
   copySlideImageToClipboard,
@@ -34,17 +35,49 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     useRef(null)
   ]
 
-  // Capture canvas visualizer if present on the page
+  // Capture canvas or SVG/DOM visualizer if present on the page
   useEffect(() => {
     if (!isOpen) return
-    try {
-      const vizContainer = document.querySelector('[data-visualization-container]') || document.querySelector('canvas')
-      if (vizContainer && vizContainer.tagName === 'CANVAS') {
-        setCapturedVisualUrl(vizContainer.toDataURL('image/png'))
+    let active = true
+
+    const captureViz = async () => {
+      try {
+        const el = document.getElementById('concept-visualization-section') || document.querySelector('[data-visualization-container]')
+        if (el) {
+          const canvasEl = el.querySelector('canvas')
+          if (canvasEl) {
+            try {
+              const dataUrl = canvasEl.toDataURL('image/png')
+              if (dataUrl && dataUrl.length > 100) {
+                if (active) setCapturedVisualUrl(dataUrl)
+                return
+              }
+            } catch (e) {
+              // canvas might be tainted
+            }
+          }
+
+          // Target inner visualization stage to avoid capturing outer step controls
+          const stageEl = el.querySelector('svg, canvas, [class*="overflow-x-auto"], [class*="aspect-"], [class*="grid"]') || el
+
+          // Use html2canvas to snapshot the SVG / DOM visualizer
+          const renderedCanvas = await html2canvas(stageEl, {
+            backgroundColor: '#0b0e14',
+            scale: 1.5,
+            logging: false,
+            useCORS: true,
+          })
+          if (active && renderedCanvas) {
+            setCapturedVisualUrl(renderedCanvas.toDataURL('image/png'))
+          }
+        }
+      } catch (err) {
+        console.debug('Failed to capture visualization element:', err)
       }
-    } catch (e) {
-      console.debug('Canvas capture note:', e)
     }
+
+    captureViz()
+    return () => { active = false }
   }, [isOpen])
 
   if (!isOpen || !concept) return null
@@ -154,7 +187,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Marketing carousel for {concept.title} • Hook, simulation, definition, gotchas, quiz & CTA.
+                Marketing carousel for {concept.title} • Hook, simulation image, definition, gotchas, quiz & CTA.
               </p>
             </div>
           </div>
@@ -413,6 +446,21 @@ function SlideContent({
   )
 }
 
+// ─── Visual Graphic Frame Component ───────────────────────────────────────────
+
+function SlideVisualFrame({ concept, capturedVisualUrl }) {
+  if (capturedVisualUrl) {
+    return (
+      <img
+        src={capturedVisualUrl}
+        alt={concept.title}
+        className="max-h-full max-w-full object-contain filter drop-shadow-sm"
+      />
+    )
+  }
+  return <ConceptGraphicIllustration concept={concept} />
+}
+
 // ─── 01. Hook / Cover ─────────────────────────────────────────────────────────
 
 function Slide1Cover({ concept, domain, capturedVisualUrl }) {
@@ -439,13 +487,9 @@ function Slide1Cover({ concept, domain, capturedVisualUrl }) {
         </p>
       </div>
 
-      {/* Graphic Preview Container */}
-      <div className="w-full aspect-[16/9] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-3 relative overflow-hidden">
-        {capturedVisualUrl ? (
-          <img src={capturedVisualUrl} alt={concept.title} className="max-h-full object-contain filter drop-shadow-sm" />
-        ) : (
-          <MinimalTreeGraphic />
-        )}
+      {/* Graphic Image Frame Container */}
+      <div className="w-full aspect-[16/9] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-2.5 relative overflow-hidden">
+        <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
       </div>
     </div>
   )
@@ -465,20 +509,16 @@ function Slide2Visualization({ concept, card, capturedVisualUrl }) {
         </p>
       </div>
 
-      {/* Frame Preview */}
-      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-3 relative overflow-hidden">
-        {capturedVisualUrl ? (
-          <img src={capturedVisualUrl} alt={concept.title} className="max-h-full object-contain" />
-        ) : (
-          <MinimalSimulationFlow concept={concept} />
-        )}
+      {/* Visualization Image Frame */}
+      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-2.5 relative overflow-hidden">
+        <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
 
         <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
           <span className="flex items-center gap-1.5 font-mono">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
-            <span>Step 01: Initial State</span>
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span>Interactive Visualizer Frame</span>
           </span>
-          <span className="text-blue-400 font-mono text-[9px]">Interactive simulator on site</span>
+          <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
         </div>
       </div>
 
@@ -731,18 +771,482 @@ function Slide7PlatformAndCTA({ concept }) {
   )
 }
 
-// ─── Minimal Vector Graphics ──────────────────────────────────────────────────
+// ─── High-Detail Algorithmic Illustrations (Image Fallbacks) ──────────────────
 
-function MinimalTreeGraphic() {
+function ConceptGraphicIllustration({ concept }) {
+  const type = concept.visualization?.type || ''
+  const slug = (concept.slug || '').toLowerCase()
+  const cat = (concept.category || '').toLowerCase()
+  const domain = (concept.domain || '').toLowerCase()
+  const mode = (concept.visualization?.config?.mode || '').toLowerCase()
+
+  if (slug.includes('lifecycle') || mode === 'lifecycle' || (domain.includes('react') && type.includes('state'))) {
+    return <LifecycleIllustration concept={concept} />
+  }
+  if (type === 'array-pointers' || slug.includes('search') || slug.includes('pointer')) {
+    return <ArraySearchIllustration concept={concept} />
+  }
+  if (type === 'array-bars' || slug.includes('sort')) {
+    return <SortingBarsIllustration concept={concept} />
+  }
+  if (type === 'tree-canvas' || cat.includes('tree') || slug.includes('tree') || slug.includes('bst') || slug.includes('heap')) {
+    return <BinaryTreeIllustration concept={concept} />
+  }
+  if (type === 'graph-traversal' || cat.includes('graph') || slug.includes('dijkstra') || slug.includes('bfs') || slug.includes('dfs')) {
+    return <NetworkGraphIllustration concept={concept} />
+  }
+  if (type === 'matrix-grid' || cat.includes('dynamic') || slug.includes('matrix') || slug.includes('dp')) {
+    return <MatrixDPIllustration concept={concept} />
+  }
+  if (type === 'heatmap-grid') {
+    return <HeatmapIllustration concept={concept} />
+  }
+  if (type.includes('neural') || type.includes('loss') || domain.includes('ml') || domain.includes('ai') || slug.includes('transformer') || slug.includes('attention')) {
+    return <NeuralNetworkIllustration concept={concept} />
+  }
+  if (type === 'timeline-step') {
+    return <TimelineStepIllustration concept={concept} />
+  }
+  if (type === 'state-diagram') {
+    return <StateDiagramIllustration concept={concept} />
+  }
+  if (type.includes('architecture') || slug.includes('cache') || slug.includes('lru') || domain.includes('system')) {
+    return <SystemArchitectureIllustration concept={concept} />
+  }
+  return <TimelineStepIllustration concept={concept} />
+}
+
+function ArraySearchIllustration({ concept }) {
+  const items = [
+    { val: '2', idx: '0' },
+    { val: '5', idx: '1' },
+    { val: '8', idx: '2' },
+    { val: '12', idx: '3', isMid: true, isMatch: true },
+    { val: '16', idx: '4' },
+    { val: '23', idx: '5' },
+    { val: '38', idx: '6' },
+    { val: '56', idx: '7' },
+  ]
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-2">
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
+        <span className="text-blue-400 font-bold">Target = 12</span>
+        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
+          nums[mid] == target (Match Found at idx 3)
+        </span>
+      </div>
+      <div className="grid grid-cols-8 gap-1.5 w-full">
+        {items.map((it) => (
+          <div key={it.idx} className="flex flex-col items-center gap-1">
+            <div
+              className={`w-full aspect-square rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
+                it.isMatch
+                  ? 'bg-blue-500/30 border-2 border-[#38bdf8] text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-[#161d2d] border border-[#1e2638] text-slate-300'
+              }`}
+            >
+              {it.val}
+            </div>
+            <span className={`text-[9px] font-mono ${it.isMatch ? 'text-blue-400 font-bold' : 'text-slate-500'}`}>
+              [{it.idx}]
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2.5 px-2">
+        <span className="text-slate-400">↑ Low: [0]</span>
+        <span className="text-[#38bdf8] font-bold">↑ Mid: [3]</span>
+        <span className="text-slate-400">↑ High: [7]</span>
+      </div>
+    </div>
+  )
+}
+
+function SortingBarsIllustration({ concept }) {
+  const bars = [
+    { height: 28, val: 14, state: 'sorted' },
+    { height: 45, val: 23, state: 'sorted' },
+    { height: 60, val: 38, state: 'comparing' },
+    { height: 85, val: 56, state: 'pivot' },
+    { height: 35, val: 19, state: 'unsorted' },
+    { height: 70, val: 42, state: 'unsorted' },
+    { height: 95, val: 78, state: 'unsorted' },
+    { height: 50, val: 31, state: 'unsorted' },
+  ]
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-end p-2">
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2">
+        <span className="text-emerald-400 font-semibold">● Sorted Partition</span>
+        <span className="text-amber-400 font-semibold">● Comparing</span>
+        <span className="text-[#38bdf8] font-semibold">● Pivot</span>
+      </div>
+      <div className="flex items-end justify-between gap-1.5 w-full h-24 border-b border-[#1e2638] pb-1">
+        {bars.map((b, i) => {
+          const bg =
+            b.state === 'sorted'
+              ? 'bg-emerald-500/70 border-emerald-400'
+              : b.state === 'pivot'
+              ? 'bg-blue-500 border-[#38bdf8]'
+              : b.state === 'comparing'
+              ? 'bg-amber-500 border-amber-400'
+              : 'bg-[#1e2638] border-slate-600'
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+              <div style={{ height: `${b.height}%` }} className={`w-full rounded-t-md border-t border-x ${bg}`} />
+              <span className="text-[8px] font-mono text-slate-400">{b.val}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function BinaryTreeIllustration({ concept }) {
+  return (
+    <svg className="w-full h-full max-h-36" viewBox="0 0 280 130" fill="none">
+      <line x1="140" y1="24" x2="80" y2="65" stroke="#1e2638" strokeWidth="2" />
+      <line x1="140" y1="24" x2="200" y2="65" stroke="#38bdf8" strokeWidth="2.5" />
+      <line x1="80" y1="65" x2="50" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="80" y1="65" x2="110" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="200" y1="65" x2="170" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="200" y1="65" x2="230" y2="105" stroke="#38bdf8" strokeWidth="2.5" />
+
+      <circle cx="140" cy="24" r="14" fill="#161d2d" stroke="#38bdf8" strokeWidth="2" />
+      <text x="140" y="28" textAnchor="middle" fill="#ffffff" fontSize="10" fontFamily="monospace" fontWeight="bold">50</text>
+
+      <circle cx="80" cy="65" r="12" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="80" y="69" textAnchor="middle" fill="#94a3b8" fontSize="9" fontFamily="monospace">25</text>
+
+      <circle cx="200" cy="65" r="13" fill="#161d2d" stroke="#38bdf8" strokeWidth="2" />
+      <text x="200" y="69" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="monospace" fontWeight="bold">75</text>
+
+      <circle cx="50" cy="105" r="10" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="50" y="108" textAnchor="middle" fill="#64748b" fontSize="8" fontFamily="monospace">15</text>
+
+      <circle cx="110" cy="105" r="10" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="110" y="108" textAnchor="middle" fill="#64748b" fontSize="8" fontFamily="monospace">35</text>
+
+      <circle cx="170" cy="105" r="10" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="170" y="108" textAnchor="middle" fill="#64748b" fontSize="8" fontFamily="monospace">65</text>
+
+      <circle cx="230" cy="105" r="11" fill="#161d2d" stroke="#10b981" strokeWidth="2" />
+      <text x="230" y="108" textAnchor="middle" fill="#10b981" fontSize="8" fontFamily="monospace" fontWeight="bold">90</text>
+
+      <rect x="175" y="4" width="95" height="16" rx="8" fill="#161d2d" stroke="#1e2638" />
+      <text x="222" y="15" textAnchor="middle" fill="#38bdf8" fontSize="8" fontFamily="monospace">Path: 50 ➔ 75 ➔ 90</text>
+    </svg>
+  )
+}
+
+function NetworkGraphIllustration({ concept }) {
+  return (
+    <svg className="w-full h-full max-h-36" viewBox="0 0 280 120" fill="none">
+      <line x1="50" y1="60" x2="110" y2="25" stroke="#38bdf8" strokeWidth="2" />
+      <line x1="50" y1="60" x2="110" y2="95" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="110" y1="25" x2="170" y2="25" stroke="#38bdf8" strokeWidth="2.5" />
+      <line x1="110" y1="95" x2="170" y2="95" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="170" y1="25" x2="230" y2="60" stroke="#10b981" strokeWidth="2.5" />
+      <line x1="170" y1="95" x2="230" y2="60" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="110" y1="25" x2="170" y2="95" stroke="#1e2638" strokeWidth="1.5" />
+
+      <text x="75" y="38" fill="#38bdf8" fontSize="8" fontFamily="monospace" fontWeight="bold">w=2</text>
+      <text x="140" y="18" fill="#38bdf8" fontSize="8" fontFamily="monospace" fontWeight="bold">w=3</text>
+      <text x="205" y="38" fill="#10b981" fontSize="8" fontFamily="monospace" fontWeight="bold">w=1</text>
+      <text x="75" y="85" fill="#64748b" fontSize="8" fontFamily="monospace">w=7</text>
+      <text x="140" y="108" fill="#64748b" fontSize="8" fontFamily="monospace">w=4</text>
+
+      <circle cx="50" cy="60" r="14" fill="#161d2d" stroke="#38bdf8" strokeWidth="2" />
+      <text x="50" y="64" textAnchor="middle" fill="#ffffff" fontSize="10" fontFamily="monospace" fontWeight="bold">A</text>
+
+      <circle cx="110" cy="25" r="13" fill="#161d2d" stroke="#38bdf8" strokeWidth="2" />
+      <text x="110" y="29" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="monospace" fontWeight="bold">B</text>
+
+      <circle cx="110" cy="95" r="12" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="110" y="99" textAnchor="middle" fill="#94a3b8" fontSize="9" fontFamily="monospace">C</text>
+
+      <circle cx="170" cy="25" r="13" fill="#161d2d" stroke="#38bdf8" strokeWidth="2" />
+      <text x="170" y="29" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="monospace" fontWeight="bold">D</text>
+
+      <circle cx="170" cy="95" r="12" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+      <text x="170" y="99" textAnchor="middle" fill="#94a3b8" fontSize="9" fontFamily="monospace">E</text>
+
+      <circle cx="230" cy="60" r="14" fill="#161d2d" stroke="#10b981" strokeWidth="2.5" />
+      <text x="230" y="64" textAnchor="middle" fill="#10b981" fontSize="10" fontFamily="monospace" fontWeight="bold">F</text>
+    </svg>
+  )
+}
+
+function MatrixDPIllustration({ concept }) {
+  const rows = [
+    ['0', '0', '0', '0', '0'],
+    ['0', '1', '1', '1', '1'],
+    ['0', '1', '2', '3', '4'],
+    ['0', '1', '3', '6', '10'],
+  ]
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-2">
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1.5 px-2">
+        <span className="text-blue-400 font-bold">dp[i][j] = dp[i-1][j] + dp[i][j-1]</span>
+      </div>
+      <div className="grid grid-cols-5 gap-1.5 w-full max-w-xs">
+        {rows.flat().map((val, idx) => {
+          const isOptimal = idx === 19 || idx === 18 || idx === 12 || idx === 6 || idx === 0
+          return (
+            <div
+              key={idx}
+              className={`h-7 rounded flex items-center justify-center font-mono text-xs font-bold ${
+                isOptimal
+                  ? 'bg-blue-500/25 border border-[#38bdf8] text-[#38bdf8]'
+                  : 'bg-[#161d2d] border border-[#1e2638] text-slate-400'
+              }`}
+            >
+              {val}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function NeuralNetworkIllustration({ concept }) {
+  return (
+    <svg className="w-full h-full max-h-36" viewBox="0 0 280 120" fill="none">
+      {[30, 60, 90].map((y1, i) =>
+        [20, 46, 74, 100].map((y2, j) => (
+          <line key={`l1-${i}-${j}`} x1="60" y1={y1} x2="140" y2={y2} stroke="#1e2638" strokeWidth="1" />
+        ))
+      )}
+      <line x1="60" y1="60" x2="140" y2="46" stroke="#38bdf8" strokeWidth="2" />
+      <line x1="60" y1="60" x2="140" y2="74" stroke="#38bdf8" strokeWidth="2" />
+
+      {[20, 46, 74, 100].map((y1, i) =>
+        [45, 75].map((y2, j) => (
+          <line key={`l2-${i}-${j}`} x1="140" y1={y1} x2="220" y2={y2} stroke="#1e2638" strokeWidth="1" />
+        ))
+      )}
+      <line x1="140" y1="46" x2="220" y2="45" stroke="#10b981" strokeWidth="2.5" />
+      <line x1="140" y1="74" x2="220" y2="45" stroke="#10b981" strokeWidth="2.5" />
+
+      {[30, 60, 90].map((y, i) => (
+        <circle key={`in-${i}`} cx="60" cy={y} r="8" fill="#161d2d" stroke="#38bdf8" strokeWidth="1.5" />
+      ))}
+
+      {[20, 46, 74, 100].map((y, i) => (
+        <circle key={`hid-${i}`} cx="140" cy={y} r="9" fill="#161d2d" stroke="#38bdf8" strokeWidth="1.5" />
+      ))}
+
+      <circle cx="220" cy="45" r="10" fill="#161d2d" stroke="#10b981" strokeWidth="2" />
+      <circle cx="220" cy="75" r="8" fill="#111622" stroke="#1e2638" strokeWidth="1.5" />
+
+      <text x="60" y="115" textAnchor="middle" fill="#64748b" fontSize="8" fontFamily="monospace">Input</text>
+      <text x="140" y="115" textAnchor="middle" fill="#38bdf8" fontSize="8" fontFamily="monospace">Dense</text>
+      <text x="220" y="115" textAnchor="middle" fill="#10b981" fontSize="8" fontFamily="monospace">Softmax</text>
+    </svg>
+  )
+}
+
+function SystemArchitectureIllustration({ concept }) {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-2">
+      <div className="flex items-center gap-1.5 w-full justify-between">
+        <div className="p-2 rounded-lg bg-[#161d2d] border border-[#1e2638] text-center">
+          <span className="text-[8px] font-mono text-slate-400 block">CLIENT</span>
+          <span className="text-[10px] font-bold text-white">Requests</span>
+        </div>
+        <span className="text-slate-500 font-mono text-xs">➔</span>
+        <div className="p-2 rounded-lg bg-[#161d2d] border border-blue-500/40 text-center">
+          <span className="text-[8px] font-mono text-blue-400 block">GATEWAY</span>
+          <span className="text-[10px] font-bold text-blue-300">Balancer</span>
+        </div>
+        <span className="text-slate-500 font-mono text-xs">➔</span>
+        <div className="p-2 rounded-lg bg-[#161d2d] border border-emerald-500/40 text-center">
+          <span className="text-[8px] font-mono text-emerald-400 block">CACHE</span>
+          <span className="text-[10px] font-bold text-emerald-300">O(1) LRU</span>
+        </div>
+        <span className="text-slate-500 font-mono text-xs">➔</span>
+        <div className="p-2 rounded-lg bg-[#161d2d] border border-[#1e2638] text-center">
+          <span className="text-[8px] font-mono text-slate-400 block">DB</span>
+          <span className="text-[10px] font-bold text-slate-300">Storage</span>
+        </div>
+      </div>
+      <div className="mt-2.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] font-mono text-blue-400">
+        High Availability • Low Latency • Horizontal Scalability
+      </div>
+    </div>
+  )
+}
+
+function LifecycleIllustration({ concept }) {
+  return (
+    <div className="w-full h-full flex flex-col justify-center p-2 text-left">
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
+        <span className="text-blue-400 font-bold">React Lifecycle Pipeline</span>
+        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px]">
+          Mount ➔ Update ➔ Unmount
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 w-full">
+        {/* Phase 1: Mount */}
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-blue-500/40 flex flex-col gap-1 relative">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-blue-400 font-mono">01. MOUNT</span>
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+          </div>
+          <span className="text-xs font-bold text-white">Initial Render</span>
+          <span className="text-[9px] text-slate-400 font-mono">useEffect(fn, [])</span>
+          <span className="text-[8px] text-blue-300">DOM insertion</span>
+        </div>
+
+        {/* Phase 2: Update */}
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-amber-500/40 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-amber-400 font-mono">02. UPDATE</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+          </div>
+          <span className="text-xs font-bold text-white">State / Props</span>
+          <span className="text-[9px] text-slate-400 font-mono">useEffect(fn, [id])</span>
+          <span className="text-[8px] text-amber-300">Re-render / Diff</span>
+        </div>
+
+        {/* Phase 3: Unmount */}
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-rose-500/40 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-rose-400 font-mono">03. UNMOUNT</span>
+            <span className="w-2 h-2 rounded-full bg-rose-400" />
+          </div>
+          <span className="text-xs font-bold text-white">Cleanup</span>
+          <span className="text-[9px] text-slate-400 font-mono">return () =&gt; cleanup</span>
+          <span className="text-[8px] text-rose-300">Memory freed</span>
+        </div>
+      </div>
+      <div className="w-full flex items-center justify-between text-[9px] font-mono text-slate-400 mt-2 px-1">
+        <span>Trigger: setState() / deps change</span>
+        <span className="text-blue-400">Fiber Reconciliation</span>
+      </div>
+    </div>
+  )
+}
+
+function TimelineStepIllustration({ concept }) {
+  const steps = [
+    { num: '01', title: 'Dispatch', sub: 'Event / Trigger', active: false },
+    { num: '02', title: 'Validate', sub: 'Schema & Auth', active: false },
+    { num: '03', title: 'Execute', sub: 'State Mutation', active: true },
+    { num: '04', title: 'Commit', sub: 'Persistence', active: false },
+  ]
+  return (
+    <div className="w-full h-full flex flex-col justify-center p-2 text-left">
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
+        <span className="text-blue-400 font-bold">Execution Timeline</span>
+        <span className="text-slate-400 font-mono text-[9px]">Sequential State Flow</span>
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 w-full">
+        {steps.map((st) => (
+          <div
+            key={st.num}
+            className={`p-2 rounded-lg border flex flex-col gap-0.5 ${
+              st.active
+                ? 'bg-blue-500/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                : 'bg-[#161d2d] border-[#1e2638] text-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className={`text-[9px] font-mono font-bold ${st.active ? 'text-blue-400' : 'text-slate-500'}`}>
+                {st.num}
+              </span>
+              {st.active && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />}
+            </div>
+            <span className="text-[11px] font-bold leading-tight">{st.title}</span>
+            <span className="text-[8px] text-slate-400 leading-tight">{st.sub}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2.5 px-2.5 py-1 rounded-lg bg-[#0d121c] border border-[#1e2638] flex items-center justify-between text-[9px] font-mono text-slate-400">
+        <span className="text-blue-400">▶ Active Phase: 03. Execute</span>
+        <span>Deterministic Pipeline</span>
+      </div>
+    </div>
+  )
+}
+
+function StateDiagramIllustration({ concept }) {
+  return (
+    <div className="w-full h-full flex flex-col justify-center p-2 text-left">
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
+        <span className="text-blue-400 font-bold">Finite State Machine (FSM)</span>
+        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px]">
+          Deterministic Transitions
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-1.5 w-full">
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-blue-500/40 text-center flex-1">
+          <span className="text-[8px] font-mono text-blue-400 block">INIT</span>
+          <span className="text-xs font-bold text-white">Closed</span>
+        </div>
+        <span className="text-slate-500 text-xs">➔</span>
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-amber-500/40 text-center flex-1">
+          <span className="text-[8px] font-mono text-amber-400 block">TRIPPED</span>
+          <span className="text-xs font-bold text-white">Open</span>
+        </div>
+        <span className="text-slate-500 text-xs">➔</span>
+        <div className="p-2.5 rounded-lg bg-[#161d2d] border border-emerald-500/40 text-center flex-1">
+          <span className="text-[8px] font-mono text-emerald-400 block">PROBE</span>
+          <span className="text-xs font-bold text-white">Half-Open</span>
+        </div>
+      </div>
+      <div className="mt-2 text-[9px] font-mono text-slate-400 text-center">
+        State invariants maintained across all concurrent transitions
+      </div>
+    </div>
+  )
+}
+
+function HeatmapIllustration({ concept }) {
+  const cells = [
+    [0.1, 0.85, 0.3, 0.15],
+    [0.9, 0.2, 0.45, 0.1],
+    [0.05, 0.4, 0.95, 0.6],
+    [0.3, 0.1, 0.7, 0.8],
+  ]
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-2">
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1.5 px-2">
+        <span className="text-blue-400 font-bold">Attention & Heatmap Matrix</span>
+        <span className="text-slate-400 font-mono text-[9px]">Normalized Activation</span>
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 w-full max-w-[240px]">
+        {cells.flat().map((val, idx) => {
+          const opacity = Math.max(0.15, val)
+          const isHot = val > 0.7
+          return (
+            <div
+              key={idx}
+              style={{ backgroundColor: `rgba(56, 189, 248, ${opacity})` }}
+              className={`h-7 rounded flex items-center justify-center font-mono text-[10px] font-bold ${
+                isHot ? 'text-black font-extrabold border border-white/60' : 'text-slate-200 border border-blue-500/20'
+              }`}
+            >
+              {val.toFixed(2)}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function DefaultFlowIllustration({ concept }) {
   return (
     <svg className="w-48 h-32" viewBox="0 0 200 120" fill="none">
-      <line x1="100" y1="20" x2="60" y2="70" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="100" y1="20" x2="140" y2="70" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="100" y1="20" x2="100" y2="70" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="60" y1="70" x2="40" y2="105" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="60" y1="70" x2="80" y2="105" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="140" y1="70" x2="120" y2="105" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="140" y1="70" x2="160" y2="105" stroke="#1e293b" strokeWidth="1.5" />
+      <line x1="100" y1="20" x2="60" y2="70" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="100" y1="20" x2="140" y2="70" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="100" y1="20" x2="100" y2="70" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="60" y1="70" x2="40" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="60" y1="70" x2="80" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="140" y1="70" x2="120" y2="105" stroke="#1e2638" strokeWidth="1.5" />
+      <line x1="140" y1="70" x2="160" y2="105" stroke="#1e2638" strokeWidth="1.5" />
 
       <circle cx="100" cy="20" r="7" fill="#38bdf8" />
       <circle cx="100" cy="70" r="6" fill="#38bdf8" />
@@ -754,24 +1258,6 @@ function MinimalTreeGraphic() {
       <circle cx="120" cy="105" r="4.5" fill="#475569" />
       <circle cx="160" cy="105" r="4.5" fill="#475569" />
     </svg>
-  )
-}
-
-function MinimalSimulationFlow({ concept }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-12 h-12 rounded-xl bg-[#161d2d] border border-blue-500/30 flex items-center justify-center font-mono font-bold text-xs text-blue-400">
-        IN
-      </div>
-      <span className="text-slate-500 text-sm">➔</span>
-      <div className="px-3 py-2 rounded-xl bg-[#161d2d] border border-[#1e2638] font-mono text-[10px] text-slate-300">
-        {concept.title} Logic
-      </div>
-      <span className="text-slate-500 text-sm">➔</span>
-      <div className="w-12 h-12 rounded-xl bg-[#161d2d] border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-xs text-emerald-400">
-        OUT
-      </div>
-    </div>
   )
 }
 
@@ -819,7 +1305,7 @@ function DownloadIcon({ className }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
+      <line x1="12" y1="3" x2="12" y2="15" />
     </svg>
   )
 }

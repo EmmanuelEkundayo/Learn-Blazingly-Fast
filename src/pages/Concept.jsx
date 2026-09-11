@@ -316,7 +316,7 @@ export default function Concept() {
         </section>
 
         {/* ── VISUALIZATION ────────────────────── */}
-        <section>
+        <section id="concept-visualization-section" data-visualization-container>
           <SectionLabel className="mb-3">
             Visualization
             <span className="ml-2 text-gray-400 font-normal normal-case tracking-normal font-mono text-xs">
