@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { generateShareCard, copyShareCardImage, shareCardViaNative } from '../utils/shareCard.js'
 import { toast } from 'react-hot-toast'
 import { trackConceptView, trackExerciseAttempt, trackShare } from '../services/analytics.js'
+import TikTokCarouselModal from '../components/ui/TikTokCarouselModal.jsx'
 import { useConceptStore }  from '../store/conceptStore.js'
 import { useProgressStore } from '../store/progressStore.js'
 import SEO from '../components/ui/SEO.jsx'
@@ -424,6 +425,7 @@ function ShareMenu({ concept, accent }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [isTikTokOpen, setIsTikTokOpen] = useState(false)
   const menuRef = useRef(null)
   const cardRef = useRef(null)
 
@@ -547,6 +549,24 @@ function ShareMenu({ concept, accent }) {
             </button>
 
             <button
+              onClick={() => {
+                setOpen(false)
+                setIsTikTokOpen(true)
+              }}
+              disabled={sharing}
+              className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
+            >
+              <TikTokIcon className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-white">Export TikTok Carousel</span>
+                  <span className="text-[9px] bg-pink-500/20 text-pink-300 px-1 py-0.2 rounded font-mono font-bold">VIRAL</span>
+                </div>
+                <span className="text-[10px] text-gray-400">9:16 slides + clip + quiz + CTA</span>
+              </div>
+            </button>
+
+            <button
               onClick={handleCopyImage}
               disabled={sharing}
               className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
@@ -597,6 +617,14 @@ function ShareMenu({ concept, accent }) {
           <HiddenShareCard concept={concept} />
         </div>
       </div>
+
+      {/* TikTok 9:16 Carousel Modal */}
+      <TikTokCarouselModal
+        isOpen={isTikTokOpen}
+        onClose={() => setIsTikTokOpen(false)}
+        concept={concept}
+        accent={accent}
+      />
     </div>
   )
 }
@@ -741,6 +769,14 @@ function XIcon({ className }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 1200 1227">
       <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" />
+    </svg>
+  )
+}
+
+function TikTokIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
     </svg>
   )
 }

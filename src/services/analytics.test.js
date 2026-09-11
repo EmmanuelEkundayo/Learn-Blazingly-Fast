@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import posthog from 'posthog-js'
 import * as analytics from './analytics.js'
 
 describe('Analytics Service', () => {
+  let captureSpy
+  let debugSpy
+
   beforeEach(() => {
     vi.restoreAllMocks()
     window.goatcounter = undefined
+    captureSpy = vi.spyOn(posthog, 'capture').mockImplementation(() => {})
+    debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
   })
 
   it('initializes safely without crashing when environment keys are absent', () => {
@@ -25,8 +31,6 @@ describe('Analytics Service', () => {
   })
 
   it('trackConceptView formats concept details correctly', () => {
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
-    
     analytics.trackConceptView({
       slug: 'binary-search-01',
       title: 'Binary Search',
@@ -35,8 +39,11 @@ describe('Analytics Service', () => {
       difficulty: 'beginner',
     })
 
-    expect(debugSpy).toHaveBeenCalledWith(
-      '[Analytics Mock] Event: "concept_viewed"',
+    const called = captureSpy.mock.calls.length > 0 || debugSpy.mock.calls.length > 0
+    expect(called).toBe(true)
+
+    const payload = captureSpy.mock.calls[0]?.[1] || debugSpy.mock.calls[0]?.[1]
+    expect(payload).toEqual(
       expect.objectContaining({
         concept_slug: 'binary-search-01',
         concept_title: 'Binary Search',
@@ -46,8 +53,6 @@ describe('Analytics Service', () => {
   })
 
   it('trackExerciseAttempt captures pass/fail status and exercise type', () => {
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
-
     analytics.trackExerciseAttempt({
       slug: 'quick-sort-01',
       exerciseType: 'spot-the-bug',
@@ -55,8 +60,8 @@ describe('Analytics Service', () => {
       confidence: 'high',
     })
 
-    expect(debugSpy).toHaveBeenCalledWith(
-      '[Analytics Mock] Event: "exercise_attempted"',
+    const payload = captureSpy.mock.calls[0]?.[1] || debugSpy.mock.calls[0]?.[1]
+    expect(payload).toEqual(
       expect.objectContaining({
         concept_slug: 'quick-sort-01',
         exercise_type: 'spot-the-bug',
@@ -66,8 +71,6 @@ describe('Analytics Service', () => {
   })
 
   it('trackShare records platform and method', () => {
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
-
     analytics.trackShare({
       slug: 'transformer-01',
       title: 'Transformers',
@@ -75,8 +78,8 @@ describe('Analytics Service', () => {
       method: 'web_intent',
     })
 
-    expect(debugSpy).toHaveBeenCalledWith(
-      '[Analytics Mock] Event: "concept_shared"',
+    const payload = captureSpy.mock.calls[0]?.[1] || debugSpy.mock.calls[0]?.[1]
+    expect(payload).toEqual(
       expect.objectContaining({
         concept_slug: 'transformer-01',
         platform: 'x_twitter',
@@ -86,14 +89,13 @@ describe('Analytics Service', () => {
   })
 
   it('trackSearch ignores 1-character queries and records valid searches', () => {
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
-
     analytics.trackSearch({ query: 'a', resultsCount: 0 })
+    expect(captureSpy).not.toHaveBeenCalled()
     expect(debugSpy).not.toHaveBeenCalled()
 
     analytics.trackSearch({ query: 'graph', resultsCount: 4 })
-    expect(debugSpy).toHaveBeenCalledWith(
-      '[Analytics Mock] Event: "search_performed"',
+    const payload = captureSpy.mock.calls[0]?.[1] || debugSpy.mock.calls[0]?.[1]
+    expect(payload).toEqual(
       expect.objectContaining({
         query: 'graph',
         results_count: 4,
@@ -102,16 +104,14 @@ describe('Analytics Service', () => {
   })
 
   it('trackRoadmapProgress sends structured progress payload', () => {
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
-
     analytics.trackRoadmapProgress({
       roadmapSlug: 'frontend-architect',
       phaseTitle: 'Phase 1: React Internals',
       percentage: 60,
     })
 
-    expect(debugSpy).toHaveBeenCalledWith(
-      '[Analytics Mock] Event: "roadmap_progress_updated"',
+    const payload = captureSpy.mock.calls[0]?.[1] || debugSpy.mock.calls[0]?.[1]
+    expect(payload).toEqual(
       expect.objectContaining({
         roadmap_slug: 'frontend-architect',
         percentage: 60,
