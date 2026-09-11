@@ -23,13 +23,13 @@ def collatz(n):
 
 def emit(fig):
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=80, bbox_inches='tight', facecolor='#0f1117')
+    fig.savefig(buf, format='png', dpi=70, bbox_inches='tight', facecolor='#0f1117')
     buf.seek(0)
     print('IMG:' + base64.b64encode(buf.read()).decode())
     plt.close(fig)
 
 cmap = plt.cm.plasma
-for frame in range(10):
+for frame in range(8):
     n_max = frame + 4
     fig, ax = plt.subplots(figsize=(5, 3.5), facecolor='#0f1117')
     ax.set_facecolor('#0f1117')
@@ -186,8 +186,8 @@ import io, base64
 
 rng = np.random.default_rng(42)
 vertices = np.array([[0.0, 0.0], [1.0, 0.0], [0.5, np.sqrt(3) / 2]])
-FRAMES = 10
-PER_FRAME = 800
+FRAMES = 8
+PER_FRAME = 700
 total = FRAMES * PER_FRAME
 
 choices = rng.integers(0, 3, size=total)
@@ -198,7 +198,7 @@ for k in range(total):
 
 def emit(fig):
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=80, bbox_inches='tight', facecolor='#0f1117')
+    fig.savefig(buf, format='png', dpi=70, bbox_inches='tight', facecolor='#0f1117')
     buf.seek(0)
     print('IMG:' + base64.b64encode(buf.read()).decode())
     plt.close(fig)
@@ -228,7 +228,7 @@ for frame in range(FRAMES):
     tags: ['mandelbrot', 'fractal', 'complex numbers', 'iteration', 'chaos'],
     interactive_config: {
       sliders: [
-        { id: 'max_iter', label: 'Iterations', min: 10, max: 150, step: 10, default: 60 },
+        { id: 'max_iter', label: 'Iterations', min: 10, max: 100, step: 10, default: 40 },
       ],
     },
     python_code: `import matplotlib.pyplot as plt
@@ -237,7 +237,7 @@ import io, base64
 
 xmin, xmax = -2.5, 1.0
 ymin, ymax = -1.25, 1.25
-W, H = 320, 256
+W, H = 250, 200
 
 x = np.linspace(xmin, xmax, W)
 y = np.linspace(ymin, ymax, H)
@@ -259,7 +259,7 @@ ax.tick_params(colors='#6b7280', labelsize=8)
 for sp in ax.spines.values():
     sp.set_edgecolor('#374151')
 buf = io.BytesIO()
-fig.savefig(buf, format='png', dpi=90, bbox_inches='tight', facecolor='#0f1117')
+fig.savefig(buf, format='png', dpi=75, bbox_inches='tight', facecolor='#0f1117')
 buf.seek(0)
 print('IMG:' + base64.b64encode(buf.read()).decode())
 plt.close(fig)`,
@@ -403,12 +403,12 @@ palette = ['#8b5cf6', '#f59e0b', '#34d399', '#f87171']
 
 def emit(fig):
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=80, bbox_inches='tight', facecolor='#0f1117')
+    fig.savefig(buf, format='png', dpi=70, bbox_inches='tight', facecolor='#0f1117')
     buf.seek(0)
     print('IMG:' + base64.b64encode(buf.read()).decode())
     plt.close(fig)
 
-for frame in range(FRAMES):
+for frame in range(8):
     n = (frame + 1) * SPF
     fig, ax = plt.subplots(figsize=(5, 5), facecolor='#0f1117')
     ax.set_facecolor('#0f1117')
@@ -442,7 +442,7 @@ import io, base64
 
 rng = np.random.default_rng(99)
 ROWS = 14
-FRAMES = 10
+FRAMES = 8
 BPF = 80
 total = FRAMES * BPF
 
@@ -455,7 +455,7 @@ def normal_pdf(x, m, s):
 
 def emit(fig):
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=80, bbox_inches='tight', facecolor='#0f1117')
+    fig.savefig(buf, format='png', dpi=70, bbox_inches='tight', facecolor='#0f1117')
     buf.seek(0)
     print('IMG:' + base64.b64encode(buf.read()).decode())
     plt.close(fig)

@@ -18,12 +18,16 @@ async function initPyodide() {
   })
   // Pre-load packages needed for math visualizations
   await pyodide.loadPackage(['numpy', 'matplotlib'])
-  // Pre-warm: set up stdout/stderr redirect helpers + matplotlib Agg backend
+  // Pre-warm: set up stdout/stderr redirect helpers + matplotlib Agg backend + font cache
   pyodide.runPython(`
 import sys
 from io import StringIO as _StringIO
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+_f, _a = plt.subplots(figsize=(1, 1))
+plt.close(_f)
 `)
   self.postMessage({ type: 'ready' })
 }
@@ -67,14 +71,13 @@ sys.stderr = _al_err
 function cleanPythonError(msg) {
   if (!msg) return ''
   const lines = msg.split('\n')
-  // Strip the leading "PythonError: " line that Pyodide adds
   const start = lines.findIndex(
     (l) => l.trim().startsWith('Traceback') || /^\w+(Error|Exception|Warning):/.test(l.trim())
   )
   if (start >= 0) {
     return lines
       .slice(start)
-      .filter((l) => !l.startsWith('  at '))   // strip JS stack frames
+      .filter((l) => !l.startsWith('  at ')) // strip JS stack frames
       .join('\n')
       .trim()
   }

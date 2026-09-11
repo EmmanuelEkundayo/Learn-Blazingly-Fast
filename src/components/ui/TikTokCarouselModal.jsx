@@ -763,8 +763,8 @@ function ConceptSlide7CallToAction() {
 
         <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">02 Contribute</span>
-            <div className="text-sm font-bold text-white">github.com/EmmanuelEkundayo</div>
+            <span className="text-[10px] text-slate-400 font-mono">02 Open Source</span>
+            <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
           </div>
           <span className="text-slate-400">→</span>
         </div>
@@ -1174,8 +1174,8 @@ function ManifestoSlide9() {
 
         <div className="p-3.5 rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-between">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-slate-400 font-mono">02 Contribute</span>
-            <div className="text-sm font-bold text-white">github.com/emmanuelekundayo</div>
+            <span className="text-[10px] text-slate-400 font-mono">02 Open Source</span>
+            <div className="text-sm font-bold text-white">learnblazinglyfast.tech</div>
           </div>
           <span className="text-slate-400">→</span>
         </div>

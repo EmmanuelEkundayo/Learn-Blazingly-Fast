@@ -778,7 +778,7 @@ function HiddenShareCard({ concept }) {
           fontFamily: 'monospace',
           fontWeight: '500',
         }}>
-          github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
+          The Visual Tech Dictionary · Open Source
         </span>
       </div>
     </div>

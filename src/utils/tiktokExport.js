@@ -134,10 +134,7 @@ export function getTikTokCaption(concept, mode = 'concept') {
 Why 45-minute tutorials and static documentation do not cut it in the age of AI.
 
 Algorithms are living systems. Explore 550+ interactive step-by-step visualizers:
-learnblazinglyfast.tech
-
-100% Free & Open Source on GitHub:
-github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
+learnblazinglyfast.tech (Visit site for GitHub repo link)
 
 Save this post for your technical interview prep and drop a comment if you would like to contribute.
 
@@ -155,10 +152,7 @@ Category: Visual Tech Dictionary for Developers
 Can you solve the coding challenge on Slide 06? Drop your answer in the comments.
 
 Explore 550+ interactive step-by-step visualizers:
-learnblazinglyfast.tech
-
-100% Free & Open Source on GitHub:
-github.com/EmmanuelEkundayo/Learn-Blazingly-Fast
+learnblazinglyfast.tech (Visit site for GitHub repo link)
 
 Like and share to support open-source developer tooling.
 
