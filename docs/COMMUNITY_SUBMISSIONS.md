@@ -92,7 +92,50 @@ List maintainers reject spammy or promotional PRs. To ensure a 100% acceptance r
 
 ---
 
-## 5. Awesome Self-Hosted (`awesome-selfhosted/awesome-selfhosted`) — ⭐ 220k+
+## 5. Awesome React (`enaqx/awesome-react`) — ⭐ 65k+
+
+- **Repo**: [`enaqx/awesome-react`](https://github.com/enaqx/awesome-react)
+- **Target File**: `README.md`
+- **Target Section**: `#### React Real Apps`
+- **Status**: ✅ **Submitted! Pull Request [#1846](https://github.com/enaqx/awesome-react/pull/1846)**
+
+### Exact Markdown Entry:
+```markdown
+- [Learn-Blazingly-Fast](https://github.com/EmmanuelEkundayo/Learn-Blazingly-Fast) - An open-source interactive learning platform with 550+ visual simulations and quizzes for CS, algorithms, and ML
+```
+
+---
+
+## 6. Awesome System Design Resources (`ashishps1/awesome-system-design-resources`) — ⭐ 41.3k+
+
+- **Repo**: [`ashishps1/awesome-system-design-resources`](https://github.com/ashishps1/awesome-system-design-resources)
+- **Target File**: `README.md`
+- **Target Section**: `## 🔎 Interactive Visualizations`
+- **Status**: ✅ **Submitted! Pull Request [#61](https://github.com/ashishps1/awesome-system-design-resources/pull/61)**
+
+### Exact Markdown Entry:
+```markdown
+- [Learn Blazingly Fast](https://learnblazinglyfast.tech/) - Interactive visual simulations for system architecture, caching strategies, distributed state machines, and microservice patterns.
+```
+
+---
+
+## 7. Awesome Interactive Learning (`rhetenor/awesome-interactive-learning`)
+
+- **Repo**: [`rhetenor/awesome-interactive-learning`](https://github.com/rhetenor/awesome-interactive-learning)
+- **Target File**: `README.md`
+- **Target Section**: `# Programming / System Engineering`
+- **Status**: ✅ **Submitted! Pull Request [#3](https://github.com/rhetenor/awesome-interactive-learning/pull/3)**
+
+### Exact Markdown Entry:
+```markdown
+ - [Learn Blazingly Fast](https://learnblazinglyfast.tech/)
+   > Interactive visual simulations and quizzes for 550+ computer science, algorithm, system design, and machine learning concepts
+```
+
+---
+
+## 8. Awesome Self-Hosted (`awesome-selfhosted/awesome-selfhosted`) — ⭐ 220k+
 
 *(Requires container/deployment capability)*
 - **Target Category**: `Software Development - Learning & Practice`
