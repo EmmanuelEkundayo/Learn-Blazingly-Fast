@@ -21,7 +21,13 @@ function barColor(idx, step) {
   return '#1d4ed8'                               // blue — active range
 }
 
-export default function ArrayBars({ config = {}, data }) {
+export default function ArrayBars({
+  config = {},
+  data,
+  step: controlledStep,
+  progress,
+  compact = false,
+}) {
   const svgRef   = useRef(null)
   const barsRef  = useRef(null)
   const labelsRef = useRef(null)
@@ -36,11 +42,24 @@ export default function ArrayBars({ config = {}, data }) {
     [inputArray, config.mode]
   )
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
 
-  const current = steps[step]
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : controlledStep !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, controlledStep))
+    : internalStep
+
+  const setStep = useCallback((valOrFn) => {
+    setInternalStep((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn
+      return Math.min(steps.length - 1, Math.max(0, next))
+    })
+  }, [steps.length])
+
+  const current = steps[step] || steps[0]
 
   useInterval(
     () => {
@@ -59,9 +78,11 @@ export default function ArrayBars({ config = {}, data }) {
     const svg = d3.select(el)
     svg.selectAll('*').remove()
 
-    const margin = { top: 20, right: 16, bottom: 36, left: 16 }
+    const margin = compact
+      ? { top: 16, right: 10, bottom: 28, left: 10 }
+      : { top: 20, right: 16, bottom: 36, left: 16 }
     const W = el.clientWidth  || 560
-    const H = el.clientHeight || 300
+    const H = el.clientHeight || (compact ? 170 : 300)
     const inner_W = W - margin.left - margin.right
     const inner_H = H - margin.top  - margin.bottom
 
@@ -132,14 +153,14 @@ export default function ArrayBars({ config = {}, data }) {
 
     bars
       .data(arr)
-      .transition().duration(180)
+      .transition().duration(compact ? 70 : 180)
       .attr('y',      d => yS(d))
       .attr('height', d => inner_H - yS(d))
       .attr('fill', (_, i) => barColor(i, current))
 
     valLabels
       .data(arr)
-      .transition().duration(180)
+      .transition().duration(compact ? 70 : 180)
       .attr('y', d => yS(d) - 5)
       .text(d => d)
       .attr('fill', (_, i) =>
@@ -187,7 +208,7 @@ export default function ArrayBars({ config = {}, data }) {
 
       {/* Canvas */}
       <div className="rounded-lg overflow-hidden border border-surface-600 bg-surface-800">
-        <svg ref={svgRef} className="w-full h-[220px] sm:h-[300px]" />
+        <svg ref={svgRef} className={`w-full ${compact ? 'h-[160px]' : 'h-[220px] sm:h-[300px]'}`} />
       </div>
 
       <StepControls

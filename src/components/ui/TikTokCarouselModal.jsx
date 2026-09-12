@@ -719,6 +719,7 @@ function SlideContent({
             capturedVisualUrl={capturedVisualUrl}
             progress={progress}
             isVideoMode={isVideoMode}
+            isExportResolution={isExportResolution}
           />
         )}
         {index === 2 && (
@@ -749,7 +750,7 @@ function SlideContent({
 
 // ─── Visual Graphic Frame Component ───────────────────────────────────────────
 
-function SlideVisualFrame({ concept, capturedVisualUrl }) {
+function SlideVisualFrame({ concept, capturedVisualUrl, isExportResolution = false }) {
   if (capturedVisualUrl) {
     return (
       <img
@@ -759,7 +760,7 @@ function SlideVisualFrame({ concept, capturedVisualUrl }) {
       />
     )
   }
-  return <ConceptGraphicIllustration concept={concept} />
+  return <AnimatedSlideVisualizer concept={concept} progress={1.0} isExportResolution={isExportResolution} />
 }
 
 // ─── 01. Hook / Cover ─────────────────────────────────────────────────────────
@@ -798,7 +799,14 @@ function Slide1Cover({ concept, domain, capturedVisualUrl }) {
 
 // ─── 02. The Visualization (How It Works) ─────────────────────────────────────
 
-function Slide2Visualization({ concept, card, capturedVisualUrl, progress = 1.0, isVideoMode = false }) {
+function Slide2Visualization({
+  concept,
+  card,
+  capturedVisualUrl,
+  progress = 1.0,
+  isVideoMode = false,
+  isExportResolution = false,
+}) {
   return (
     <div className="flex flex-col gap-3 my-auto text-left">
       <div>
@@ -811,31 +819,19 @@ function Slide2Visualization({ concept, card, capturedVisualUrl, progress = 1.0,
       </div>
 
       {/* Visualization Image Frame */}
-      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center relative overflow-hidden">
-        {isVideoMode ? (
+      <div className="w-full aspect-[16/10] rounded-xl bg-[#0b0e14] border border-[#1e2638] flex items-center justify-center relative overflow-hidden">
+        {capturedVisualUrl && !isVideoMode ? (
+          <img
+            src={capturedVisualUrl}
+            alt={concept?.title}
+            className="max-h-full max-w-full object-contain filter drop-shadow-sm"
+          />
+        ) : (
           <AnimatedSlideVisualizer
             concept={concept}
             progress={progress}
-            capturedVisualUrl={capturedVisualUrl}
+            isExportResolution={isExportResolution}
           />
-        ) : (
-          capturedVisualUrl ? (
-            <>
-              <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
-              <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 font-mono">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                  <span>Interactive Visualizer Frame</span>
-                </span>
-                <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
-              </div>
-            </>
-          ) : (
-            <AnimatedSlideVisualizer
-              concept={concept}
-              progress={1.0}
-            />
-          )
         )}
       </div>
 

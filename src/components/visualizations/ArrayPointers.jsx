@@ -8,16 +8,34 @@ const DEFAULT_ARRAY  = [2, 5, 8, 12, 16, 23, 38, 45, 56, 72, 91, 99]
 const DEFAULT_TARGET = 23
 import { getSteps } from '../../utils/algorithms/registry.js'
 
-export default function ArrayPointers({ config = {} }) {
+export default function ArrayPointers({
+  config = {},
+  step: controlledStep,
+  progress,
+  compact = false,
+}) {
   const arr    = DEFAULT_ARRAY
   const target = DEFAULT_TARGET
   const steps  = useMemo(() => getSteps('search', config.mode, arr, target), [arr, target, config.mode])
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
 
-  const cur = steps[step]
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : controlledStep !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, controlledStep))
+    : internalStep
+
+  const setStep = useCallback((valOrFn) => {
+    setInternalStep((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn
+      return Math.min(steps.length - 1, Math.max(0, next))
+    })
+  }, [steps.length])
+
+  const cur = steps[step] || steps[0]
 
   useInterval(
     () => { if (step < steps.length - 1) setStep(s => s + 1); else setPlaying(false) },
@@ -26,7 +44,7 @@ export default function ArrayPointers({ config = {} }) {
 
   const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [])
 
-  const CELL = 48
+  const CELL = compact ? 38 : 48
 
   return (
     <div className="flex flex-col gap-4">
