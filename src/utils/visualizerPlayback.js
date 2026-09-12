@@ -121,8 +121,8 @@ function drawSortingBars(ctx, concept, box, progress) {
 
   const totalSteps = steps.length
   const stepIdx = Math.min(totalSteps - 1, Math.floor(progress * totalSteps))
-  const currentStep = steps[stepIdx]
-  const arr = currentStep.array || inputArray
+  const currentStep = (steps && steps.length > 0) ? (steps[stepIdx] || steps[0]) : { array: inputArray, swapping: [], sorted: [] }
+  const arr = currentStep?.array || inputArray
   const n = arr.length
   const maxVal = Math.max(...arr, 1)
 
@@ -284,7 +284,7 @@ function drawSortingBars(ctx, concept, box, progress) {
 function drawSearchPointers(ctx, concept, box, progress) {
   const mode = concept.visualization?.config?.mode || concept.slug || 'binary-search'
   const arr = concept.visualization?.config?.array || [2, 5, 8, 12, 16, 23, 38, 45, 56, 72]
-  const target = concept.visualization?.config?.target ?? (mode === 'binary-search' ? 23 : 16)
+  const target = concept.visualization?.config?.target ?? (mode === 'sliding-window' ? (concept.visualization?.config?.k ?? 3) : (mode === 'binary-search' ? 23 : 16))
 
   let steps = getSteps('search', mode, arr, target)
   if (!steps || steps.length === 0) {
@@ -294,7 +294,7 @@ function drawSearchPointers(ctx, concept, box, progress) {
 
   const totalSteps = steps.length
   const stepIdx = Math.min(totalSteps - 1, Math.floor(progress * totalSteps))
-  const step = steps[stepIdx]
+  const step = (steps && steps.length > 0) ? (steps[stepIdx] || steps[0]) : { found: false, done: false }
   const n = arr.length
 
   // ── 1. Target Banner (exact site layout) ───────────────────────────────────────
@@ -308,17 +308,17 @@ function drawSearchPointers(ctx, concept, box, progress) {
   ctx.textAlign = 'left'
   ctx.font = '11px JetBrains Mono, monospace'
   ctx.fillStyle = '#9ca3af'
-  ctx.fillText('target = ', box.x + 22, bannerY + 20)
+  ctx.fillText(mode === 'sliding-window' ? 'window k = ' : 'target = ', box.x + 22, bannerY + 20)
   ctx.fillStyle = '#f59e0b'
   ctx.font = 'bold 12px JetBrains Mono, monospace'
-  ctx.fillText(String(target), box.x + 22 + ctx.measureText('target = ').width, bannerY + 20)
+  ctx.fillText(String(target), box.x + 22 + ctx.measureText(mode === 'sliding-window' ? 'window k = ' : 'target = ').width, bannerY + 20)
 
   ctx.textAlign = 'right'
-  if (step.found) {
+  if (step?.found) {
     ctx.fillStyle = '#4ade80'
     ctx.font = 'bold 11px JetBrains Mono, monospace'
-    ctx.fillText(`✓ found at index ${step.mid ?? step.i}`, box.x + box.width - 24, bannerY + 20)
-  } else if (step.done && !step.found) {
+    ctx.fillText(mode === 'sliding-window' ? `✓ max sum window [${step.lo}…${step.hi}]` : `✓ found at index ${step.mid ?? step.i}`, box.x + box.width - 24, bannerY + 20)
+  } else if (step?.done && !step?.found) {
     ctx.fillStyle = '#ef4444'
     ctx.font = 'bold 11px JetBrains Mono, monospace'
     ctx.fillText('✗ not found', box.x + box.width - 24, bannerY + 20)
