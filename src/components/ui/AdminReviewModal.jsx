@@ -165,11 +165,11 @@ export default function AdminReviewModal({ isOpen, onClose }) {
             <form onSubmit={handleTokenSubmit} className="p-8 space-y-4">
               <div className="flex items-center gap-2 text-gray-300 text-sm">
                 <Lock className="w-4 h-4 text-blue-400" />
-                <span>Enter the admin token to manage reviews</span>
+                <span>Enter the admin password to manage reviews</span>
               </div>
               <input
                 type="password"
-                placeholder="Admin token"
+                placeholder="Admin password"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 autoFocus
