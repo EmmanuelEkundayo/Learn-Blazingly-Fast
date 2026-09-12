@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { Component, useMemo } from 'react'
 import GraphCanvas       from '../visualizations/GraphCanvas.jsx'
 import ArrayBars         from '../visualizations/ArrayBars.jsx'
 import MatrixGrid        from '../visualizations/MatrixGrid.jsx'
@@ -15,20 +15,43 @@ import ArchDiagram       from '../visualizations/ArchDiagram.jsx'
 import StateDiagram      from '../visualizations/StateDiagram.jsx'
 
 const VIZ_MAP = {
-  'array-bars': ArrayBars,
-  'array-pointers': ArrayPointers,
-  'graph-canvas': GraphCanvas,
-  'matrix-grid': MatrixGrid,
-  'tree-canvas': TreeCanvas,
-  'loss-landscape': LossLandscape,
-  'cluster-plot': ClusterPlot,
-  'heatmap-grid': HeatmapGrid,
-  'timeline-step': TimelineStep,
-  'decision-boundary': DecisionBoundary,
-  'neural-net': NeuralNetDiagram,
-  'vector-space': VectorSpace,
-  'arch-diagram': ArchDiagram,
-  'state-diagram': StateDiagram,
+  'array-bars':           ArrayBars,
+  'array-pointers':       ArrayPointers,
+  'graph-canvas':         GraphCanvas,
+  'graph-traversal':      GraphCanvas,
+  'matrix-grid':          MatrixGrid,
+  'tree-canvas':          TreeCanvas,
+  'loss-landscape':       LossLandscape,
+  'cluster-plot':         ClusterPlot,
+  'heatmap-grid':         HeatmapGrid,
+  'timeline-step':        TimelineStep,
+  'code-flow':            TimelineStep,
+  'decision-boundary':    DecisionBoundary,
+  'neural-net':           NeuralNetDiagram,
+  'neural-net-diagram':   NeuralNetDiagram,
+  'vector-space':         VectorSpace,
+  'arch-diagram':         ArchDiagram,
+  'architecture-diagram': ArchDiagram,
+  'state-diagram':        StateDiagram,
+}
+
+class VizErrorBoundary extends Component {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(err) {
+    console.warn('[VizErrorBoundary] Caught visualizer render error:', err)
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-slate-400 text-xs">
+          <span className="font-mono text-blue-400 font-bold mb-1">{this.props.title || 'Interactive Visualization'}</span>
+          <span>Simulation ready for execution flow</span>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 /**
@@ -41,6 +64,7 @@ export default function AnimatedSlideVisualizer({
   progress = 1.0,
   capturedVisualUrl,
   isExportResolution = false,
+  fallback,
 }) {
   const type = concept?.visualization?.type || 'array-bars'
   const VizComp = useMemo(() => VIZ_MAP[type] || ArrayBars, [type])
@@ -70,12 +94,14 @@ export default function AnimatedSlideVisualizer({
           transform: `scale(${scale})`,
         }}
       >
-        <VizComp
-          config={concept?.visualization?.config ?? {}}
-          data={concept?.visualization?.data}
-          progress={progress}
-          compact={true}
-        />
+        <VizErrorBoundary fallback={fallback} title={concept?.title}>
+          <VizComp
+            config={concept?.visualization?.config ?? {}}
+            data={concept?.visualization?.data}
+            progress={progress}
+            compact={true}
+          />
+        </VizErrorBoundary>
       </div>
     </div>
   )

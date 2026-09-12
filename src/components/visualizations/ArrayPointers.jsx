@@ -14,9 +14,16 @@ export default function ArrayPointers({
   progress,
   compact = false,
 }) {
-  const arr    = DEFAULT_ARRAY
-  const target = DEFAULT_TARGET
-  const steps  = useMemo(() => getSteps('search', config.mode, arr, target), [arr, target, config.mode])
+  const arr    = config.array || DEFAULT_ARRAY
+  const target = config.mode === 'sliding-window' ? (config.k ?? 3) : (config.target ?? DEFAULT_TARGET)
+  const steps  = useMemo(() => {
+    const s = getSteps('search', config.mode, arr, target)
+    if (s && s.length > 0) return s
+    return [{
+      lo: 0, hi: Math.min(1, arr.length - 1), mid: 0, found: false, done: false,
+      annotation: 'Array pointers overview'
+    }]
+  }, [arr, target, config.mode])
 
   const [internalStep, setInternalStep] = useState(0)
   const [playing,      setPlaying]      = useState(false)
@@ -35,7 +42,9 @@ export default function ArrayPointers({
     })
   }, [steps.length])
 
-  const cur = steps[step] || steps[0]
+  const cur = (steps && steps.length > 0)
+    ? (steps[step] || steps[0])
+    : { lo: null, hi: null, mid: null, found: false, done: false }
 
   useInterval(
     () => { if (step < steps.length - 1) setStep(s => s + 1); else setPlaying(false) },
@@ -50,16 +59,16 @@ export default function ArrayPointers({
     <div className="flex flex-col gap-4">
       {/* Target banner */}
       <div className="flex items-center gap-3 px-3 py-2 rounded bg-surface-700 border border-surface-600 text-sm font-mono">
-        <span className="text-gray-400">target =</span>
+        <span className="text-gray-400">{config.mode === 'sliding-window' ? 'window k =' : 'target ='}</span>
         <span className="text-amber-400 font-bold">{target}</span>
         <AnimatePresence>
-          {cur.found && (
+          {cur?.found && (
             <motion.span key="found" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="ml-auto text-green-400 font-semibold text-xs">
-              ✓ found at index {cur.mid}
+              {config.mode === 'sliding-window' ? `✓ max sum window [${cur.lo}…${cur.hi}]` : `✓ found at index ${cur.mid}`}
             </motion.span>
           )}
-          {cur.done && !cur.found && (
+          {cur?.done && !cur?.found && (
             <motion.span key="nf" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="ml-auto text-red-400 font-semibold text-xs">
               ✗ not found
@@ -73,11 +82,11 @@ export default function ArrayPointers({
         <div style={{ display: 'inline-flex', flexDirection: 'column' }}>
           <div className="flex">
             {arr.map((val, i) => {
-              const inRange = cur.lo != null && cur.hi != null && i >= cur.lo && i <= cur.hi
-              const isMid   = cur.mid === i
-              const isLo    = cur.lo  === i
-              const isHi    = cur.hi  === i
-              const isFound = cur.found && isMid
+              const inRange = cur?.lo != null && cur?.hi != null && i >= cur.lo && i <= cur.hi
+              const isMid   = cur?.mid === i
+              const isLo    = cur?.lo  === i
+              const isHi    = cur?.hi  === i
+              const isFound = cur?.found && (isMid || inRange)
 
               let bg = '#0d0d10', border = '#2d2d35', tc = '#4b5563'
               if      (isFound)  { bg = '#14532d'; border = '#22c55e'; tc = '#86efac' }

@@ -122,39 +122,40 @@ export function generateTwoPointersSteps(arr, target) {
 // ─── Sliding Window (Maximum Sum Subarray of size k) ─────────────────────────
 export function generateSlidingWindowSteps(arr, k = 3) {
   const steps = []
+  if (!Array.isArray(arr) || arr.length === 0) return steps
   const n = arr.length
-  if (n < k) return steps
+  const safeK = (typeof k === 'number' && k > 0 && k <= n) ? Math.floor(k) : Math.min(3, n)
 
   let windowSum = 0
-  for (let i = 0; i < k; i++) windowSum += arr[i]
+  for (let i = 0; i < safeK; i++) windowSum += arr[i]
   let maxSum = windowSum
   let maxStart = 0
 
   steps.push({
-    lo: 0, hi: k - 1, mid: 0, found: false, done: false,
-    annotation: `Initialize window [0…${k - 1}]: Sum = ${windowSum}.`
+    lo: 0, hi: safeK - 1, mid: 0, found: false, done: false,
+    annotation: `Initialize window [0…${safeK - 1}]: Sum = ${windowSum}.`
   })
 
-  for (let i = k; i < n; i++) {
-    const prev = arr[i - k]
+  for (let i = safeK; i < n; i++) {
+    const prev = arr[i - safeK]
     const curr = arr[i]
     windowSum = windowSum - prev + curr
 
     const isNewMax = windowSum > maxSum
     if (isNewMax) {
       maxSum = windowSum
-      maxStart = i - k + 1
+      maxStart = i - safeK + 1
     }
 
     steps.push({
-      lo: i - k + 1, hi: i, mid: maxStart, found: isNewMax, done: false,
-      annotation: `Slide window [${i - k + 1}…${i}]: -${prev} +${curr} = ${windowSum}. Max = ${maxSum}.`
+      lo: i - safeK + 1, hi: i, mid: maxStart, found: isNewMax, done: false,
+      annotation: `Slide window [${i - safeK + 1}…${i}]: -${prev} +${curr} = ${windowSum}. Max = ${maxSum}.`
     })
   }
 
   steps.push({
-    lo: maxStart, hi: maxStart + k - 1, mid: maxStart, found: true, done: true,
-    annotation: `Maximum subarray found at [${maxStart}…${maxStart + k - 1}] with sum = ${maxSum}!`
+    lo: maxStart, hi: maxStart + safeK - 1, mid: maxStart, found: true, done: true,
+    annotation: `Maximum subarray found at [${maxStart}…${maxStart + safeK - 1}] with sum = ${maxSum}!`
   })
   return steps
 }

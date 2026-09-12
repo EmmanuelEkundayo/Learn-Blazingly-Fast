@@ -15,13 +15,18 @@ export function openTikTokUpload() {
 export async function renderSlideCanvas(element) {
   if (!element) return null
 
-  return await html2canvas(element, {
-    backgroundColor: '#0b0e14',
-    scale: 2.0, // 540x675 * 2 = 1080x1350 crisp native resolution
-    logging: false,
-    useCORS: true,
-    allowTaint: true,
-  })
+  try {
+    return await html2canvas(element, {
+      backgroundColor: '#0b0e14',
+      scale: 2.0, // 540x675 * 2 = 1080x1350 crisp native resolution
+      logging: false,
+      useCORS: true,
+      allowTaint: true,
+    })
+  } catch (err) {
+    console.error('Failed to render slide canvas with html2canvas:', err)
+    return null
+  }
 }
 
 /**

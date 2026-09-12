@@ -68,18 +68,22 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
             }
           }
 
-          // Target inner visualization stage to avoid capturing outer step controls
-          const stageEl = el.querySelector('svg, canvas, [class*="overflow-x-auto"], [class*="aspect-"], [class*="grid"]') || el
+          // Target inner HTML stage container (avoid passing bare SVGElement to html2canvas)
+          const stageEl = el.querySelector('[class*="overflow-x-auto"], [class*="aspect-"], [class*="grid"]') || el
 
-          // Use html2canvas to snapshot the SVG / DOM visualizer
-          const renderedCanvas = await html2canvas(stageEl, {
-            backgroundColor: '#0b0e14',
-            scale: 1.5,
-            logging: false,
-            useCORS: true,
-          })
-          if (active && renderedCanvas) {
-            setCapturedVisualUrl(renderedCanvas.toDataURL('image/png'))
+          if (stageEl && typeof html2canvas === 'function') {
+            const renderedCanvas = await html2canvas(stageEl, {
+              backgroundColor: '#0b0e14',
+              scale: 1.5,
+              logging: false,
+              useCORS: true,
+            }).catch((e) => {
+              console.debug('html2canvas snapshot failed:', e)
+              return null
+            })
+            if (active && renderedCanvas) {
+              setCapturedVisualUrl(renderedCanvas.toDataURL('image/png'))
+            }
           }
         }
       } catch (err) {
@@ -160,107 +164,129 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
   }
 
   const handleExportVideoClipAndOpenTikTok = async () => {
-    const elements = slideRefs.map(r => r.current).filter(Boolean)
-    if (elements.length < totalSlides) {
-      toast.error('Preparing slide frames, please try again in a moment.')
-      return
-    }
-
-    if (!isVideoExportSupported()) {
-      toast.error('Video recording is not supported in this browser. Please use the 7-Slide Carousel ZIP export.', { duration: 5000 })
-      setExportMode('carousel')
-      return
-    }
-
-    setExportingVideo(true)
-    setVideoProgress({ percent: 0, currentSec: 0, totalSec: 15, message: 'Starting video engine...' })
-
-    const caption = getTikTokCaption(concept)
     try {
-      await navigator.clipboard.writeText(caption)
-    } catch {
-      // ignore
-    }
+      const elements = slideRefs.map(r => r.current).filter(Boolean)
+      if (elements.length < totalSlides) {
+        toast.error('Preparing slide frames, please try again in a moment.')
+        return
+      }
 
-    const result = await exportVideoClip(elements, concept.slug, (prog) => {
-      setVideoProgress(prog)
-    }, concept)
+      if (!isVideoExportSupported()) {
+        toast.error('Video recording is not supported in this browser. Please use the 7-Slide Carousel ZIP export.', { duration: 5000 })
+        setExportMode('carousel')
+        return
+      }
 
-    setExportingVideo(false)
+      setExportingVideo(true)
+      setVideoProgress({ percent: 0, currentSec: 0, totalSec: 15, message: 'Starting video engine...' })
 
-    if (result && result.success) {
-      setVideoResult(result)
-      toast.success('15-Second video downloaded & caption copied! Opening TikTok Studio...', { duration: 4500 })
-      trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_video_15s', method: 'export_video' })
-      setTimeout(() => {
-        openTikTokUpload()
-      }, 800)
-    } else {
-      toast.error(result?.error || 'Failed to generate video clip')
+      const caption = getTikTokCaption(concept)
+      try {
+        await navigator.clipboard.writeText(caption)
+      } catch {
+        // ignore
+      }
+
+      const result = await exportVideoClip(elements, concept?.slug, (prog) => {
+        setVideoProgress(prog)
+      }, concept)
+
+      setExportingVideo(false)
+
+      if (result && result.success) {
+        setVideoResult(result)
+        toast.success('15-Second video downloaded & caption copied! Opening TikTok Studio...', { duration: 4500 })
+        trackShare({ slug: concept?.slug, title: concept?.title, platform: 'tiktok_video_15s', method: 'export_video' })
+        setTimeout(() => {
+          openTikTokUpload()
+        }, 800)
+      } else {
+        toast.error(result?.error || 'Failed to generate video clip')
+      }
+    } catch (err) {
+      console.error('Export video failed:', err)
+      setExportingVideo(false)
+      toast.error('Video generation encountered an issue. Try the 7-Slide Carousel ZIP export!')
     }
   }
 
   const handleDownloadActive = async () => {
-    const el = slideRefs[activeSlide]?.current
-    if (!el) return
-    toast.loading('Rendering slide PNG...', { id: 'slide-dl' })
-    const filename = `${concept.slug}-slide-0${activeSlide + 1}.png`
-    const success = await downloadSlidePNG(el, filename)
-    if (success) {
-      toast.success(`Downloaded Slide ${activeSlide + 1}!`, { id: 'slide-dl' })
-      trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_slide_png', method: 'download_single' })
-    } else {
+    try {
+      const el = slideRefs[activeSlide]?.current
+      if (!el) return
+      toast.loading('Rendering slide PNG...', { id: 'slide-dl' })
+      const filename = `${concept?.slug || 'concept'}-slide-0${activeSlide + 1}.png`
+      const success = await downloadSlidePNG(el, filename)
+      if (success) {
+        toast.success(`Downloaded Slide ${activeSlide + 1}!`, { id: 'slide-dl' })
+        trackShare({ slug: concept?.slug, title: concept?.title, platform: 'tiktok_slide_png', method: 'download_single' })
+      } else {
+        toast.error('Failed to export slide', { id: 'slide-dl' })
+      }
+    } catch (err) {
+      console.error('Download slide failed:', err)
       toast.error('Failed to export slide', { id: 'slide-dl' })
     }
   }
 
   const handleCopyActiveImage = async () => {
-    const el = slideRefs[activeSlide]?.current
-    if (!el) return
-    toast.loading('Copying slide image...', { id: 'slide-copy' })
-    const success = await copySlideImageToClipboard(el)
-    if (success) {
-      toast.success(`Slide ${activeSlide + 1} copied to clipboard`, { id: 'slide-copy' })
-      trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_slide_copy', method: 'copy_image' })
-    } else {
+    try {
+      const el = slideRefs[activeSlide]?.current
+      if (!el) return
+      toast.loading('Copying slide image...', { id: 'slide-copy' })
+      const success = await copySlideImageToClipboard(el)
+      if (success) {
+        toast.success(`Slide ${activeSlide + 1} copied to clipboard`, { id: 'slide-copy' })
+        trackShare({ slug: concept?.slug, title: concept?.title, platform: 'tiktok_slide_copy', method: 'copy_image' })
+      } else {
+        toast.error('Clipboard copy not supported by your browser. Use Download instead.', { id: 'slide-copy' })
+      }
+    } catch (err) {
+      console.error('Copy image failed:', err)
       toast.error('Clipboard copy not supported by your browser. Use Download instead.', { id: 'slide-copy' })
     }
   }
 
   const handleExportZipAndOpenTikTok = async () => {
-    const elements = slideRefs.map(r => r.current).filter(Boolean)
-    if (elements.length < totalSlides) {
-      toast.error('Preparing slides, please try again in a moment.')
-      return
-    }
-
-    setExportingZip(true)
-    toast.loading(`Rendering ${totalSlides} slides (1080x1350)...`, { id: 'zip-dl' })
-
-    const caption = getTikTokCaption(concept)
     try {
-      await navigator.clipboard.writeText(caption)
-    } catch {
-      // ignore clipboard error if unfocused
-    }
+      const elements = slideRefs.map(r => r.current).filter(Boolean)
+      if (elements.length < totalSlides) {
+        toast.error('Preparing slides, please try again in a moment.')
+        return
+      }
 
-    const filenames = SLIDE_NAMES.map((_, i) => `slide-0${i + 1}.png`)
-    const success = await exportCarouselZip(
-      elements,
-      concept.slug,
-      filenames,
-      caption,
-      (current, total) => setExportProgress({ current, total })
-    )
+      setExportingZip(true)
+      toast.loading(`Rendering ${totalSlides} slides (1080x1350)...`, { id: 'zip-dl' })
 
-    setExportingZip(false)
-    if (success) {
-      toast.success('ZIP downloaded & caption copied! Opening TikTok Studio...', { id: 'zip-dl', duration: 4000 })
-      trackShare({ slug: concept.slug, title: concept.title, platform: 'tiktok_carousel_zip', method: 'download_and_open' })
-      setTimeout(() => {
-        openTikTokUpload()
-      }, 700)
-    } else {
+      const caption = getTikTokCaption(concept)
+      try {
+        await navigator.clipboard.writeText(caption)
+      } catch {
+        // ignore clipboard error if unfocused
+      }
+
+      const filenames = SLIDE_NAMES.map((_, i) => `slide-0${i + 1}.png`)
+      const success = await exportCarouselZip(
+        elements,
+        concept?.slug,
+        filenames,
+        caption,
+        (current, total) => setExportProgress({ current, total })
+      )
+
+      setExportingZip(false)
+      if (success) {
+        toast.success('ZIP downloaded & caption copied! Opening TikTok Studio...', { id: 'zip-dl', duration: 4000 })
+        trackShare({ slug: concept?.slug, title: concept?.title, platform: 'tiktok_carousel_zip', method: 'download_and_open' })
+        setTimeout(() => {
+          openTikTokUpload()
+        }, 700)
+      } else {
+        toast.error('Failed to export ZIP package', { id: 'zip-dl' })
+      }
+    } catch (err) {
+      console.error('Export ZIP failed:', err)
+      setExportingZip(false)
       toast.error('Failed to export ZIP package', { id: 'zip-dl' })
     }
   }
@@ -750,17 +776,17 @@ function SlideContent({
 
 // ─── Visual Graphic Frame Component ───────────────────────────────────────────
 
-function SlideVisualFrame({ concept, capturedVisualUrl, isExportResolution = false }) {
+function SlideVisualFrame({ concept, capturedVisualUrl }) {
   if (capturedVisualUrl) {
     return (
       <img
         src={capturedVisualUrl}
-        alt={concept.title}
+        alt={concept?.title}
         className="max-h-full max-w-full object-contain filter drop-shadow-sm"
       />
     )
   }
-  return <AnimatedSlideVisualizer concept={concept} progress={1.0} isExportResolution={isExportResolution} />
+  return <ConceptGraphicIllustration concept={concept} />
 }
 
 // ─── 01. Hook / Cover ─────────────────────────────────────────────────────────
@@ -831,6 +857,7 @@ function Slide2Visualization({
             concept={concept}
             progress={progress}
             isExportResolution={isExportResolution}
+            fallback={<ConceptGraphicIllustration concept={concept} />}
           />
         )}
       </div>
