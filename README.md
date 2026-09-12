@@ -6,13 +6,21 @@
 [![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Vitest-66%20Passed-22c55e?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
+[![Tests](https://img.shields.io/badge/Vitest-107%20Passed-22c55e?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Product Hunt](https://img.shields.io/badge/Product%20Hunt-Support%20Launch-da552f?style=for-the-badge&logo=producthunt&logoColor=white)](https://www.producthunt.com/products/learn-blazingly-fast)
+[![Show HN](https://img.shields.io/badge/Show%20HN-Join%20Discussion-ff6600?style=for-the-badge&logo=ycombinator&logoColor=white)](https://news.ycombinator.com)
 
 **550+ Computer Science, Machine Learning, and Software Engineering Concepts Visualized.**  
 *Interactive simulations, step-by-step algorithms, and hands-on coding exercises. Under 5 minutes each.*
 
-[Explore the Platform](https://learnblazinglyfast.tech) • [Browse Concepts](https://learnblazinglyfast.tech/browse) • [Career Roadmaps](https://learnblazinglyfast.tech/roadmaps) • [Contribute](#-contributing)
+<p align="center">
+  <a href="https://www.producthunt.com/products/learn-blazingly-fast" target="_blank" rel="noopener noreferrer">
+    <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=learn-blazingly-fast&theme=dark" alt="Learn Blazingly Fast - 550+ Interactive CS, DSA & ML Visualizers | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" />
+  </a>
+</p>
+
+[Explore the Platform](https://learnblazinglyfast.tech) • [Browse Concepts](https://learnblazinglyfast.tech/browse) • [Career Roadmaps](https://learnblazinglyfast.tech/roadmaps) • [Contribute](#contributing)
 
 </div>
 
