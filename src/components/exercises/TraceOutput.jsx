@@ -61,7 +61,7 @@ export default function TraceOutput({
   return (
     <div className="space-y-6">
       {/* Prompt */}
-      <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 backdrop-blur-sm">
+      <div className="bg-surface-800 border border-surface-600 rounded-xl p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-cyan-400">
@@ -108,8 +108,8 @@ export default function TraceOutput({
 
       {/* Code Display */}
       {codeSnippet && (
-        <div className="bg-surface-900 border border-surface-700/80 rounded-xl overflow-hidden shadow-inner font-mono text-xs">
-          <div className="bg-surface-800/80 border-b border-surface-700/80 px-4 py-2 flex items-center justify-between text-gray-400 text-xs">
+        <div className="bg-surface-900 border border-surface-700 rounded-xl overflow-hidden shadow-inner font-mono text-xs">
+          <div className="bg-surface-800 border-b border-surface-700 px-4 py-2 flex items-center justify-between text-gray-400 text-xs">
             <span>{exercise.language || 'python'} snippet</span>
             {exercise.input_case && (
               <span className="text-cyan-300">Input: {exercise.input_case}</span>
@@ -123,7 +123,7 @@ export default function TraceOutput({
 
       {/* Multiple-Choice or Input Mode */}
       {isMultipleChoice ? (
-        <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-800 border border-surface-600 rounded-xl p-5 space-y-3">
           <label className="text-sm font-semibold text-gray-300">
             Select the correct output:
           </label>
@@ -133,7 +133,7 @@ export default function TraceOutput({
               const isCorrectOpt = idx === (exercise.correct_index ?? 0)
 
               let optClass =
-                'bg-surface-700/60 border-surface-600/60 text-gray-300 hover:border-surface-400'
+                'bg-surface-700 border-surface-600 text-gray-300 hover:border-surface-400'
               if (isSelected) {
                 optClass = 'bg-cyan-950/50 border-cyan-500 text-cyan-200 font-semibold'
               }
@@ -162,7 +162,7 @@ export default function TraceOutput({
           </div>
         </div>
       ) : (
-        <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-800 border border-surface-600 rounded-xl p-5 space-y-3">
           <label className="text-sm font-semibold text-gray-300">
             Type the expected output:
           </label>

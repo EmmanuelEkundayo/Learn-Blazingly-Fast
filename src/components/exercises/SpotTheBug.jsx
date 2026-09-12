@@ -52,7 +52,7 @@ export default function SpotTheBug({
   return (
     <div className="space-y-6">
       {/* Prompt Header */}
-      <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 backdrop-blur-sm">
+      <div className="bg-surface-800 border border-surface-600 rounded-xl p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-rose-400">
@@ -98,8 +98,8 @@ export default function SpotTheBug({
       </div>
 
       {/* Code Viewer with Line Selection */}
-      <div className="bg-surface-900 border border-surface-700/80 rounded-xl overflow-hidden shadow-inner font-mono text-xs">
-        <div className="bg-surface-800/80 border-b border-surface-700/80 px-4 py-2 flex items-center justify-between text-gray-400 text-xs">
+      <div className="bg-surface-900 border border-surface-700 rounded-xl overflow-hidden shadow-inner font-mono text-xs">
+        <div className="bg-surface-800 border-b border-surface-700 px-4 py-2 flex items-center justify-between text-gray-400 text-xs">
           <span>{exercise.language || 'python'} snippet</span>
           <span>{isLineMode ? 'Click any line to mark bug' : 'Inspect the code below'}</span>
         </div>
@@ -109,7 +109,7 @@ export default function SpotTheBug({
             const isSelected = selectedLine === lineNum
             const isBugLine = lineNum === targetLine
 
-            let lineClass = 'hover:bg-surface-800/60 cursor-pointer text-gray-300'
+            let lineClass = 'hover:bg-surface-800 cursor-pointer text-gray-300'
             if (isSelected) {
               lineClass = 'bg-rose-950/50 border-rose-500/60 text-rose-200 font-semibold'
             }
@@ -151,7 +151,7 @@ export default function SpotTheBug({
 
       {/* Multiple-Choice Options if present */}
       {options.length > 0 && (
-        <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-800 border border-surface-600 rounded-xl p-5 space-y-3">
           <label className="text-sm font-semibold text-gray-300">
             What is the bug causing the failure?
           </label>
@@ -160,7 +160,7 @@ export default function SpotTheBug({
               const isSelected = selectedOption === idx
               const isCorrectOpt = idx === (exercise.correct_index ?? 0)
 
-              let optClass = 'bg-surface-700/60 border-surface-600/60 text-gray-300 hover:border-surface-400'
+              let optClass = 'bg-surface-700 border-surface-600 text-gray-300 hover:border-surface-400'
               if (isSelected) {
                 optClass = 'bg-rose-950/40 border-rose-500 text-rose-200 font-semibold'
               }

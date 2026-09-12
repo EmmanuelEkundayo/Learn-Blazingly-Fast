@@ -13,7 +13,12 @@ export default function ArrayPointers({
   step: controlledStep,
   progress,
   compact = false,
+  readOnly = false,
+  theme,
+  primaryColor,
 }) {
+  const isReadOnly = readOnly || progress !== undefined
+  const activeColor = primaryColor || theme?.primary || '#3b82f6'
   const arr    = config.array || DEFAULT_ARRAY
   const target = config.mode === 'sliding-window' ? (config.k ?? 3) : (config.target ?? DEFAULT_TARGET)
   const steps  = useMemo(() => {
@@ -91,8 +96,8 @@ export default function ArrayPointers({
               let bg = '#0d0d10', border = '#2d2d35', tc = '#4b5563'
               if      (isFound)  { bg = '#14532d'; border = '#22c55e'; tc = '#86efac' }
               else if (isMid)    { bg = '#451a03'; border = '#f59e0b'; tc = '#fcd34d' }
-              else if (inRange)  { bg = '#1e293b'; border = '#3b82f6'; tc = '#e2e8f0' }
-              if ((isLo || isHi) && !isMid && !isFound) border = '#60a5fa'
+              else if (inRange)  { bg = '#1e293b'; border = activeColor; tc = '#e2e8f0' }
+              if ((isLo || isHi) && !isMid && !isFound) border = activeColor
 
               return (
                 <motion.div key={i}
@@ -136,7 +141,7 @@ export default function ArrayPointers({
       {/* Legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
         {[
-          ['#3b82f6', '#1e293b', 'active window (lo…hi)'],
+          [activeColor, '#1e293b', 'active window (lo…hi)'],
           ['#f59e0b', '#451a03', 'mid — comparing'],
           ['#22c55e', '#14532d', 'found'],
         ].map(([border, bg, label]) => (
@@ -157,6 +162,9 @@ export default function ArrayPointers({
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
+        primaryColor={activeColor}
+        theme={theme}
       />
     </div>
   )

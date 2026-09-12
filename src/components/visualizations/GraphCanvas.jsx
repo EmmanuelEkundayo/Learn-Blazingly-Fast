@@ -26,7 +26,8 @@ const C = {
 const SPEED_MS = { 0.5: 1600, 1: 800, 1.5: 533, 2: 400, 3: 267 }
 const NODE_R = 22
 
-export default function GraphCanvas({ config = {}, data }) {
+export default function GraphCanvas({ config = {}, data, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const svgRef   = useRef(null)
   const simRef   = useRef(null)
   const nodesRef = useRef(null) // d3 selection
@@ -44,9 +45,20 @@ export default function GraphCanvas({ config = {}, data }) {
   // ── steps ──────────────────────────────────────────────────────────────
   const steps = useMemo(() => getSteps('graph', config.mode, adjacency, startNode), [adjacency, startNode, config.mode])
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
+
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalStep
+
+  const setStep = useCallback((valOrFn) => {
+    setInternalStep((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn
+      return Math.min(steps.length - 1, Math.max(0, next))
+    })
+  }, [steps.length])
 
   const current = steps[step]
 
@@ -169,20 +181,28 @@ export default function GraphCanvas({ config = {}, data }) {
     const { activeNode, activeEdge, visited, queue, type } = current
 
     // Node colours
-    nodesRef.current.select('circle')
-      .transition().duration(200)
-      .attr('fill', d => {
-        if (d.id === activeNode && type === 'dequeue') return C.nodeCurrent
-        if (d.id === activeNode && type === 'enqueue') return C.nodeEnqueued
-        if (visited.has(d.id))  return C.nodeVisited
-        if (queue.includes(d.id)) return C.nodeInQueue
-        return C.nodeBg
-      })
-      .attr('stroke', d => {
-        if (d.id === activeNode) return C.nodeCurrent
-        return C.nodeStroke
-      })
-      .attr('stroke-width', d => d.id === activeNode ? 3 : 2)
+    const circleEl = nodesRef.current.select('circle')
+    const getFill = d => {
+      if (d.id === activeNode && type === 'dequeue') return C.nodeCurrent
+      if (d.id === activeNode && type === 'enqueue') return C.nodeEnqueued
+      if (visited.has(d.id))  return C.nodeVisited
+      if (queue.includes(d.id)) return C.nodeInQueue
+      return C.nodeBg
+    }
+    const getStroke = d => (d.id === activeNode ? C.nodeCurrent : C.nodeStroke)
+    const getStrokeWidth = d => (d.id === activeNode ? 3 : 2)
+
+    if (isReadOnly) {
+      circleEl.interrupt()
+        .attr('fill', getFill)
+        .attr('stroke', getStroke)
+        .attr('stroke-width', getStrokeWidth)
+    } else {
+      circleEl.transition().duration(200)
+        .attr('fill', getFill)
+        .attr('stroke', getStroke)
+        .attr('stroke-width', getStrokeWidth)
+    }
 
     nodesRef.current.select('text')
       .attr('fill', d =>
@@ -191,35 +211,46 @@ export default function GraphCanvas({ config = {}, data }) {
 
     // Edge colours
     if (edgesRef.current) {
-      const { el, data: edata } = edgesRef.current
-      el.transition().duration(200)
-        .attr('stroke', d => {
-          const u = typeof d.source === 'object' ? d.source.id : d.source
-          const v = typeof d.target === 'object' ? d.target.id : d.target
-          if (!activeEdge) return C.edgeDefault
-          const [au, av] = activeEdge
-          if ((u === au && v === av) || (!directed && u === av && v === au))
-            return type === 'skip' ? C.edgeSkip : C.edgeActive
-          return C.edgeDefault
-        })
-        .attr('stroke-width', d => {
-          const u = typeof d.source === 'object' ? d.source.id : d.source
-          const v = typeof d.target === 'object' ? d.target.id : d.target
-          if (!activeEdge) return 2
-          const [au, av] = activeEdge
-          if ((u === au && v === av) || (!directed && u === av && v === au)) return 3
-          return 2
-        })
-        .attr('stroke-opacity', d => {
-          const u = typeof d.source === 'object' ? d.source.id : d.source
-          const v = typeof d.target === 'object' ? d.target.id : d.target
-          if (!activeEdge) return 0.5
-          const [au, av] = activeEdge
-          if ((u === au && v === av) || (!directed && u === av && v === au)) return 1
-          return 0.35
-        })
+      const { el } = edgesRef.current
+      const getEdgeStroke = d => {
+        const u = typeof d.source === 'object' ? d.source.id : d.source
+        const v = typeof d.target === 'object' ? d.target.id : d.target
+        if (!activeEdge) return C.edgeDefault
+        const [au, av] = activeEdge
+        if ((u === au && v === av) || (!directed && u === av && v === au))
+          return type === 'skip' ? C.edgeSkip : C.edgeActive
+        return C.edgeDefault
+      }
+      const getEdgeStrokeWidth = d => {
+        const u = typeof d.source === 'object' ? d.source.id : d.source
+        const v = typeof d.target === 'object' ? d.target.id : d.target
+        if (!activeEdge) return 2
+        const [au, av] = activeEdge
+        if ((u === au && v === av) || (!directed && u === av && v === au)) return 3
+        return 2
+      }
+      const getEdgeOpacity = d => {
+        const u = typeof d.source === 'object' ? d.source.id : d.source
+        const v = typeof d.target === 'object' ? d.target.id : d.target
+        if (!activeEdge) return 0.5
+        const [au, av] = activeEdge
+        if ((u === au && v === av) || (!directed && u === av && v === au)) return 1
+        return 0.35
+      }
+
+      if (isReadOnly) {
+        el.interrupt()
+          .attr('stroke', getEdgeStroke)
+          .attr('stroke-width', getEdgeStrokeWidth)
+          .attr('stroke-opacity', getEdgeOpacity)
+      } else {
+        el.transition().duration(200)
+          .attr('stroke', getEdgeStroke)
+          .attr('stroke-width', getEdgeStrokeWidth)
+          .attr('stroke-opacity', getEdgeOpacity)
+      }
     }
-  }, [step, current, directed])
+  }, [step, current, directed, isReadOnly])
 
   // ── controls ───────────────────────────────────────────────────────────
   const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [])
@@ -272,6 +303,7 @@ export default function GraphCanvas({ config = {}, data }) {
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

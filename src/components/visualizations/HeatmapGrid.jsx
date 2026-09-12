@@ -344,13 +344,18 @@ function buildSteps(matrixCfg) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function HeatmapGrid({ config = {} }) {
+export default function HeatmapGrid({ config = {}, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const matrixCfg = useMemo(() => getModeMatrix(config.mode), [config.mode])
   const steps = useMemo(() => buildSteps(matrixCfg), [matrixCfg])
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
+
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalStep
 
   const cur = steps[Math.min(step, steps.length - 1)]
 
@@ -476,12 +481,13 @@ export default function HeatmapGrid({ config = {} }) {
       <StepControls
         step={Math.min(step, steps.length - 1)} totalSteps={steps.length} playing={playing} speed={speed}
         annotation={cur?.annotation}
-        onPrev={()  => { setPlaying(false); setStep(s => Math.max(0, s - 1)) }}
-        onNext={()  => { setPlaying(false); setStep(s => Math.min(steps.length - 1, s + 1)) }}
+        onPrev={()  => { setPlaying(false); setInternalStep(s => Math.max(0, s - 1)) }}
+        onNext={()  => { setPlaying(false); setInternalStep(s => Math.min(steps.length - 1, s + 1)) }}
         onPlay={()  => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

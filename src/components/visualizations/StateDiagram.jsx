@@ -347,23 +347,30 @@ function resolveStateConfig(config) {
   }
 }
 
-export default function StateDiagram({ config = {} }) {
+export { computeLayout, STATE_PRESETS, resolveStateConfig, BOX_W, BOX_H, GAP_X, GAP_Y }
+
+export default function StateDiagram({ config = {}, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const { states, transitions, steps } = resolveStateConfig(config)
 
-  const [idx, setIdx]         = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed]     = useState(1)
+  const [internalIdx, setInternalIdx] = useState(0)
+  const [playing, setPlaying]         = useState(false)
+  const [speed, setSpeed]             = useState(1)
+
+  const idx = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalIdx
 
   const cur              = steps[idx]
   const activeState      = cur?.active_state      ?? null
   const activeTransition = cur?.active_transition ?? null   // { from, to }
 
   useInterval(
-    () => { if (idx < steps.length - 1) setIdx(i => i + 1); else setPlaying(false) },
+    () => { if (idx < steps.length - 1) setInternalIdx(i => i + 1); else setPlaying(false) },
     playing ? SPEED_MS[speed] : null,
   )
 
-  const handleReset = useCallback(() => { setIdx(0); setPlaying(false) }, [])
+  const handleReset = useCallback(() => { setInternalIdx(0); setPlaying(false) }, [])
 
   const { W, H, positions } = computeLayout(states)
   const stateIdx = Object.fromEntries(states.map((s, i) => [s.id, i]))
@@ -479,12 +486,13 @@ export default function StateDiagram({ config = {} }) {
       <StepControls
         step={idx} totalSteps={steps.length} playing={playing} speed={speed}
         annotation={cur?.annotation}
-        onPrev={() => { setPlaying(false); setIdx(i => Math.max(0, i - 1)) }}
-        onNext={() => { setPlaying(false); setIdx(i => Math.min(steps.length - 1, i + 1)) }}
+        onPrev={() => { setPlaying(false); setInternalIdx(i => Math.max(0, i - 1)) }}
+        onNext={() => { setPlaying(false); setInternalIdx(i => Math.min(steps.length - 1, i + 1)) }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

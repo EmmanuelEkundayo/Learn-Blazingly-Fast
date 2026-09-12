@@ -9,7 +9,8 @@ import {
 
 const SPEED_MS = { 0.5: 1400, 1: 700, 1.5: 467, 2: 350, 3: 233 }
 
-export default function MatrixGrid({ config = {}, data }) {
+export default function MatrixGrid({ config = {}, data, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const knapsack = useMemo(
     () => ({
       weights: data?.weights ?? DEFAULT_KNAPSACK.weights,
@@ -25,9 +26,20 @@ export default function MatrixGrid({ config = {}, data }) {
     [knapsack, config.mode]
   )
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
+
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalStep
+
+  const setStep = useCallback((valOrFn) => {
+    setInternalStep((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn
+      return Math.min(steps.length - 1, Math.max(0, next))
+    })
+  }, [steps.length])
 
   const current = steps[step]
 
@@ -39,7 +51,7 @@ export default function MatrixGrid({ config = {}, data }) {
     playing ? SPEED_MS[speed] : null
   )
 
-  const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [])
+  const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [setStep])
 
   const { dp, activeCell, sourceCells, tookItem } = current ?? {}
   const n = knapsack.weights.length
@@ -171,6 +183,7 @@ export default function MatrixGrid({ config = {}, data }) {
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

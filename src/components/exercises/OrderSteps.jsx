@@ -80,7 +80,7 @@ export default function OrderSteps({
   return (
     <div className="space-y-6">
       {/* Prompt */}
-      <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 backdrop-blur-sm">
+      <div className="bg-surface-800 border border-surface-600 rounded-xl p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
@@ -128,7 +128,7 @@ export default function OrderSteps({
       <div className="space-y-2.5">
         {steps.map((step, idx) => {
           const isStepCorrect = step.originalIdx === (correctOrder[idx] ?? idx)
-          let cardStyle = 'bg-surface-800/90 border-surface-600/70 text-gray-200'
+          let cardStyle = 'bg-surface-800 border-surface-600 text-gray-200'
           if (submitted) {
             cardStyle = isStepCorrect
               ? 'bg-green-950/40 border-green-500/50 text-green-200'
@@ -169,7 +169,7 @@ export default function OrderSteps({
                   <button
                     disabled={idx === 0}
                     onClick={() => moveStep(idx, -1)}
-                    className="p-1.5 rounded-lg border border-surface-600 bg-surface-700/60 hover:bg-surface-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-300"
+                    className="p-1.5 rounded-lg border border-surface-600 bg-surface-700 hover:bg-surface-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-300"
                     title="Move step up"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
@@ -177,7 +177,7 @@ export default function OrderSteps({
                   <button
                     disabled={idx === steps.length - 1}
                     onClick={() => moveStep(idx, 1)}
-                    className="p-1.5 rounded-lg border border-surface-600 bg-surface-700/60 hover:bg-surface-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-300"
+                    className="p-1.5 rounded-lg border border-surface-600 bg-surface-700 hover:bg-surface-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-300"
                     title="Move step down"
                   >
                     <ArrowDown className="w-3.5 h-3.5" />

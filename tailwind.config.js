@@ -44,11 +44,11 @@ export default {
           600: '#0891b2',
         },
         surface: {
-          900: 'var(--surface-900)',
-          800: 'var(--surface-800)',
-          700: 'var(--surface-700)',
-          600: 'var(--surface-600)',
-          500: 'var(--surface-500)',
+          900: '#0d0d0f',
+          800: '#141418',
+          700: '#1c1c22',
+          600: '#26262e',
+          500: '#32323c',
         },
       },
       fontFamily: {

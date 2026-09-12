@@ -69,9 +69,9 @@ const EXERCISE_MAP = {
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
 const DIFF_STYLE = {
-  beginner:     'bg-green-900/30 text-green-400 border-green-800',
-  intermediate: 'bg-yellow-900/30 text-yellow-400 border-yellow-800',
-  advanced:     'bg-red-900/30 text-red-400 border-red-800',
+  beginner:     'bg-green-900/30 text-green-400 border-green-900',
+  intermediate: 'bg-yellow-900/30 text-yellow-400 border-yellow-900',
+  advanced:     'bg-red-900/30 text-red-400 border-red-900',
 }
 
 function domainAccent(domain) {
@@ -116,6 +116,7 @@ export default function Concept() {
   }, [activeRoadmap, slug])
 
   const roadmapProgress = useMemo(() => getRoadmapProgress(activeRoadmap), [activeRoadmap, slug])
+  const onScreenCardRef = useRef(null)
 
   useEffect(() => {
     if (slug) {
@@ -257,25 +258,48 @@ export default function Concept() {
           <span className={`text-xs px-2 py-0.5 rounded border font-medium ${DIFF_STYLE[difficulty]}`}>
             {difficulty}
           </span>
-          <ShareMenu concept={concept} accent={accent} />
+          <ShareMenu concept={concept} accent={accent} targetRef={onScreenCardRef} />
         </div>
       </header>
 
-      <h1 className="text-2xl font-bold mb-7">{title}</h1>
-
       {/* ══════════════════════════════════════════
-          ROW 1 — CARD  +  VISUALIZATION
+          ON-SCREEN CAPTURABLE CONCEPT CARD & LIVE VISUALIZATION
       ══════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-        {/* ── CARD ─────────────────────────────── */}
-        <section className="space-y-6">
-
-          {/* Intuition */}
-          <div>
-            <SectionLabel>Intuition</SectionLabel>
-            <p className="text-gray-100 leading-relaxed">{card.intuition}</p>
+      <div
+        id="concept-screen-card"
+        ref={onScreenCardRef}
+        className="rounded-xl border border-surface-600 bg-surface-800 p-5 sm:p-7 shadow-xl mb-8 space-y-6"
+      >
+        {/* Top bar with Domain, Category, Difficulty, Title & Branding */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-surface-700">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mb-1.5">
+              <span className={`font-semibold ${accent.text}`}>{domain}</span>
+              <span>›</span>
+              <span className="text-gray-300">{category}</span>
+              <span className={`px-1.5 py-0.2 rounded border text-[10px] font-medium ${DIFF_STYLE[difficulty]}`}>
+                {difficulty}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">{title}</h1>
           </div>
+          <div className="flex items-center gap-2 text-xs text-gray-400 font-mono shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            <span className="text-gray-300 font-semibold">learnblazinglyfast.tech</span>
+          </div>
+        </div>
+
+        {/* ROW 1 — CARD  +  VISUALIZATION */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* ── CARD ─────────────────────────────── */}
+          <section className="space-y-6">
+
+            {/* Intuition */}
+            <div>
+              <SectionLabel>Intuition</SectionLabel>
+              <p className="text-gray-100 leading-relaxed">{card.intuition}</p>
+            </div>
 
           {/* Analogy */}
           <blockquote className={`px-4 py-3 rounded-r bg-surface-700 border-l-[3px] ${accent.border} text-gray-300 text-sm leading-relaxed`}>
@@ -307,7 +331,7 @@ export default function Concept() {
             <ul className="space-y-3 mt-2">
               {card.gotchas.map((g, i) => (
                 <li key={i} className="flex gap-2 text-sm text-amber-200/80 leading-snug">
-                  <span className="shrink-0 mt-[2px] text-amber-500">⚠</span>
+                  <span className="shrink-0 mt-[2px] text-amber-500 font-bold">›</span>
                   {g}
                 </li>
               ))}
@@ -330,6 +354,7 @@ export default function Concept() {
             <VizPlaceholder type={visualization?.type} />
           )}
         </section>
+        </div>
       </div>
 
       {/* ══════════════════════════════════════════
@@ -337,7 +362,7 @@ export default function Concept() {
       ══════════════════════════════════════════ */}
       <section className="rounded-xl border border-surface-600 bg-surface-800 overflow-hidden mb-8">
         {/* Exercise header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-surface-600 bg-surface-700/50">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-surface-600 bg-surface-700">
           <SectionLabel className="mb-0">Exercise</SectionLabel>
           <ExerciseTypeBadge type={exercise?.type} />
         </div>
@@ -421,13 +446,15 @@ export default function Concept() {
 
 // ─── Share components ────────────────────────────────────────────────────────
 
-function ShareMenu({ concept, accent }) {
+function ShareMenu({ concept, accent, targetRef }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [isTikTokOpen, setIsTikTokOpen] = useState(false)
+  const [exportPlatform, setExportPlatform] = useState('tiktok')
   const menuRef = useRef(null)
-  const cardRef = useRef(null)
+
+  const getTarget = () => targetRef?.current || (typeof document !== 'undefined' ? document.getElementById('concept-screen-card') : null)
 
   useEffect(() => {
     const handler = (e) => {
@@ -448,8 +475,8 @@ function ShareMenu({ concept, accent }) {
 
   const handleXShare = async () => {
     setSharing(true)
-    // 1. Automatically copy the high-res card image to clipboard
-    const imageCopied = await copyShareCardImage(cardRef.current)
+    // 1. Automatically copy the on-screen card image to clipboard
+    const imageCopied = await copyShareCardImage(getTarget())
     if (imageCopied) {
       toast.success('Card image copied to clipboard. Ready to paste.', {
         duration: 4000,
@@ -466,14 +493,18 @@ function ShareMenu({ concept, accent }) {
 
   const handleCopyImage = async () => {
     setSharing(true)
-    const success = await copyShareCardImage(cardRef.current)
+    const success = await copyShareCardImage(getTarget())
     if (success) {
-      toast.success('Card image copied to clipboard', { duration: 3000 })
+      toast.success('Card screenshot copied to clipboard', { duration: 3000 })
       trackShare({ slug: concept.slug, title: concept.title, platform: 'clipboard', method: 'copy_image' })
     } else {
-      await generateShareCard(cardRef.current, concept.slug)
-      toast('Card downloaded as image', { duration: 3000 })
-      trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'fallback_download' })
+      const downloaded = await generateShareCard(getTarget(), concept.slug)
+      if (downloaded) {
+        toast('Card downloaded as image', { duration: 3000 })
+        trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'fallback_download' })
+      } else {
+        toast.error('Failed to capture card screenshot')
+      }
     }
     setSharing(false)
     setOpen(false)
@@ -481,16 +512,20 @@ function ShareMenu({ concept, accent }) {
 
   const handleDownload = async () => {
     setSharing(true)
-    await generateShareCard(cardRef.current, concept.slug)
-    toast.success('Downloaded share card', { duration: 2500 })
-    trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'png_download' })
+    const success = await generateShareCard(getTarget(), concept.slug)
+    if (success) {
+      toast.success('Downloaded card screenshot', { duration: 2500 })
+      trackShare({ slug: concept.slug, title: concept.title, platform: 'download', method: 'png_download' })
+    } else {
+      toast.error('Failed to capture card screenshot')
+    }
     setSharing(false)
     setOpen(false)
   }
 
   const handleNativeShare = async () => {
     setSharing(true)
-    const shared = await shareCardViaNative(cardRef.current, concept)
+    const shared = await shareCardViaNative(getTarget(), concept)
     if (shared) {
       trackShare({ slug: concept.slug, title: concept.title, platform: 'native', method: 'web_share_api' })
       setOpen(false)
@@ -519,7 +554,7 @@ function ShareMenu({ concept, accent }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-surface-800 border border-surface-600 rounded-xl shadow-2xl z-50 overflow-hidden py-1"
+            className="absolute right-0 mt-2 w-60 bg-surface-800 border border-surface-600 rounded-xl shadow-2xl z-50 overflow-hidden py-1"
           >
             {canNativeShare && (
               <button
@@ -538,7 +573,7 @@ function ShareMenu({ concept, accent }) {
             <button
               onClick={handleXShare}
               disabled={sharing}
-              className={`w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 ${canNativeShare ? 'border-t border-surface-700/60' : ''}`}
+              className={`w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 ${canNativeShare ? 'border-t border-surface-700' : ''}`}
             >
               <XIcon className="w-3.5 h-3.5 text-white shrink-0" />
               <div className="flex flex-col">
@@ -550,25 +585,64 @@ function ShareMenu({ concept, accent }) {
             <button
               onClick={() => {
                 setOpen(false)
+                setExportPlatform('tiktok')
                 setIsTikTokOpen(true)
               }}
               disabled={sharing}
-              className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
+              className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
             >
-              <TikTokIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <TikTokIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-white">Export Carousel</span>
-                  <span className="text-[9px] bg-blue-500/15 text-blue-400 border border-blue-500/30 px-1.5 py-0.2 rounded font-mono font-bold">4:5</span>
+                  <span className="font-semibold text-white">Export to TikTok / Reels</span>
+                  <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 px-1.5 py-0.2 rounded font-mono font-bold">4:5</span>
                 </div>
-                <span className="text-[10px] text-gray-400">TikTok & IG slides + auto-open</span>
+                <span className="text-[10px] text-gray-400">Motion video clip or 7-slide carousel</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setOpen(false)
+                setExportPlatform('pinterest')
+                setIsTikTokOpen(true)
+              }}
+              disabled={sharing}
+              className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
+            >
+              <PinterestIcon className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-white">Export to Pinterest</span>
+                  <span className="text-[9px] bg-rose-500/15 text-rose-400 border border-rose-500/30 px-1.5 py-0.2 rounded font-mono font-bold">Pin</span>
+                </div>
+                <span className="text-[10px] text-gray-400">Card, Carousel ZIP, or Video Pin</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setOpen(false)
+                setExportPlatform('youtube')
+                setIsTikTokOpen(true)
+              }}
+              disabled={sharing}
+              className="w-full px-3.5 py-2.5 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
+            >
+              <YouTubeIcon className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-white">Export to YouTube Shorts</span>
+                  <span className="text-[9px] bg-red-500/15 text-red-400 border border-red-500/30 px-1.5 py-0.2 rounded font-mono font-bold">9:16</span>
+                </div>
+                <span className="text-[10px] text-gray-400">Vertical video alone with safe zones</span>
               </div>
             </button>
 
             <button
               onClick={handleCopyImage}
               disabled={sharing}
-              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
+              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
             >
               <CopyImageIcon className="w-3.5 h-3.5 text-slate-300 shrink-0" />
               <div className="flex flex-col">
@@ -580,7 +654,7 @@ function ShareMenu({ concept, accent }) {
             <button
               onClick={handleDownload}
               disabled={sharing}
-              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
+              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
             >
               <ImageIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="text-gray-200">Download Card (PNG)</span>
@@ -588,7 +662,7 @@ function ShareMenu({ concept, accent }) {
 
             <button
               onClick={handleCopy}
-              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700/60"
+              className="w-full px-3.5 py-2 text-xs font-medium text-left text-gray-200 hover:bg-surface-700 transition-colors flex items-center gap-2.5 border-t border-surface-700"
             >
               <LinkIcon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span className="text-gray-200">Copy Link</span>
@@ -610,177 +684,14 @@ function ShareMenu({ concept, accent }) {
         )}
       </AnimatePresence>
 
-      {/* Hidden Share Card for html2canvas rendering (1200x630 high-res format matching PDF theme) */}
-      <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', pointerEvents: 'none' }}>
-        <div ref={cardRef}>
-          <HiddenShareCard concept={concept} />
-        </div>
-      </div>
-
-      {/* TikTok & Carousel Exporter Modal */}
+      {/* Exporter Modal with initialPlatform support */}
       <TikTokCarouselModal
         isOpen={isTikTokOpen}
         onClose={() => setIsTikTokOpen(false)}
         concept={concept}
         accent={accent}
+        initialPlatform={exportPlatform}
       />
-    </div>
-  )
-}
-
-function HiddenShareCard({ concept }) {
-  const domain = (concept.domain || 'Computer Science').toUpperCase()
-  const category = (concept.category || 'Algorithms').toUpperCase()
-
-  return (
-    <div style={{
-      width: '1200px',
-      height: '630px',
-      backgroundColor: '#0b0e14',
-      padding: '48px 56px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      color: '#ffffff',
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-      position: 'relative',
-      overflow: 'hidden',
-      border: '1px solid #1e2638',
-      boxSizing: 'border-box',
-    }}>
-      {/* Top Header Row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{
-            color: '#38bdf8',
-            fontSize: '13px',
-            fontWeight: '700',
-            letterSpacing: '2px',
-            fontFamily: 'monospace',
-          }}>
-            {domain} · {category}
-          </span>
-          <span style={{
-            background: 'rgba(56, 189, 248, 0.1)',
-            color: '#38bdf8',
-            border: '1px solid rgba(56, 189, 248, 0.25)',
-            padding: '3px 10px',
-            borderRadius: '16px',
-            fontSize: '11px',
-            fontWeight: '600',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-          }}>
-            Open Source & Free
-          </span>
-        </div>
-        <span style={{
-          color: '#64748b',
-          fontSize: '13px',
-          fontFamily: 'monospace',
-          fontWeight: '600',
-        }}>
-          learnblazinglyfast.tech
-        </span>
-      </div>
-
-      {/* Main Content Area */}
-      <div style={{ margin: 'auto 0', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{
-          fontSize: '22px',
-          fontWeight: '600',
-          color: '#94a3b8',
-          letterSpacing: '-0.3px',
-        }}>
-          The Visual Guide to
-        </div>
-        <h1 style={{
-          fontSize: concept.title.length > 24 ? '44px' : '52px',
-          fontWeight: '800',
-          margin: 0,
-          lineHeight: '1.1',
-          color: '#ffffff',
-          letterSpacing: '-0.8px',
-        }}>
-          <span style={{ color: '#38bdf8' }}>{concept.title}</span>.
-        </h1>
-        <p style={{
-          color: '#94a3b8',
-          fontSize: '18px',
-          margin: '4px 0 0 0',
-          lineHeight: '1.5',
-          maxWidth: '960px',
-          fontWeight: '400',
-        }}>
-          {concept.card?.intuition || 'Master core computational models, memory boundaries, and algorithms with interactive visual logic.'}
-        </p>
-      </div>
-
-      {/* Bottom Metadata Bar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: '20px',
-        borderTop: '1px solid #1e2638',
-      }}>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {concept.card?.time_complexity && (
-            <div style={{
-              background: '#111622',
-              border: '1px solid #1e2638',
-              padding: '6px 14px',
-              borderRadius: '8px',
-              display: 'flex',
-              gap: '8px',
-              alignItems: 'center',
-            }}>
-              <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'monospace' }}>Time</span>
-              <span style={{ color: '#10b981', fontSize: '13px', fontWeight: '700', fontFamily: 'monospace' }}>
-                {concept.card.time_complexity}
-              </span>
-            </div>
-          )}
-          {concept.card?.space_complexity && (
-            <div style={{
-              background: '#111622',
-              border: '1px solid #1e2638',
-              padding: '6px 14px',
-              borderRadius: '8px',
-              display: 'flex',
-              gap: '8px',
-              alignItems: 'center',
-            }}>
-              <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'monospace' }}>Space</span>
-              <span style={{ color: '#38bdf8', fontSize: '13px', fontWeight: '700', fontFamily: 'monospace' }}>
-                {concept.card.space_complexity}
-              </span>
-            </div>
-          )}
-          <div style={{
-            background: '#111622',
-            border: '1px solid #1e2638',
-            padding: '6px 14px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            color: '#94a3b8',
-            fontWeight: '600',
-            textTransform: 'capitalize',
-          }}>
-            {concept.difficulty || 'intermediate'}
-          </div>
-        </div>
-
-        <span style={{
-          color: '#64748b',
-          fontSize: '13px',
-          fontFamily: 'monospace',
-          fontWeight: '500',
-        }}>
-          The Visual Tech Dictionary · Open Source
-        </span>
-      </div>
     </div>
   )
 }
@@ -814,6 +725,22 @@ function TikTokIcon({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+    </svg>
+  )
+}
+
+function PinterestIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z" />
+    </svg>
+  )
+}
+
+function YouTubeIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
     </svg>
   )
 }
@@ -857,7 +784,7 @@ function PersonalNotes({ slug }) {
       <section className="mb-8">
         <button 
           onClick={() => setIsEditing(true)}
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-300 transition-colors bg-surface-800/50 border border-surface-700/50 px-4 py-3 rounded-xl w-full"
+          className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-300 transition-colors bg-surface-800 border border-surface-600 px-4 py-3 rounded-xl w-full"
         >
           <span className="text-lg">✎</span>
           <span>+ Add a personal note for this concept...</span>
@@ -867,7 +794,7 @@ function PersonalNotes({ slug }) {
   }
 
   return (
-    <section className="bg-surface-800 border border-surface-700 rounded-xl p-5 mb-8 space-y-4">
+    <section className="bg-surface-800 border border-surface-600 rounded-xl p-5 mb-8 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SectionLabel className="mb-0">My Notes</SectionLabel>
@@ -898,7 +825,7 @@ function PersonalNotes({ slug }) {
             value={text}
             onChange={handleTextChange}
             placeholder="Write anything — intuitions, gotchas, connections to other concepts..."
-            className="w-full bg-surface-900 border border-surface-700 rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-surface-600 min-h-[140px] resize-y"
+            className="w-full bg-surface-900 border border-surface-600 rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-surface-500 min-h-[140px] resize-y"
           />
           <div className="flex justify-end">
              <span className={`text-[10px] font-mono ${text.length > 4500 ? 'text-orange-500' : 'text-gray-600'}`}>
@@ -934,9 +861,9 @@ function PrerequisiteCard({ slug, getProgress }) {
   return (
     <button
       onClick={() => navigate(`/concept/${slug}`)}
-      className={`w-full text-left bg-surface-800 border border-surface-700 rounded-xl p-4 flex items-center gap-3 transition-colors ${accent.ring} ${concept ? '' : 'opacity-50 pointer-events-none'}`}
+      className={`w-full text-left bg-surface-800 border border-surface-600 rounded-xl p-4 flex items-center gap-3 transition-colors ${accent.ring} ${concept ? '' : 'opacity-50 pointer-events-none'}`}
     >
-      <div className="w-8 h-8 shrink-0 rounded-lg bg-surface-700/60 flex items-center justify-center">
+      <div className="w-8 h-8 shrink-0 rounded-lg bg-surface-700 flex items-center justify-center">
         {completed ? (
           <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -992,7 +919,7 @@ function ExerciseTypeBadge({ type }) {
     'complexity-quiz':   'Complexity quiz',
   }
   return (
-    <span className="text-xs px-2 py-0.5 rounded bg-surface-600 text-gray-400 font-medium border border-surface-500">
+    <span className="text-xs px-2 py-0.5 rounded bg-surface-700 text-gray-400 font-medium border border-surface-600">
       {labels[type] ?? type}
     </span>
   )
@@ -1022,7 +949,7 @@ function RelatedChip({ slug, currentDomain }) {
     <Link
       to={`/concept/${slug}`}
       className={`
-        flex items-center gap-1.5 px-3 py-1 rounded-full border border-surface-500 text-sm
+        flex items-center gap-1.5 px-3 py-1 rounded-full border border-surface-600 text-sm
         text-gray-300 transition-colors ${accent.ring}
         ${!concept ? 'opacity-50 pointer-events-none' : ''}
       `}

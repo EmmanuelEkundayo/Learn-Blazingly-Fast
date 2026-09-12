@@ -10,15 +10,15 @@ import {
 const SPEED_MS = { 0.5: 1400, 1: 700, 1.5: 467, 2: 350, 3: 233 }
 
 // Bar colour by role
-function barColor(idx, step) {
-  if (!step) return '#1d4ed8'
+function barColor(idx, step, activeColor = '#1d4ed8') {
+  if (!step) return activeColor
   const { pivot, i, j, swapping, sorted, lo, hi, type } = step
   if (sorted[idx]) return '#16a34a'              // green — in final position
   if (swapping.includes(idx)) return '#ef4444'   // red — being swapped
   if (idx === pivot) return '#f59e0b'            // amber — pivot
   if (idx === j && type === 'compare') return '#fde68a' // yellow — comparison target
   if (idx < lo || idx > hi) return '#374151'     // gray — outside active range
-  return '#1d4ed8'                               // blue — active range
+  return activeColor                             // active range in theme color
 }
 
 export default function ArrayBars({
@@ -27,7 +27,12 @@ export default function ArrayBars({
   step: controlledStep,
   progress,
   compact = false,
+  readOnly = false,
+  theme,
+  primaryColor,
 }) {
+  const isReadOnly = readOnly || progress !== undefined
+  const activeColor = primaryColor || theme?.primary || '#3b82f6'
   const svgRef   = useRef(null)
   const barsRef  = useRef(null)
   const labelsRef = useRef(null)
@@ -151,24 +156,44 @@ export default function ArrayBars({
     const arr    = current.array
     const yS     = d3.scaleLinear().domain([0, max]).range([inner_H, 0])
 
-    bars
-      .data(arr)
-      .transition().duration(compact ? 70 : 180)
-      .attr('y',      d => yS(d))
-      .attr('height', d => inner_H - yS(d))
-      .attr('fill', (_, i) => barColor(i, current))
+    if (isReadOnly) {
+      bars
+        .data(arr)
+        .interrupt()
+        .attr('y',      d => yS(d))
+        .attr('height', d => inner_H - yS(d))
+        .attr('fill', (_, i) => barColor(i, current, activeColor))
 
-    valLabels
-      .data(arr)
-      .transition().duration(compact ? 70 : 180)
-      .attr('y', d => yS(d) - 5)
-      .text(d => d)
-      .attr('fill', (_, i) =>
-        current.sorted[i] ? '#4ade80'
-        : current.pivot === i ? '#fde68a'
-        : '#9ca3af'
-      )
-  }, [step, current])
+      valLabels
+        .data(arr)
+        .interrupt()
+        .attr('y', d => yS(d) - 5)
+        .text(d => d)
+        .attr('fill', (_, i) =>
+          current.sorted[i] ? '#4ade80'
+          : current.pivot === i ? '#fde68a'
+          : '#9ca3af'
+        )
+    } else {
+      bars
+        .data(arr)
+        .transition().duration(compact ? 70 : 180)
+        .attr('y',      d => yS(d))
+        .attr('height', d => inner_H - yS(d))
+        .attr('fill', (_, i) => barColor(i, current, activeColor))
+
+      valLabels
+        .data(arr)
+        .transition().duration(compact ? 70 : 180)
+        .attr('y', d => yS(d) - 5)
+        .text(d => d)
+        .attr('fill', (_, i) =>
+          current.sorted[i] ? '#4ade80'
+          : current.pivot === i ? '#fde68a'
+          : '#9ca3af'
+        )
+    }
+  }, [step, current, isReadOnly, compact])
 
   const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [])
 
@@ -223,6 +248,9 @@ export default function ArrayBars({
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
+        primaryColor={activeColor}
+        theme={theme}
       />
     </div>
   )

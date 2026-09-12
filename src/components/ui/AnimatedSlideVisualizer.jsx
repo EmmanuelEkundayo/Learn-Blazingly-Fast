@@ -64,13 +64,15 @@ export default function AnimatedSlideVisualizer({
   progress = 1.0,
   capturedVisualUrl,
   isExportResolution = false,
+  isVideoMode = false,
   fallback,
+  theme,
 }) {
   const type = concept?.visualization?.type || 'array-bars'
   const VizComp = useMemo(() => VIZ_MAP[type] || ArrayBars, [type])
 
   // If user has a captured snapshot and is in static carousel mode, use captured image
-  if (capturedVisualUrl && progress === 1.0) {
+  if (capturedVisualUrl && progress === 1.0 && !isVideoMode) {
     return (
       <img
         src={capturedVisualUrl}
@@ -86,9 +88,9 @@ export default function AnimatedSlideVisualizer({
   const scale = isExportResolution ? 0.85 : 0.58
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-2 relative overflow-hidden bg-[#0b0e14] select-none">
+    <div className="w-full h-full flex items-center justify-center p-2 relative overflow-hidden bg-[#0b0e14] select-none pointer-events-none">
       <div
-        className="shrink-0 transition-transform duration-75 origin-center"
+        className="shrink-0 transition-transform duration-75 origin-center pointer-events-none"
         style={{
           width: '520px',
           transform: `scale(${scale})`,
@@ -100,6 +102,9 @@ export default function AnimatedSlideVisualizer({
             data={concept?.visualization?.data}
             progress={progress}
             compact={true}
+            readOnly={true}
+            theme={theme}
+            primaryColor={theme?.primary}
           />
         </VizErrorBoundary>
       </div>

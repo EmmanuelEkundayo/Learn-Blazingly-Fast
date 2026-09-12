@@ -71,7 +71,7 @@ export default function ComplexityQuiz({
   return (
     <div className="space-y-6">
       {/* Exercise Prompt */}
-      <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 backdrop-blur-sm">
+      <div className="bg-surface-800 border border-surface-600 rounded-xl p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
@@ -125,10 +125,10 @@ export default function ComplexityQuiz({
       {/* Selectors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Time Complexity Options */}
-        <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-800 border border-surface-600 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold text-gray-300">
-              ⏱️ Time Complexity
+              Time Complexity
             </label>
             {submitted && (
               <span
@@ -145,7 +145,7 @@ export default function ComplexityQuiz({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {COMPLEXITY_OPTIONS.map((opt) => {
               const isSelected = selectedTime === opt
-              let btnClass = 'bg-surface-700/60 border-surface-600/60 text-gray-300 hover:border-surface-400'
+              let btnClass = 'bg-surface-700 border-surface-600 text-gray-300 hover:border-surface-400'
               if (isSelected) {
                 btnClass = 'bg-blue-600/30 border-blue-500 text-blue-300 font-semibold shadow-sm'
               }
@@ -172,10 +172,10 @@ export default function ComplexityQuiz({
         </div>
 
         {/* Space Complexity Options */}
-        <div className="bg-surface-800/80 border border-surface-600/60 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-800 border border-surface-600 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold text-gray-300">
-              💾 Space Complexity
+              Space Complexity
             </label>
             {submitted && (
               <span
@@ -192,7 +192,7 @@ export default function ComplexityQuiz({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {COMPLEXITY_OPTIONS.map((opt) => {
               const isSelected = selectedSpace === opt
-              let btnClass = 'bg-surface-700/60 border-surface-600/60 text-gray-300 hover:border-surface-400'
+              let btnClass = 'bg-surface-700 border-surface-600 text-gray-300 hover:border-surface-400'
               if (isSelected) {
                 btnClass = 'bg-purple-600/30 border-purple-500 text-purple-300 font-semibold shadow-sm'
               }

@@ -153,22 +153,27 @@ function resolveArchConfig(config) {
   }
 }
 
-export default function ArchDiagram({ config = {} }) {
+export default function ArchDiagram({ config = {}, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const { layers, steps } = resolveArchConfig(config)
 
-  const [idx, setIdx]         = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed]     = useState(1)
+  const [internalIdx, setInternalIdx] = useState(0)
+  const [playing,     setPlaying]     = useState(false)
+  const [speed,       setSpeed]       = useState(1)
+
+  const idx = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalIdx
 
   const cur         = steps[idx]
   const activeLayer = cur?.active_layer ?? -1
 
   useInterval(
-    () => { if (idx < steps.length - 1) setIdx(i => i + 1); else setPlaying(false) },
+    () => { if (idx < steps.length - 1) setInternalIdx(i => i + 1); else setPlaying(false) },
     playing ? SPEED_MS[speed] : null,
   )
 
-  const handleReset = useCallback(() => { setIdx(0); setPlaying(false) }, [])
+  const handleReset = useCallback(() => { setInternalIdx(0); setPlaying(false) }, [])
 
   return (
     <div className="flex flex-col gap-4">
@@ -241,12 +246,13 @@ export default function ArchDiagram({ config = {} }) {
       <StepControls
         step={idx} totalSteps={steps.length} playing={playing} speed={speed}
         annotation={cur?.annotation}
-        onPrev={() => { setPlaying(false); setIdx(i => Math.max(0, i - 1)) }}
-        onNext={() => { setPlaying(false); setIdx(i => Math.min(steps.length - 1, i + 1)) }}
+        onPrev={() => { setPlaying(false); setInternalIdx(i => Math.max(0, i - 1)) }}
+        onNext={() => { setPlaying(false); setInternalIdx(i => Math.min(steps.length - 1, i + 1)) }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

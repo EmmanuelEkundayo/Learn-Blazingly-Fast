@@ -341,13 +341,25 @@ function getModeTree(rawMode) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function TreeCanvas({ config = {} }) {
+export default function TreeCanvas({ config = {}, progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
   const modeTree = useMemo(() => getModeTree(config.mode), [config.mode])
   const { tree, steps, legend, note, isIris, isRBTree } = modeTree
 
-  const [step,    setStep]    = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed,   setSpeed]   = useState(1)
+  const [internalStep, setInternalStep] = useState(0)
+  const [playing,      setPlaying]      = useState(false)
+  const [speed,        setSpeed]        = useState(1)
+
+  const step = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalStep
+
+  const setStep = useCallback((valOrFn) => {
+    setInternalStep((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn
+      return Math.min(steps.length - 1, Math.max(0, next))
+    })
+  }, [steps.length])
 
   const cur = steps[Math.min(step, steps.length - 1)]
 
@@ -356,7 +368,7 @@ export default function TreeCanvas({ config = {} }) {
     playing ? SPEED_MS[speed] : null,
   )
 
-  const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [])
+  const handleReset = useCallback(() => { setStep(0); setPlaying(false) }, [setStep])
 
   const { nodes, links, W, H } = useMemo(() => {
     const W = 560, H = 320
@@ -490,6 +502,7 @@ export default function TreeCanvas({ config = {} }) {
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )

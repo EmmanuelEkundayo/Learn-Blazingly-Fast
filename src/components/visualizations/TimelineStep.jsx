@@ -7,20 +7,27 @@ const SPEED_MS = { 0.5: 2000, 1: 1000, 1.5: 667, 2: 500, 3: 333 }
 
 // ─── Config-driven pipeline (used when config.steps is present) ──────────────
 
-function PipelineViz({ config }) {
+function PipelineViz({ config, progress, compact = false, readOnly = false, theme, primaryColor }) {
+  const isReadOnly = readOnly || progress !== undefined
   const steps = config.steps || []
-  const [idx, setIdx] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState(1)
+  const [internalIdx, setInternalIdx] = useState(0)
+  const [playing,     setPlaying]     = useState(false)
+  const [speed,       setSpeed]       = useState(1)
+
+  const activeColor = primaryColor || theme?.primary || '#3b82f6'
+
+  const idx = progress !== undefined
+    ? Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)))
+    : internalIdx
 
   const cur = steps[idx]
 
   useInterval(
-    () => { if (idx < steps.length - 1) setIdx(i => i + 1); else setPlaying(false) },
+    () => { if (idx < steps.length - 1) setInternalIdx(i => i + 1); else setPlaying(false) },
     playing ? SPEED_MS[speed] : null,
   )
 
-  const handleReset = useCallback(() => { setIdx(0); setPlaying(false) }, [])
+  const handleReset = useCallback(() => { setInternalIdx(0); setPlaying(false) }, [])
 
   return (
     <div className="flex flex-col gap-4">
@@ -35,8 +42,8 @@ function PipelineViz({ config }) {
               <div key={i} className="flex items-center">
                 <motion.div
                   animate={{
-                    borderColor:     isActive ? '#3b82f6' : isDone ? '#22c55e' : '#374151',
-                    backgroundColor: isActive ? 'rgba(59,130,246,0.12)' : isDone ? 'rgba(34,197,94,0.07)' : '#1c1c22',
+                    borderColor:     isActive ? activeColor : isDone ? '#22c55e' : '#374151',
+                    backgroundColor: isActive ? `${activeColor}22` : isDone ? 'rgba(34,197,94,0.07)' : '#1c1c22',
                   }}
                   transition={{ duration: 0.25 }}
                   className="rounded-xl border-2 px-3 py-2 flex flex-col items-center gap-0.5"
@@ -45,22 +52,22 @@ function PipelineViz({ config }) {
                   <span
                     className="text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
                     style={{
-                      color: isActive ? '#93c5fd' : isDone ? '#86efac' : '#4b5563',
-                      backgroundColor: isActive ? 'rgba(59,130,246,0.2)' : isDone ? 'rgba(34,197,94,0.15)' : 'transparent',
+                      color: isActive ? '#ffffff' : isDone ? '#86efac' : '#4b5563',
+                      backgroundColor: isActive ? activeColor : isDone ? 'rgba(34,197,94,0.15)' : 'transparent',
                     }}
                   >
                     {i + 1}
                   </span>
                   <span
                     className="text-xs font-semibold text-center leading-tight"
-                    style={{ color: isActive ? '#e5e7eb' : isDone ? '#d1fae5' : '#6b7280' }}
+                    style={{ color: isActive ? '#ffffff' : isDone ? '#d1fae5' : '#6b7280' }}
                   >
                     {s.label}
                   </span>
                   {s.sub && (
                     <span
                       className="text-[9px] font-mono text-center leading-tight"
-                      style={{ color: isActive ? '#9ca3af' : isDone ? '#6ee7b7' : '#374151' }}
+                      style={{ color: isActive ? activeColor : isDone ? '#6ee7b7' : '#475569' }}
                     >
                       {s.sub}
                     </span>
@@ -81,12 +88,15 @@ function PipelineViz({ config }) {
       <StepControls
         step={idx} totalSteps={steps.length} playing={playing} speed={speed}
         annotation={cur?.annotation}
-        onPrev={() => { setPlaying(false); setIdx(i => Math.max(0, i - 1)) }}
-        onNext={() => { setPlaying(false); setIdx(i => Math.min(steps.length - 1, i + 1)) }}
+        onPrev={() => { setPlaying(false); setInternalIdx(i => Math.max(0, i - 1)) }}
+        onNext={() => { setPlaying(false); setInternalIdx(i => Math.min(steps.length - 1, i + 1)) }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
+        primaryColor={activeColor}
+        theme={theme}
       />
     </div>
   )
@@ -123,11 +133,15 @@ const BP_STEPS = [
     annotation: 'Backward ④: dL/dW₁ = δh · xᵀ. All gradients computed — ready for weight update.' },
 ]
 
-function BackpropFallback() {
-  const [step, setStep]     = useState(0)
+function BackpropFallback({ progress, compact = false, readOnly = false }) {
+  const isReadOnly = readOnly || progress !== undefined
+  const [internalStep, setInternalStep] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed]   = useState(1)
 
+  const step = progress !== undefined
+    ? Math.min(BP_STEPS.length - 1, Math.max(0, Math.floor(progress * BP_STEPS.length)))
+    : internalStep
   const cur = BP_STEPS[step]
 
   useInterval(
@@ -218,6 +232,7 @@ function BackpropFallback() {
         onPause={() => setPlaying(false)}
         onReset={handleReset}
         onSpeedChange={setSpeed}
+        readOnly={isReadOnly}
       />
     </div>
   )
@@ -225,7 +240,9 @@ function BackpropFallback() {
 
 // ─── Preset Pipeline Configurations ──────────────────────────────────────────
 
-const TIMELINE_PRESETS = {
+// ─── Preset Pipeline Configurations ──────────────────────────────────────────
+
+export const TIMELINE_PRESETS = {
   'traffic-switch-flip': {
     steps: [
       { label: 'Idle Green', sub: 'Environment ready', annotation: 'Green environment deployed in isolation while Blue serves 100% of live production traffic.' },
@@ -332,7 +349,7 @@ const TIMELINE_PRESETS = {
   },
 }
 
-const DEFAULT_TIMELINE_STEPS = [
+export const DEFAULT_TIMELINE_STEPS = [
   { label: 'Initiation', sub: 'Input & context', annotation: 'Phase 1: Input received, preconditions validated, and execution context initialized.' },
   { label: 'Processing', sub: 'Core execution', annotation: 'Phase 2: Core domain operations and state transitions execute against requirements.' },
   { label: 'Verification', sub: 'Invariants checked', annotation: 'Phase 3: Output verified against schema constraints, security checks, and invariants.' },
@@ -341,21 +358,21 @@ const DEFAULT_TIMELINE_STEPS = [
 
 // ─── Export ──────────────────────────────────────────────────────────────────
 
-export default function TimelineStep({ config = {} }) {
+export default function TimelineStep({ config = {}, progress, compact = false, readOnly = false, theme, primaryColor }) {
   if (config.steps && config.steps.length > 0) {
-    return <PipelineViz config={config} />
+    return <PipelineViz config={config} progress={progress} compact={compact} readOnly={readOnly} theme={theme} primaryColor={primaryColor} />
   }
 
   // Explicit backprop mode
   if (config.mode === 'backprop' || config.mode === 'backpropagation') {
-    return <BackpropFallback />
+    return <BackpropFallback progress={progress} compact={compact} readOnly={readOnly} />
   }
 
   // Presets by mode
   if (config.mode && TIMELINE_PRESETS[config.mode]) {
-    return <PipelineViz config={TIMELINE_PRESETS[config.mode]} />
+    return <PipelineViz config={TIMELINE_PRESETS[config.mode]} progress={progress} compact={compact} readOnly={readOnly} theme={theme} primaryColor={primaryColor} />
   }
 
   // Domain-safe default pipeline
-  return <PipelineViz config={{ steps: DEFAULT_TIMELINE_STEPS }} />
+  return <PipelineViz config={{ steps: DEFAULT_TIMELINE_STEPS }} progress={progress} compact={compact} readOnly={readOnly} theme={theme} primaryColor={primaryColor} />
 }
