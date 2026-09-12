@@ -1,0 +1,78 @@
+import { useId } from 'react'
+
+/**
+ * LBF Brand Logo Component
+ * Renders the official "LBF" monogram in Blue, Orange, and White.
+ */
+export default function LBFLogo({ className = 'w-8 h-8', size, ...props }) {
+  const id = useId().replace(/:/g, '')
+  const sizeStyle = size ? { width: size, height: size } : {}
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 100"
+      fill="none"
+      className={`shrink-0 select-none ${className}`}
+      style={sizeStyle}
+      aria-label="Learn Blazingly Fast Logo"
+      role="img"
+      {...props}
+    >
+      <defs>
+        <linearGradient id={`lbf-bg-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0e131f" />
+          <stop offset="100%" stopColor="#070a10" />
+        </linearGradient>
+        <linearGradient id={`lbf-blue-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#38bdf8" />
+          <stop offset="50%" stopColor="#0ea5e9" />
+          <stop offset="100%" stopColor="#0284c7" />
+        </linearGradient>
+        <linearGradient id={`lbf-orange-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fb923c" />
+          <stop offset="50%" stopColor="#f97316" />
+          <stop offset="100%" stopColor="#ea580c" />
+        </linearGradient>
+        <linearGradient id={`lbf-white-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#e2e8f0" />
+        </linearGradient>
+        <radialGradient id={`lbf-glow-b-${id}`} cx="25%" cy="40%" r="50%">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`lbf-glow-o-${id}`} cx="55%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f97316" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Squircle container */}
+      <rect width="100" height="100" rx="24" fill={`url(#lbf-bg-${id})`} />
+      <rect width="100" height="100" rx="24" fill={`url(#lbf-glow-b-${id})`} />
+      <rect width="100" height="100" rx="24" fill={`url(#lbf-glow-o-${id})`} />
+      <rect x="1" y="1" width="98" height="98" rx="23" stroke="#1e293b" strokeWidth="2" fill="none" />
+      <rect x="2" y="2" width="96" height="42" rx="22" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+
+      {/* ─── Letter L (Electric Blue) ─── */}
+      <path
+        d="M 17 30 C 17 28.9 17.9 28 19 28 H 24 C 25.1 28 26 28.9 26 30 V 63 H 34 C 35.1 63 36 63.9 36 65 V 70 C 36 71.1 35.1 72 34 72 H 19 C 17.9 72 17 71.1 17 70 Z"
+        fill={`url(#lbf-blue-${id})`}
+      />
+
+      {/* ─── Letter B (Blazing Orange) ─── */}
+      <path
+        fillRule="evenodd"
+        d="M 40.5 30 C 40.5 28.9 41.4 28 42.5 28 H 53.5 C 58.8 28 62 31.2 62 37 C 62 41.2 59 44.8 54.8 46.2 C 59.8 47.5 63 51.8 63 58 C 63 66 58.5 72 51 72 H 42.5 C 41.4 72 40.5 71.1 40.5 70 Z M 48.5 36 V 44 H 52 C 54.5 44 55.8 42.5 55.8 40 C 55.8 37.5 54.5 36 52 36 Z M 48.5 52 V 64 H 51.5 C 54.2 64 56.5 62 56.5 58 C 56.5 54 54.2 52 51.5 52 Z"
+        fill={`url(#lbf-orange-${id})`}
+      />
+
+      {/* ─── Letter F (Pure White) ─── */}
+      <path
+        d="M 67.5 30 C 67.5 28.9 68.4 28 69.5 28 H 84 C 85.1 28 86 28.9 86 30 V 34.5 C 86 35.6 85.1 36.5 84 36.5 H 76 V 47 H 82 C 83.1 47 84 47.9 84 49 V 53 C 84 54.1 83.1 55 82 55 H 76 V 70 C 76 71.1 75.1 72 74 72 H 69.5 C 68.4 72 67.5 71.1 67.5 70 Z"
+        fill={`url(#lbf-white-${id})`}
+      />
+    </svg>
+  )
+}

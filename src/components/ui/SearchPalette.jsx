@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { searchAllFiltered, highlightMatches } from '../../utils/search.js'
 import { trackSearch } from '../../services/analytics.js'
+import LBFLogo from './LBFLogo.jsx'
 
 function HighlightedText({ text, query }) {
   const parts = highlightMatches(text, query)
@@ -206,7 +207,10 @@ export default function SearchPalette({ isOpen, onClose }) {
                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded bg-surface-700 border border-surface-600">↑↓</kbd> Navigate</span>
                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded bg-surface-700 border border-surface-600">↵</kbd> Select</span>
             </div>
-            <span>Learn Blazingly Fast</span>
+            <span className="flex items-center gap-1.5 text-gray-400">
+              <LBFLogo className="w-3.5 h-3.5 rounded" />
+              <span>Learn Blazingly Fast</span>
+            </span>
           </div>
         </motion.div>
       </div>

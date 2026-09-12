@@ -12,6 +12,7 @@ import {
   openTikTokUpload
 } from '../../utils/tiktokExport.js'
 import { trackShare } from '../../services/analytics.js'
+import LBFLogo from './LBFLogo.jsx'
 
 const SLIDE_NAMES = [
   '01. Cover Hook',
@@ -267,9 +268,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e2638] bg-[#0d121c]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-              <ForkIcon className="w-4 h-4" />
-            </div>
+            <LBFLogo className="w-8 h-8 rounded-lg shadow-sm" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-white tracking-tight">TikTok & Shorts Exporter</h2>
