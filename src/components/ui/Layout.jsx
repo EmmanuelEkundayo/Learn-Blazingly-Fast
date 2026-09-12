@@ -69,13 +69,25 @@ export default function Layout() {
         e.preventDefault()
         setIsSearchOpen(true)
       }
-      if (e.ctrlKey && e.altKey && e.key === 'o') {
+      const isOKey =
+        e.code === 'KeyO' ||
+        e.key?.toLowerCase() === 'o' ||
+        e.key === 'ø' ||
+        e.key === 'Ø'
+      if ((e.ctrlKey || e.metaKey) && e.altKey && isOKey) {
         e.preventDefault()
         setIsAdminOpen(open => !open)
       }
     }
+    function handleOpenAdmin() {
+      setIsAdminOpen(true)
+    }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('open-admin-reviews', handleOpenAdmin)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('open-admin-reviews', handleOpenAdmin)
+    }
   }, [])
 
   useEffect(() => {

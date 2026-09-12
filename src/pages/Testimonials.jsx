@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Shield } from 'lucide-react'
 
 export default function Testimonials() {
   const [reviews, setReviews] = useState([])
@@ -119,6 +120,19 @@ export default function Testimonials() {
           No testimonials found for this category yet.
         </div>
       )}
+
+      {/* Admin management entry point */}
+      <div className="pt-8 pb-4 flex justify-center">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('open-admin-reviews'))}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:text-gray-300 hover:bg-surface-800 transition-colors border border-transparent hover:border-surface-700 cursor-pointer"
+          title="Review CMS shortcut: Ctrl+Option+O or Cmd+Option+O"
+        >
+          <Shield className="w-3.5 h-3.5 text-blue-400/70" />
+          <span>Admin CMS</span>
+          <kbd className="text-[10px] px-1 py-0.5 bg-surface-700/60 rounded border border-surface-600/50 font-mono text-gray-400">Ctrl+Option+O</kbd>
+        </button>
+      </div>
     </div>
   )
 }

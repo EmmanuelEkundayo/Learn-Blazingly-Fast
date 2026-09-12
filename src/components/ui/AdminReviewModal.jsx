@@ -51,6 +51,15 @@ export default function AdminReviewModal({ isOpen, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
+  useEffect(() => {
+    if (!isOpen) return
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   function handleTokenSubmit(e) {
     e.preventDefault()
     setTokenLoading(true)
@@ -117,7 +126,10 @@ export default function AdminReviewModal({ isOpen, onClose }) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div
+        className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+        onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
