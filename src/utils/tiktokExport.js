@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
+import { drawCanvasVizFrame } from './visualizerPlayback.js'
 
 /**
  * Open TikTok Web Upload studio in a new tab.
@@ -170,7 +171,7 @@ export function isVideoExportSupported() {
  * Plays through all 7 slides with live pacing, smooth cross-fades,
  * and a story segment progress bar at the top.
  */
-export async function exportVideoClip(slideElements, slug, onProgress) {
+export async function exportVideoClip(slideElements, slug, onProgress, concept) {
   try {
     if (!isVideoExportSupported()) {
       throw new Error('Video recording is not supported in this browser. Use the 7-Slide Carousel ZIP export instead.')
@@ -320,12 +321,21 @@ export async function exportVideoClip(slideElements, slug, onProgress) {
           const fade = (CROSSFADE_MS - slideRemaining) / CROSSFADE_MS
           ctx.globalAlpha = 1 - fade
           ctx.drawImage(renderedCanvases[currentIdx], 0, 0, width, height)
+          if (currentIdx === 1 && concept) {
+            const vizRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
+            drawCanvasVizFrame(ctx, concept, { x: 44, y: 195, width: width - 88, height: 380 }, vizRatio)
+          }
           ctx.globalAlpha = fade
           ctx.drawImage(renderedCanvases[currentIdx + 1], 0, 0, width, height)
           ctx.globalAlpha = 1.0
         } else {
           ctx.globalAlpha = 1.0
           ctx.drawImage(renderedCanvases[currentIdx], 0, 0, width, height)
+          // Live playing visualization on Slide 2 (index 1)
+          if (currentIdx === 1 && concept) {
+            const vizRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
+            drawCanvasVizFrame(ctx, concept, { x: 44, y: 195, width: width - 88, height: 380 }, vizRatio)
+          }
         }
 
         // Draw Story Segment Progress Bars at top

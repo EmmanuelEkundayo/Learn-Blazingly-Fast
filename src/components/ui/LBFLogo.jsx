@@ -1,7 +1,8 @@
 /**
  * LBF Brand Logo Component
- * Simple, flat monogram with normal font and no gradients:
- * L (Blue #3b82f6), B (Orange #f97316), F (White #ffffff).
+ * Simple, flat monogram with normal font:
+ * L (Blue #3b82f6), B (Amber-Orange #f59e0b), F (White #ffffff).
+ * No gradients, no outline, no shadow.
  */
 export default function LBFLogo({ className = 'w-8 h-8', size, ...props }) {
   const sizeStyle = size ? { width: size, height: size } : {}
@@ -16,7 +17,7 @@ export default function LBFLogo({ className = 'w-8 h-8', size, ...props }) {
       role="img"
       {...props}
     >
-      <rect width="100" height="100" rx="20" fill="#0b0e14" stroke="#1e293b" strokeWidth="2" />
+      <rect width="100" height="100" rx="20" fill="#0b0e14" />
       <text
         x="50"
         y="52"
@@ -28,7 +29,7 @@ export default function LBFLogo({ className = 'w-8 h-8', size, ...props }) {
         letterSpacing="-0.5"
       >
         <tspan fill="#3b82f6">L</tspan>
-        <tspan fill="#f97316">B</tspan>
+        <tspan fill="#f59e0b">B</tspan>
         <tspan fill="#ffffff">F</tspan>
       </text>
     </svg>

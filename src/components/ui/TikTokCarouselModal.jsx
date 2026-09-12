@@ -13,6 +13,7 @@ import {
 } from '../../utils/tiktokExport.js'
 import { trackShare } from '../../services/analytics.js'
 import LBFLogo from './LBFLogo.jsx'
+import AnimatedSlideVisualizer from './AnimatedSlideVisualizer.jsx'
 
 const SLIDE_NAMES = [
   '01. Cover Hook',
@@ -121,6 +122,25 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
     return () => clearInterval(interval)
   }, [isPlayingPreview, activeSlide])
 
+  const [autoVizProgress, setAutoVizProgress] = useState(0)
+
+  useEffect(() => {
+    if (exportMode !== 'video' || isPlayingPreview || activeSlide !== 1) {
+      return
+    }
+    const interval = setInterval(() => {
+      setAutoVizProgress((p) => {
+        const next = Math.round((p + 0.04) * 100) / 100
+        return next >= 1.0 ? 0 : next
+      })
+    }, 120)
+    return () => clearInterval(interval)
+  }, [exportMode, isPlayingPreview, activeSlide])
+
+  const vizProgress = isPlayingPreview
+    ? Math.min(1, Math.max(0, (previewTimer - 2.0) / 3.0))
+    : autoVizProgress
+
   if (!isOpen || !concept) return null
 
   const domain = concept.domain || 'Computer Science'
@@ -163,7 +183,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
 
     const result = await exportVideoClip(elements, concept.slug, (prog) => {
       setVideoProgress(prog)
-    })
+    }, concept)
 
     setExportingVideo(false)
 
@@ -268,7 +288,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e2638] bg-[#0d121c]">
           <div className="flex items-center gap-3">
-            <LBFLogo className="w-8 h-8 rounded-lg shadow-sm" />
+            <LBFLogo className="w-8 h-8 rounded-lg" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-white tracking-tight">TikTok & Shorts Exporter</h2>
@@ -359,6 +379,8 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
                   domain={domain}
                   capturedVisualUrl={capturedVisualUrl}
                   totalSlides={totalSlides}
+                  progress={vizProgress}
+                  isVideoMode={exportMode === 'video'}
                 />
               </div>
 
@@ -642,6 +664,8 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent }
                 capturedVisualUrl={capturedVisualUrl}
                 totalSlides={totalSlides}
                 isExportResolution={true}
+                progress={1.0}
+                isVideoMode={exportMode === 'video'}
               />
             </div>
           ))}
@@ -663,6 +687,8 @@ function SlideContent({
   capturedVisualUrl,
   totalSlides,
   isExportResolution = false,
+  progress = 1.0,
+  isVideoMode = false,
 }) {
   const scaleClass = isExportResolution ? 'p-10 text-sm' : 'p-5 text-xs'
   const currentStr = String(index + 1).padStart(2, '0')
@@ -686,7 +712,13 @@ function SlideContent({
           <Slide1Cover concept={concept} domain={domain} capturedVisualUrl={capturedVisualUrl} />
         )}
         {index === 1 && (
-          <Slide2Visualization concept={concept} card={card} capturedVisualUrl={capturedVisualUrl} />
+          <Slide2Visualization
+            concept={concept}
+            card={card}
+            capturedVisualUrl={capturedVisualUrl}
+            progress={progress}
+            isVideoMode={isVideoMode}
+          />
         )}
         {index === 2 && (
           <Slide3Definition concept={concept} card={card} />
@@ -765,7 +797,7 @@ function Slide1Cover({ concept, domain, capturedVisualUrl }) {
 
 // ─── 02. The Visualization (How It Works) ─────────────────────────────────────
 
-function Slide2Visualization({ concept, card, capturedVisualUrl }) {
+function Slide2Visualization({ concept, card, capturedVisualUrl, progress = 1.0, isVideoMode = false }) {
   return (
     <div className="flex flex-col gap-3 my-auto text-left">
       <div>
@@ -773,21 +805,30 @@ function Slide2Visualization({ concept, card, capturedVisualUrl }) {
           Watch How It Works
         </h2>
         <p className="text-xs text-blue-400 font-semibold mt-0.5">
-          Algorithms are living systems. State changes in real time:
+          {isVideoMode ? 'Algorithm playing in real-time execution flow:' : 'Algorithms are living systems. State changes in real time:'}
         </p>
       </div>
 
       {/* Visualization Image Frame */}
-      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center p-2.5 relative overflow-hidden">
-        <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
-
-        <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
-          <span className="flex items-center gap-1.5 font-mono">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            <span>Interactive Visualizer Frame</span>
-          </span>
-          <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
-        </div>
+      <div className="w-full aspect-[16/10] rounded-xl bg-[#111622] border border-[#1e2638] flex items-center justify-center relative overflow-hidden">
+        {isVideoMode ? (
+          <AnimatedSlideVisualizer
+            concept={concept}
+            progress={progress}
+            capturedVisualUrl={capturedVisualUrl}
+          />
+        ) : (
+          <>
+            <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
+            <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span>Interactive Visualizer Frame</span>
+              </span>
+              <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Core Flow Annotation */}

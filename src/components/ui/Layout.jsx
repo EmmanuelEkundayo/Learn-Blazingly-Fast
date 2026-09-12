@@ -12,7 +12,6 @@ import {
   GridIcon, CodeIcon, MapIcon, BookIcon, RefreshIcon,
   ZapIcon, EditIcon, TrophyIcon, AwardIcon, MessageIcon, PartyIcon
 } from './Icons.jsx'
-import LBFLogo from './LBFLogo.jsx'
 
 // ─── Navigation structure ─────────────────────────────────────────────────────
 // Primary links shown in desktop nav bar (most used)
@@ -120,13 +119,10 @@ export default function Layout() {
         <nav className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
 
           {/* Logo */}
-          <Link to="/" className="text-base sm:text-lg font-bold tracking-tight select-none shrink-0 mr-4 flex items-center gap-2.5 group">
-            <LBFLogo className="w-8 h-8 rounded-lg shadow-sm transition-transform duration-200 group-hover:scale-105" />
-            <span className="flex items-center">
-              <span className="text-dsa-500">Learn</span>
-              <span className="text-ml-500">&nbsp;Blazingly</span>
-              <span className="text-white">&nbsp;Fast</span>
-            </span>
+          <Link to="/" className="text-base sm:text-lg font-bold tracking-tight select-none shrink-0 mr-4 flex items-center">
+            <span className="text-dsa-500">Learn</span>
+            <span className="text-ml-500">&nbsp;Blazingly</span>
+            <span className="text-white">&nbsp;Fast</span>
           </Link>
 
           {/* Desktop nav - hidden on mobile */}
@@ -250,10 +246,7 @@ export default function Layout() {
           <div className="flex flex-col md:flex-row gap-8 md:gap-0 md:justify-between">
             {/* Left */}
             <div>
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <LBFLogo className="w-6 h-6 rounded-md" />
-                <p className="font-bold text-white text-base">Learn Blazingly Fast</p>
-              </div>
+              <p className="font-bold text-white mb-1">Learn Blazingly Fast</p>
               <p className="text-gray-400 mb-2">Built for developers who learn fast.</p>
               <a
                 href="https://learnblazinglyfast.tech"

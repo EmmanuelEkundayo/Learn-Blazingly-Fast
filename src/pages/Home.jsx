@@ -12,7 +12,6 @@ import { getDailyConcept, isDailyHidden, hideDailyForToday } from '../utils/dail
 import { getLearnerName, setLearnerName } from '../utils/learnerName.js'
 import NameModal from '../components/ui/NameModal.jsx'
 import { FlameIcon } from '../components/ui/Icons.jsx'
-import LBFLogo from '../components/ui/LBFLogo.jsx'
 import mathTricks from '../data/mathTricks/index.js'
 
 // ─── domain chip styles (shared across search dropdown + concept rows) ───────
@@ -75,8 +74,7 @@ export default function Home() {
 
       {/* ── Logo + Search ── */}
       <div className="flex flex-col items-center gap-6">
-        <div className="flex flex-col items-center text-center">
-          <LBFLogo className="w-14 h-14 sm:w-16 sm:h-16 mb-4 shadow-xl shadow-blue-500/10 rounded-2xl transition-transform duration-300 hover:scale-105" />
+        <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">
             <span className="text-dsa-500">Learn</span>
             <span className="text-ml-500"> Blazingly Fast</span>
