@@ -7,7 +7,13 @@ import {
   DEFAULT_GRAPH_ADJACENCY,
 } from './bfsSteps.js'
 import { generateDfsSteps, generateDijkstraSteps } from './graphAlgorithms.js'
-import { generateBinarySearchSteps, generateLinearSearchSteps } from './searchAlgorithms.js'
+import {
+  generateBinarySearchSteps,
+  generateLinearSearchSteps,
+  generateTwoPointersSteps,
+  generateSlidingWindowSteps,
+  generateDutchFlagSteps,
+} from './searchAlgorithms.js'
 import { generateKnapsackSteps, DEFAULT_KNAPSACK } from './knapsackSteps.js'
 
 /**
@@ -16,11 +22,12 @@ import { generateKnapsackSteps, DEFAULT_KNAPSACK } from './knapsackSteps.js'
 
 const GENERATORS = {
   sorting: {
-    'bubble-sort':    generateBubbleSortSteps,
-    'selection-sort': generateSelectionSortSteps,
-    'insertion-sort': generateInsertionSortSteps,
-    'quicksort':      generateQuicksortSteps,
-    default:          generateQuicksortSteps,
+    'bubble-sort':        generateBubbleSortSteps,
+    'selection-sort':     generateSelectionSortSteps,
+    'insertion-sort':     generateInsertionSortSteps,
+    'quicksort':          generateQuicksortSteps,
+    'sort-visualization': generateQuicksortSteps,
+    default:              generateQuicksortSteps,
   },
   graph: {
     'bfs':      generateBfsSteps,
@@ -29,9 +36,12 @@ const GENERATORS = {
     default:    generateBfsSteps,
   },
   search: {
-    'binary-search': generateBinarySearchSteps,
-    'linear-search': generateLinearSearchSteps,
-    default:         generateBinarySearchSteps,
+    'binary-search':       generateBinarySearchSteps,
+    'linear-search':       generateLinearSearchSteps,
+    'two-pointers':        generateTwoPointersSteps,
+    'sliding-window':      generateSlidingWindowSteps,
+    'dutch-national-flag': generateDutchFlagSteps,
+    default:               generateBinarySearchSteps,
   },
   dp: {
     'knapsack': generateKnapsackSteps,

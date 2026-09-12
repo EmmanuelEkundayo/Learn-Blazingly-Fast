@@ -3,6 +3,7 @@
  * Dynamically renders animated step-by-step visualizations on a 2D canvas
  * or SVG element, compressed or expanded to the slide's active time frame.
  */
+import { getSteps, getDefaultSortArray } from './algorithms/registry.js'
 
 /**
  * Determines the visualization category for a concept.
@@ -106,113 +107,261 @@ export function drawCanvasVizFrame(ctx, concept, box, rawProgress = 0) {
 // ─── Visualizer Renderers ─────────────────────────────────────────────────────
 
 function drawSortingBars(ctx, concept, box, progress) {
-  const initial = [18, 42, 28, 70, 35, 55, 88, 62]
-  const sorted = [18, 28, 35, 42, 55, 62, 70, 88]
-  const n = initial.length
+  const mode = concept.visualization?.config?.mode || concept.slug || 'quicksort'
+  const defaultArr = getDefaultSortArray(mode) || [9, 3, 7, 4, 6, 2, 8, 5]
+  const rawArray = concept.visualization?.config?.array || defaultArr
+  // Keep array within 8-10 elements for high-impact visual clarity on vertical screens
+  const inputArray = rawArray.length > 10 ? rawArray.slice(0, 10) : rawArray
 
-  // Interpolate values based on progress
-  const stepIdx = Math.min(n - 1, Math.floor(progress * n))
-  const isComplete = progress >= 0.92
-
-  const marginX = 40
-  const marginY = 50
-  const usableW = box.width - marginX * 2
-  const usableH = box.height - marginY * 2
-  const barW = (usableW / n) - 12
-  const maxH = 88
-
-  // Header caption
-  ctx.fillStyle = '#94a3b8'
-  ctx.font = 'bold 13px Inter, sans-serif'
-  ctx.textAlign = 'left'
-  ctx.fillText('SORTING IN PROGRESS', box.x + 24, box.y + 32)
-
-  ctx.textAlign = 'right'
-  ctx.fillStyle = isComplete ? '#10b981' : '#f59e0b'
-  ctx.font = 'bold 12px JetBrains Mono, monospace'
-  ctx.fillText(isComplete ? 'COMPLETED O(N log N)' : `STEP 0${stepIdx + 1} / 0${n}`, box.x + box.width - 24, box.y + 32)
-
-  for (let i = 0; i < n; i++) {
-    const startVal = initial[i]
-    const endVal = sorted[i]
-    const currentVal = Math.round(startVal + (endVal - startVal) * Math.min(1, progress * 1.2))
-    const h = (currentVal / maxH) * (usableH - 30)
-    const x = box.x + marginX + i * (barW + 12)
-    const y = box.y + box.height - 45 - h
-
-    // Bar state color
-    let barFill = '#1d4ed8' // default blue
-    if (isComplete || i <= stepIdx) {
-      barFill = '#10b981' // sorted green
-    } else if (i === stepIdx + 1) {
-      barFill = '#f59e0b' // comparing amber
-    }
-
-    ctx.fillStyle = barFill
-    fillRoundRect(ctx, x, y, barW, h, 6)
-
-    // Number label
-    ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 11px JetBrains Mono, monospace'
-    ctx.textAlign = 'center'
-    ctx.fillText(String(currentVal), x + barW / 2, y - 8)
-
-    // Index label
-    ctx.fillStyle = '#64748b'
-    ctx.font = '10px JetBrains Mono, monospace'
-    ctx.fillText(`[${i}]`, x + barW / 2, box.y + box.height - 28)
+  let steps = getSteps('sorting', mode, inputArray)
+  if (!steps || steps.length === 0) {
+    steps = getSteps('sorting', 'quicksort', inputArray)
   }
-}
+  if (!steps || steps.length === 0) return
 
-function drawSearchPointers(ctx, concept, box, progress) {
-  const items = [2, 5, 8, 12, 16, 23, 38, 56]
-  const target = 12
-  const targetIdx = 3
-  const isFound = progress >= 0.65
+  const totalSteps = steps.length
+  const stepIdx = Math.min(totalSteps - 1, Math.floor(progress * totalSteps))
+  const currentStep = steps[stepIdx]
+  const arr = currentStep.array || inputArray
+  const n = arr.length
+  const maxVal = Math.max(...arr, 1)
 
-  // Header
+  // 1. Header with Concept Title, Action Badge, and Step Counter
+  const actionLabel = (currentStep.type || 'STEP').toUpperCase().replace(/_/g, ' ')
   ctx.fillStyle = '#38bdf8'
   ctx.font = 'bold 13px Inter, sans-serif'
   ctx.textAlign = 'left'
-  ctx.fillText(`BINARY SEARCH: Target = ${target}`, box.x + 24, box.y + 32)
+  const titleText = (concept.title || 'Sorting Algorithm').toUpperCase()
+  ctx.fillText(`${titleText} · [${actionLabel}]`, box.x + 20, box.y + 28)
 
   ctx.textAlign = 'right'
-  ctx.fillStyle = isFound ? '#10b981' : '#f59e0b'
+  const isDone = stepIdx === totalSteps - 1 || currentStep.type === 'done'
+  ctx.fillStyle = isDone ? '#10b981' : '#f59e0b'
   ctx.font = 'bold 12px JetBrains Mono, monospace'
-  ctx.fillText(isFound ? 'FOUND IN O(log N)' : 'EVALUATING MID...', box.x + box.width - 24, box.y + 32)
+  ctx.fillText(`STEP ${String(stepIdx + 1).padStart(2, '0')} / ${String(totalSteps).padStart(2, '0')}`, box.x + box.width - 20, box.y + 28)
 
-  const n = items.length
+  // 2. Legend
+  ctx.textAlign = 'left'
+  ctx.font = '10px Inter, sans-serif'
+  const legendY = box.y + 48
+  let legX = box.x + 20
+  const legendItems = [
+    { color: '#f59e0b', text: 'Pivot' },
+    { color: '#fde68a', text: 'Compare' },
+    { color: '#ef4444', text: 'Swap' },
+    { color: '#10b981', text: 'Sorted' },
+  ]
+  legendItems.forEach(item => {
+    ctx.fillStyle = item.color
+    ctx.fillRect(legX, legendY - 8, 8, 8)
+    ctx.fillStyle = '#94a3b8'
+    ctx.fillText(item.text, legX + 12, legendY)
+    legX += 70
+  })
+
+  // 3. Array Bars
   const marginX = 24
-  const cellW = (box.width - marginX * 2) / n - 8
-  const cellH = 56
-  const startY = box.y + (box.height - cellH) / 2 - 10
+  const usableW = box.width - marginX * 2
+  const barAreaH = box.height - 165
+  const barW = Math.max(16, Math.floor(usableW / n) - 8)
+  const gap = (usableW - barW * n) / (n - 1)
+  const baseY = box.y + box.height - 75
 
   for (let i = 0; i < n; i++) {
-    const x = box.x + marginX + i * (cellW + 8)
-    const isMid = i === targetIdx
-    const isTarget = isMid && isFound
+    const val = arr[i]
+    const h = Math.max(14, Math.round((val / maxVal) * barAreaH))
+    const x = box.x + marginX + i * (barW + gap)
+    const y = baseY - h
 
-    ctx.fillStyle = isTarget ? '#10b981' : isMid ? 'rgba(56, 189, 248, 0.25)' : '#161d2d'
-    ctx.strokeStyle = isTarget ? '#10b981' : isMid ? '#38bdf8' : '#1e2638'
-    ctx.lineWidth = isMid ? 2 : 1
+    // Color logic matching platform
+    let fill = '#1d4ed8' // default active blue
+    const isSorted = currentStep.sorted && currentStep.sorted[i]
+    const isSwapping = currentStep.swapping && currentStep.swapping.includes(i)
+    const isPivot = currentStep.pivot === i
+    const isCompare = currentStep.j === i || (currentStep.type === 'compare' && (currentStep.j === i || currentStep.j + 1 === i)) || currentStep.i === i || currentStep.minIdx === i
+
+    if (isSorted) fill = '#10b981'
+    else if (isSwapping) fill = '#ef4444'
+    else if (isPivot) fill = '#f59e0b'
+    else if (isCompare) fill = '#fde68a'
+    else if (currentStep.lo != null && currentStep.hi != null && (i < currentStep.lo || i > currentStep.hi)) fill = '#374151'
+
+    ctx.fillStyle = fill
+    fillRoundRect(ctx, x, y, barW, h, 5)
+
+    // Bar Value
+    ctx.fillStyle = isCompare ? '#0b0e14' : '#ffffff'
+    ctx.font = 'bold 11px JetBrains Mono, monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText(String(val), x + barW / 2, y - 6)
+
+    // Bar Index
+    ctx.fillStyle = '#64748b'
+    ctx.font = '10px JetBrains Mono, monospace'
+    ctx.fillText(`[${i}]`, x + barW / 2, baseY + 14)
+
+    // Pointer Label under bar if pivot or swapping
+    if (isPivot) {
+      ctx.fillStyle = '#f59e0b'
+      ctx.font = 'bold 9px JetBrains Mono, monospace'
+      ctx.fillText('PIVOT', x + barW / 2, baseY + 26)
+    } else if (isSwapping) {
+      ctx.fillStyle = '#ef4444'
+      ctx.font = 'bold 9px JetBrains Mono, monospace'
+      ctx.fillText('SWAP', x + barW / 2, baseY + 26)
+    }
+  }
+
+  // 4. Step Annotation Box at bottom
+  const annotY = box.y + box.height - 44
+  ctx.fillStyle = '#0b0e14'
+  ctx.strokeStyle = '#1e2638'
+  ctx.lineWidth = 1
+  fillRoundRect(ctx, box.x + 16, annotY, box.width - 32, 34, 6)
+  ctx.stroke()
+
+  ctx.fillStyle = '#e2e8f0'
+  ctx.font = '11px JetBrains Mono, monospace'
+  ctx.textAlign = 'left'
+  const annot = currentStep.annotation || 'Executing algorithm step...'
+  ctx.fillText(annot.length > 70 ? annot.slice(0, 68) + '…' : annot, box.x + 26, annotY + 21)
+}
+
+function drawSearchPointers(ctx, concept, box, progress) {
+  const mode = concept.visualization?.config?.mode || concept.slug || 'binary-search'
+  const arr = concept.visualization?.config?.array || [2, 5, 8, 12, 16, 23, 38, 45, 56, 72]
+  const target = concept.visualization?.config?.target ?? (mode === 'binary-search' ? 23 : 16)
+
+  let steps = getSteps('search', mode, arr, target)
+  if (!steps || steps.length === 0) {
+    steps = getSteps('search', 'binary-search', arr, target)
+  }
+  if (!steps || steps.length === 0) return
+
+  const totalSteps = steps.length
+  const stepIdx = Math.min(totalSteps - 1, Math.floor(progress * totalSteps))
+  const step = steps[stepIdx]
+  const n = arr.length
+
+  // 1. Header with Concept Title & Step Counter
+  ctx.fillStyle = '#38bdf8'
+  ctx.font = 'bold 13px Inter, sans-serif'
+  ctx.textAlign = 'left'
+  const titleText = (concept.title || 'Search Algorithm').toUpperCase()
+  ctx.fillText(`${titleText} · TARGET = ${target}`, box.x + 20, box.y + 28)
+
+  ctx.textAlign = 'right'
+  ctx.fillStyle = step.found ? '#10b981' : '#f59e0b'
+  ctx.font = 'bold 12px JetBrains Mono, monospace'
+  ctx.fillText(`STEP ${String(stepIdx + 1).padStart(2, '0')} / ${String(totalSteps).padStart(2, '0')}`, box.x + box.width - 20, box.y + 28)
+
+  // 2. Legend / Active Pointers summary
+  ctx.textAlign = 'left'
+  ctx.font = '10px Inter, sans-serif'
+  const legendY = box.y + 48
+  let legX = box.x + 20
+  const pointers = []
+  if (step.lo != null) pointers.push(`Low: [${step.lo}] (${arr[step.lo]})`)
+  if (step.mid != null) pointers.push(`Mid: [${step.mid}] (${arr[step.mid]})`)
+  if (step.hi != null) pointers.push(`High: [${step.hi}] (${arr[step.hi]})`)
+  if (step.i != null) pointers.push(`Idx: [${step.i}] (${arr[step.i]})`)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillText(pointers.join('  •  ') || 'Evaluating search boundaries...', legX, legendY)
+
+  // 3. Array Cells with Pointers
+  const marginX = 20
+  const usableW = box.width - marginX * 2
+  const cellW = Math.max(28, Math.floor(usableW / n) - 6)
+  const gap = (usableW - cellW * n) / (n - 1)
+  const cellH = 50
+  const startY = box.y + 105
+
+  for (let i = 0; i < n; i++) {
+    const val = arr[i]
+    const x = box.x + marginX + i * (cellW + gap)
+    const inRange = step.lo != null && step.hi != null && i >= step.lo && i <= step.hi
+    const isMid = step.mid === i || step.i === i
+    const isLo = step.lo === i
+    const isHi = step.hi === i
+    const isFound = step.found && isMid
+
+    let bg = '#0d0d12'
+    let stroke = '#1e2638'
+    let textFill = '#64748b'
+
+    if (isFound) {
+      bg = '#14532d'
+      stroke = '#10b981'
+      textFill = '#ffffff'
+    } else if (isMid) {
+      bg = 'rgba(56, 189, 248, 0.25)'
+      stroke = '#38bdf8'
+      textFill = '#ffffff'
+    } else if (inRange) {
+      bg = '#161d2d'
+      stroke = (isLo || isHi) ? '#60a5fa' : '#334155'
+      textFill = '#e2e8f0'
+    } else {
+      bg = '#090d14'
+      stroke = '#161d26'
+      textFill = '#334155'
+    }
+
+    ctx.fillStyle = bg
+    ctx.strokeStyle = stroke
+    ctx.lineWidth = isMid || isFound ? 2 : 1
     fillRoundRect(ctx, x, startY, cellW, cellH, 8)
     ctx.stroke()
 
-    ctx.fillStyle = isTarget ? '#ffffff' : '#f8fafc'
-    ctx.font = 'bold 16px JetBrains Mono, monospace'
+    // Value
+    ctx.fillStyle = textFill
+    ctx.font = 'bold 15px JetBrains Mono, monospace'
     ctx.textAlign = 'center'
-    ctx.fillText(String(items[i]), x + cellW / 2, startY + cellH / 2 + 5)
+    ctx.fillText(String(val), x + cellW / 2, startY + cellH / 2 + 5)
 
-    ctx.fillStyle = isMid ? '#38bdf8' : '#64748b'
+    // Index
+    ctx.fillStyle = '#64748b'
     ctx.font = '10px JetBrains Mono, monospace'
-    ctx.fillText(`[${i}]`, x + cellW / 2, startY + cellH + 18)
+    ctx.fillText(`[${i}]`, x + cellW / 2, startY + cellH + 16)
 
-    if (isMid) {
-      ctx.fillStyle = isFound ? '#10b981' : '#38bdf8'
-      ctx.font = 'bold 11px Inter, sans-serif'
-      ctx.fillText('▲ MID', x + cellW / 2, startY + cellH + 34)
+    // Pointer Labels below
+    if (isFound) {
+      ctx.fillStyle = '#10b981'
+      ctx.font = 'bold 10px JetBrains Mono, monospace'
+      ctx.fillText('FOUND ✓', x + cellW / 2, startY + cellH + 32)
+    } else if (isMid) {
+      ctx.fillStyle = '#38bdf8'
+      ctx.font = 'bold 10px JetBrains Mono, monospace'
+      ctx.fillText('▲ MID', x + cellW / 2, startY + cellH + 32)
+    } else if (isLo && isHi) {
+      ctx.fillStyle = '#60a5fa'
+      ctx.font = 'bold 9px JetBrains Mono, monospace'
+      ctx.fillText('LO=HI', x + cellW / 2, startY + cellH + 32)
+    } else if (isLo) {
+      ctx.fillStyle = '#60a5fa'
+      ctx.font = 'bold 9px JetBrains Mono, monospace'
+      ctx.fillText('▲ LO', x + cellW / 2, startY + cellH + 32)
+    } else if (isHi) {
+      ctx.fillStyle = '#60a5fa'
+      ctx.font = 'bold 9px JetBrains Mono, monospace'
+      ctx.fillText('▲ HI', x + cellW / 2, startY + cellH + 32)
     }
   }
+
+  // 4. Step Annotation Box at bottom
+  const annotY = box.y + box.height - 44
+  ctx.fillStyle = '#0b0e14'
+  ctx.strokeStyle = '#1e2638'
+  ctx.lineWidth = 1
+  fillRoundRect(ctx, box.x + 16, annotY, box.width - 32, 34, 6)
+  ctx.stroke()
+
+  ctx.fillStyle = '#e2e8f0'
+  ctx.font = '11px JetBrains Mono, monospace'
+  ctx.textAlign = 'left'
+  const annot = step.annotation || 'Evaluating search boundaries...'
+  ctx.fillText(annot.length > 70 ? annot.slice(0, 68) + '…' : annot, box.x + 26, annotY + 21)
 }
 
 function drawGraphTraversal(ctx, concept, box, progress) {

@@ -14,6 +14,7 @@ import {
 import { trackShare } from '../../services/analytics.js'
 import LBFLogo from './LBFLogo.jsx'
 import AnimatedSlideVisualizer from './AnimatedSlideVisualizer.jsx'
+import { getSteps, getDefaultSortArray } from '../../utils/algorithms/registry.js'
 
 const SLIDE_NAMES = [
   '01. Cover Hook',
@@ -818,16 +819,23 @@ function Slide2Visualization({ concept, card, capturedVisualUrl, progress = 1.0,
             capturedVisualUrl={capturedVisualUrl}
           />
         ) : (
-          <>
-            <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
-            <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-mono">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                <span>Interactive Visualizer Frame</span>
-              </span>
-              <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
-            </div>
-          </>
+          capturedVisualUrl ? (
+            <>
+              <SlideVisualFrame concept={concept} capturedVisualUrl={capturedVisualUrl} />
+              <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#0b0e14]/90 border border-[#1e2638] text-[10px] text-slate-300 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-mono">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  <span>Interactive Visualizer Frame</span>
+                </span>
+                <span className="text-blue-400 font-mono text-[9px]">learnblazinglyfast.tech</span>
+              </div>
+            </>
+          ) : (
+            <AnimatedSlideVisualizer
+              concept={concept}
+              progress={1.0}
+            />
+          )
         )}
       </div>
 
@@ -1126,86 +1134,110 @@ function ConceptGraphicIllustration({ concept }) {
 }
 
 function ArraySearchIllustration({ concept }) {
-  const items = [
-    { val: '2', idx: '0' },
-    { val: '5', idx: '1' },
-    { val: '8', idx: '2' },
-    { val: '12', idx: '3', isMid: true, isMatch: true },
-    { val: '16', idx: '4' },
-    { val: '23', idx: '5' },
-    { val: '38', idx: '6' },
-    { val: '56', idx: '7' },
-  ]
+  const mode = concept?.visualization?.config?.mode || concept?.slug || 'binary-search'
+  const rawArr = concept?.visualization?.config?.array || [2, 5, 8, 12, 16, 23, 38, 56]
+  const arr = rawArr.length > 8 ? rawArr.slice(0, 8) : rawArr
+  const target = concept?.visualization?.config?.target ?? (mode === 'binary-search' ? (arr[3] || 12) : 16)
+  let steps = getSteps('search', mode, arr, target)
+  if (!steps || steps.length === 0) steps = getSteps('search', 'binary-search', arr, target)
+  const matchStep = steps.find((s) => s.found) || steps[Math.floor(steps.length / 2)] || steps[0]
+  const curStep = matchStep || {}
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-2">
       <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
-        <span className="text-blue-400 font-bold">Target = 12</span>
-        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
-          nums[mid] == target (Match Found at idx 3)
+        <span className="text-blue-400 font-bold">TARGET = {target}</span>
+        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px]">
+          {curStep.found ? `Found at idx ${curStep.mid ?? curStep.i}` : (curStep.annotation || 'Active Step')}
         </span>
       </div>
       <div className="grid grid-cols-8 gap-1.5 w-full">
-        {items.map((it) => (
-          <div key={it.idx} className="flex flex-col items-center gap-1">
-            <div
-              className={`w-full aspect-square rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
-                it.isMatch
-                  ? 'bg-blue-500/30 border-2 border-[#38bdf8] text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-[#161d2d] border border-[#1e2638] text-slate-300'
-              }`}
-            >
-              {it.val}
+        {arr.map((val, i) => {
+          const isMid = curStep.mid === i || curStep.i === i
+          const isMatch = curStep.found && isMid
+          const inRange = curStep.lo != null && curStep.hi != null && i >= curStep.lo && i <= curStep.hi
+
+          return (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <div
+                className={`w-full aspect-square rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
+                  isMatch
+                    ? 'bg-emerald-500/30 border-2 border-emerald-400 text-white shadow-lg shadow-emerald-500/30'
+                    : isMid
+                    ? 'bg-blue-500/30 border-2 border-[#38bdf8] text-white shadow-md shadow-blue-500/30'
+                    : inRange
+                    ? 'bg-[#161d2d] border border-blue-500/40 text-slate-200'
+                    : 'bg-[#0e131d] border border-[#1e2638] text-slate-500 opacity-60'
+                }`}
+              >
+                {val}
+              </div>
+              <span className={`text-[9px] font-mono ${isMid ? 'text-blue-400 font-bold' : 'text-slate-500'}`}>
+                [{i}]
+              </span>
             </div>
-            <span className={`text-[9px] font-mono ${it.isMatch ? 'text-blue-400 font-bold' : 'text-slate-500'}`}>
-              [{it.idx}]
-            </span>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2.5 px-2">
-        <span className="text-slate-400">↑ Low: [0]</span>
-        <span className="text-[#38bdf8] font-bold">↑ Mid: [3]</span>
-        <span className="text-slate-400">↑ High: [7]</span>
+        <span className="text-slate-400">↑ Low: [{curStep.lo ?? 0}]</span>
+        <span className="text-[#38bdf8] font-bold">↑ Mid: [{curStep.mid ?? Math.floor(arr.length / 2)}]</span>
+        <span className="text-slate-400">↑ High: [{curStep.hi ?? arr.length - 1}]</span>
       </div>
     </div>
   )
 }
 
 function SortingBarsIllustration({ concept }) {
-  const bars = [
-    { height: 28, val: 14, state: 'sorted' },
-    { height: 45, val: 23, state: 'sorted' },
-    { height: 60, val: 38, state: 'comparing' },
-    { height: 85, val: 56, state: 'pivot' },
-    { height: 35, val: 19, state: 'unsorted' },
-    { height: 70, val: 42, state: 'unsorted' },
-    { height: 95, val: 78, state: 'unsorted' },
-    { height: 50, val: 31, state: 'unsorted' },
-  ]
+  const mode = concept?.visualization?.config?.mode || concept?.slug || 'quicksort'
+  const defaultArr = getDefaultSortArray(mode) || [9, 3, 7, 4, 6, 2, 8, 5]
+  const rawArray = concept?.visualization?.config?.array || defaultArr
+  const arr = rawArray.length > 8 ? rawArray.slice(0, 8) : rawArray
+  let steps = getSteps('sorting', mode, arr)
+  if (!steps || steps.length === 0) steps = getSteps('sorting', 'quicksort', arr)
+  const activeStep = steps[Math.min(steps.length - 1, Math.max(1, Math.floor(steps.length * 0.55)))] || steps[0]
+  const curArr = activeStep.array || arr
+  const maxVal = Math.max(...curArr, 1)
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-end p-2">
-      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2">
-        <span className="text-emerald-400 font-semibold">● Sorted Partition</span>
-        <span className="text-amber-400 font-semibold">● Comparing</span>
-        <span className="text-[#38bdf8] font-semibold">● Pivot</span>
+      <div className="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 px-1">
+        <span className="text-emerald-400 font-semibold">● Sorted</span>
+        <span className="text-amber-400 font-semibold">● Compare</span>
+        <span className="text-red-400 font-semibold">● Swap</span>
+        <span className="text-blue-400 font-semibold">● Pivot</span>
       </div>
       <div className="flex items-end justify-between gap-1.5 w-full h-24 border-b border-[#1e2638] pb-1">
-        {bars.map((b, i) => {
-          const bg =
-            b.state === 'sorted'
-              ? 'bg-emerald-500/70 border-emerald-400'
-              : b.state === 'pivot'
-              ? 'bg-blue-500 border-[#38bdf8]'
-              : b.state === 'comparing'
-              ? 'bg-amber-500 border-amber-400'
-              : 'bg-[#1e2638] border-slate-600'
+        {curArr.map((val, i) => {
+          const isSorted = activeStep.sorted && activeStep.sorted[i]
+          const isSwapping = activeStep.swapping && activeStep.swapping.includes(i)
+          const isPivot = activeStep.pivot === i
+          const isCompare =
+            activeStep.j === i ||
+            activeStep.i === i ||
+            (activeStep.type === 'compare' && (activeStep.j === i || activeStep.j + 1 === i))
+          const isOut = activeStep.lo != null && activeStep.hi != null && (i < activeStep.lo || i > activeStep.hi)
+
+          let bg = 'bg-blue-600 border-blue-400'
+          if (isSorted) bg = 'bg-emerald-500/80 border-emerald-400'
+          else if (isSwapping) bg = 'bg-red-500 border-red-400'
+          else if (isPivot) bg = 'bg-amber-500 border-amber-400'
+          else if (isCompare) bg = 'bg-amber-200 border-amber-100 text-black'
+          else if (isOut) bg = 'bg-[#1e2638] border-slate-700 opacity-40'
+
+          const hPct = Math.max(18, Math.round((val / maxVal) * 100))
+
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-              <div style={{ height: `${b.height}%` }} className={`w-full rounded-t-md border-t border-x ${bg}`} />
-              <span className="text-[8px] font-mono text-slate-400">{b.val}</span>
+              <div style={{ height: `${hPct}%` }} className={`w-full rounded-t-md border-t border-x ${bg}`} />
+              <span className="text-[8px] font-mono text-slate-400">{val}</span>
             </div>
           )
         })}
+      </div>
+      <div className="w-full flex items-center justify-between text-[9px] font-mono text-slate-400 mt-1.5 px-1 truncate">
+        <span className="text-blue-400 font-bold mr-1">›</span>
+        <span className="truncate">{activeStep.annotation || 'Executing partition step...'}</span>
       </div>
     </div>
   )
