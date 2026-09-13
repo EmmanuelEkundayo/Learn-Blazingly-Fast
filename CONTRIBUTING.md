@@ -222,6 +222,6 @@ npm run build
 
 If you have questions, encounter an issue, or want to discuss a new idea:
 - Open a GitHub issue or start a discussion.
-- Reach out via email at `ekunday00@outlook.com` or on X [@ekunday00](https://twitter.com/ekunday00).
+- Reach out via email at `learnblazinglyfast@gmail.com` or on X [@ekunday00](https://twitter.com/ekunday00).
 
 Happy hacking! ⚡️

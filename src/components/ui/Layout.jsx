@@ -297,11 +297,11 @@ export default function Layout() {
               <p className="text-gray-400 mb-3">Found a bug or have feedback?</p>
               <div className="flex flex-col gap-2">
                 <a
-                  href="mailto:ekunday00@outlook.com"
+                  href="mailto:learnblazinglyfast@gmail.com"
                   className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   <Mail size={14} />
-                  ekunday00@outlook.com
+                  learnblazinglyfast@gmail.com
                 </a>
                 <a
                   href="https://x.com/ekunday00"
