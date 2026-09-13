@@ -301,7 +301,9 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
     const primaryColor = resolvedTheme?.primary || '#38bdf8'
 
     // Step 1: Pre-render all slides to high-res canvases
-    const renderedCanvases = []
+    // Each entry stores { canvas, originalIndex } so duration mapping is always correct
+    // regardless of which slides succeed or fail to render.
+    const renderedEntries = []
     const total = slideElements.length
     for (let i = 0; i < total; i++) {
       if (onProgress) {
@@ -309,15 +311,39 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           phase: 'rendering',
           percent: Math.round(((i + 1) / total) * 30),
           currentSec: 0,
-          totalSec: 15,
+          totalSec: options?.videoDuration || 17,
           message: `Rendering slide frame ${i + 1} of ${total}...`
         })
       }
       const el = slideElements[i]
       if (!el) continue
-      const c = await renderSlideCanvas(el)
-      if (c) renderedCanvases.push(c)
+
+      // Attempt render with one retry on failure
+      let c = await renderSlideCanvas(el)
+      if (!c) {
+        await new Promise((r) => setTimeout(r, 120))
+        c = await renderSlideCanvas(el)
+      }
+
+      if (c) {
+        renderedEntries.push({ canvas: c, originalIndex: i })
+      } else {
+        // Create a solid placeholder so every slide slot always has a frame
+        const placeholder = document.createElement('canvas')
+        placeholder.width = 1080
+        placeholder.height = 1350
+        const pCtx = placeholder.getContext('2d')
+        if (pCtx) {
+          pCtx.fillStyle = '#0b0e14'
+          pCtx.fillRect(0, 0, 1080, 1350)
+        }
+        renderedEntries.push({ canvas: placeholder, originalIndex: i })
+        console.warn(`Slide ${i + 1} failed to render — using placeholder.`)
+      }
     }
+
+    const renderedCanvases = renderedEntries.map((e) => e.canvas)
+    const renderedIndices = renderedEntries.map((e) => e.originalIndex)
 
     if (renderedCanvases.length === 0) {
       throw new Error('No slide frames could be captured.')
@@ -374,13 +400,15 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
     // Timing plan: base 17.0s (5.0s viz slide 2) scaled to target duration
     // 7 slides base: [2000, 5000, 2000, 2000, 2000, 2000, 2000]
+    // IMPORTANT: use originalIndex (not position in renderedCanvases) for duration lookup
+    // so slide 2 (visualization) always gets its extended time regardless of render failures.
     const BASE_DURATIONS = [2000, 5000, 2000, 2000, 2000, 2000, 2000]
     const BASE_TOTAL_MS = BASE_DURATIONS.reduce((a, b) => a + b, 0) // 17000ms
     const targetSec = options?.videoDuration || 17
     const targetMs = targetSec * 1000
     const durationScale = targetMs / BASE_TOTAL_MS
-    const slideDurations = renderedCanvases.map((_, i) =>
-      Math.round((BASE_DURATIONS[i] || 2000) * durationScale)
+    const slideDurations = renderedCanvases.map((_, pos) =>
+      Math.round((BASE_DURATIONS[renderedIndices[pos]] ?? 2000) * durationScale)
     )
     const totalDurationMs = slideDurations.reduce((a, b) => a + b, 0)
     const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
