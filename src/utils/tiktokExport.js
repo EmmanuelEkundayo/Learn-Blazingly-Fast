@@ -252,15 +252,25 @@ export function getSupportedVideoMimeType() {
     return { mimeType: 'video/webm', extension: 'webm' }
   }
 
-  const candidates = [
-    { mimeType: 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', extension: 'mp4' },
-    { mimeType: 'video/mp4;codecs=avc1', extension: 'mp4' },
-    { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
-    { mimeType: 'video/mp4', extension: 'mp4' },
+  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+
+  // WebM candidates (pure video codecs, rock-solid for Chromium and Firefox)
+  const webmCandidates = [
     { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
     { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
     { mimeType: 'video/webm', extension: 'webm' },
   ]
+
+  // MP4 candidates (pure video codecs, native for Safari/WebKit, never include mp4a audio codec on video stream!)
+  const mp4Candidates = [
+    { mimeType: 'video/mp4;codecs=avc1', extension: 'mp4' },
+    { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
+    { mimeType: 'video/mp4', extension: 'mp4' },
+  ]
+
+  const candidates = isSafari
+    ? [...mp4Candidates, ...webmCandidates]
+    : [...webmCandidates, ...mp4Candidates]
 
   for (const c of candidates) {
     try {
@@ -272,7 +282,241 @@ export function getSupportedVideoMimeType() {
     }
   }
 
-  return { mimeType: 'video/webm', extension: 'webm' }
+  return { mimeType: '', extension: isSafari ? 'mp4' : 'webm' }
+}
+
+/**
+ * Attaches a silent Web Audio track to a MediaStream so video muxers
+ * never stall or produce empty recordings waiting for audio samples.
+ */
+function attachSilentAudioTrack(stream) {
+  try {
+    const AudioContextClass = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)
+    if (!AudioContextClass) return null
+    const audioCtx = new AudioContextClass()
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    gain.gain.value = 0 // completely silent
+    osc.connect(gain)
+    const dst = audioCtx.createMediaStreamDestination()
+    gain.connect(dst)
+    osc.start()
+    const track = dst.stream.getAudioTracks()[0]
+    if (track) {
+      stream.addTrack(track)
+      return { audioCtx, osc }
+    }
+  } catch (e) {
+    console.warn('Silent audio track attachment skipped:', e)
+  }
+  return null
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+  if (!text) return
+  const words = text.split(' ')
+  let line = ''
+  let curY = y
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' '
+    const metrics = ctx.measureText(testLine)
+    const testWidth = metrics.width
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, curY)
+      line = words[n] + ' '
+      curY += lineHeight
+    } else {
+      line = testLine
+    }
+  }
+  ctx.fillText(line, x, curY)
+}
+
+function createFallbackCoverCanvas(concept, domain, theme) {
+  const c = document.createElement('canvas')
+  c.width = 1080
+  c.height = 1350
+  const ctx = c.getContext('2d')
+  if (!ctx) return c
+
+  const primary = theme?.primary || '#38bdf8'
+  const grad = ctx.createLinearGradient(0, 0, 0, 1350)
+  grad.addColorStop(0, '#0f172a')
+  grad.addColorStop(0.5, '#0b0e14')
+  grad.addColorStop(1, '#05070a')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 1080, 1350)
+
+  ctx.save()
+  // Badge
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)'
+  ctx.strokeStyle = primary
+  ctx.lineWidth = 2
+  fillSafeRoundRect(ctx, 80, 110, 440, 60, 30)
+  ctx.stroke()
+
+  ctx.fillStyle = primary
+  ctx.font = 'bold 22px monospace'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(`${domain || 'CODE'} · ${concept?.category || 'ALGORITHMS'}`, 105, 140)
+
+  // Title
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  const title = concept?.title || 'Tech Concept'
+  wrapCanvasText(ctx, title, 80, 260, 920, 76)
+
+  // Subtitle / intuition
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  const subtitle = concept?.card?.intuition || 'Master this core computer science concept visually.'
+  wrapCanvasText(ctx, subtitle, 80, 460, 920, 44)
+
+  // Graphic card
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+  ctx.fillStyle = '#111622'
+  fillSafeRoundRect(ctx, 80, 620, 920, 500, 24)
+  ctx.stroke()
+
+  ctx.fillStyle = primary
+  ctx.font = 'bold 40px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('▶ VISUAL GUIDE', 540, 880)
+  ctx.textAlign = 'left'
+
+  ctx.fillStyle = '#64748b'
+  ctx.font = 'bold 24px monospace'
+  ctx.fillText('learnblazinglyfast.tech', 80, 1260)
+  ctx.restore()
+
+  return c
+}
+
+function createFallbackVizBaseCanvas(concept, domain, theme) {
+  const c = document.createElement('canvas')
+  c.width = 1080
+  c.height = 1350
+  const ctx = c.getContext('2d')
+  if (!ctx) return c
+
+  const primary = theme?.primary || '#38bdf8'
+  ctx.fillStyle = '#0b0e14'
+  ctx.fillRect(0, 0, 1080, 1350)
+
+  ctx.save()
+  ctx.fillStyle = primary
+  ctx.font = 'bold 22px monospace'
+  ctx.fillText(`${domain || 'CODE'} · ${concept?.category || 'ALGORITHMS'}`, 60, 60)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = 'bold 22px monospace'
+  ctx.textAlign = 'right'
+  ctx.fillText('02 / 07', 1020, 60)
+  ctx.textAlign = 'left'
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+  ctx.beginPath()
+  ctx.moveTo(60, 80)
+  ctx.lineTo(1020, 80)
+  ctx.stroke()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  ctx.fillText('How It Works In Motion', 60, 140)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  ctx.fillText(`Step-by-step visual simulation of ${concept?.title || 'the concept'}`, 60, 185)
+
+  ctx.fillStyle = '#111622'
+  ctx.strokeStyle = '#1e2638'
+  fillSafeRoundRect(ctx, 60, 1140, 960, 120, 20)
+  ctx.stroke()
+
+  ctx.fillStyle = '#38bdf8'
+  ctx.font = 'bold 22px monospace'
+  ctx.fillText("What's happening: ", 90, 1185)
+  ctx.fillStyle = '#cbd5e1'
+  ctx.font = '22px sans-serif'
+  const intuition = concept?.card?.intuition?.slice(0, 140) || 'Data transitions through states step-by-step to optimize execution path and memory.'
+  wrapCanvasText(ctx, intuition, 90, 1220, 900, 28)
+
+  ctx.restore()
+  return c
+}
+
+function createFallbackEndCanvas(concept, domain, theme) {
+  const c = document.createElement('canvas')
+  c.width = 1080
+  c.height = 1350
+  const ctx = c.getContext('2d')
+  if (!ctx) return c
+
+  const primary = theme?.primary || '#38bdf8'
+  const grad = ctx.createLinearGradient(0, 0, 0, 1350)
+  grad.addColorStop(0, '#0b0e14')
+  grad.addColorStop(0.5, '#111622')
+  grad.addColorStop(1, '#070a10')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 1080, 1350)
+
+  ctx.save()
+  // Badge
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.12)'
+  ctx.strokeStyle = primary
+  ctx.lineWidth = 2
+  fillSafeRoundRect(ctx, 80, 130, 380, 56, 28)
+  ctx.stroke()
+  ctx.fillStyle = primary
+  ctx.font = 'bold 22px monospace'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('100% FREE & OPEN SOURCE', 105, 158)
+
+  // Headline
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  wrapCanvasText(ctx, 'Level Up on Learn Blazingly Fast', 80, 270, 920, 68)
+
+  // Subtitle
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  wrapCanvasText(ctx, 'The interactive visual dictionary for developers. 550+ algorithm visualizers.', 80, 440, 920, 40)
+
+  // Card 1
+  ctx.fillStyle = '#0b0e14'
+  ctx.strokeStyle = '#1e2638'
+  fillSafeRoundRect(ctx, 80, 580, 920, 170, 20)
+  ctx.stroke()
+  ctx.fillStyle = primary
+  ctx.font = 'bold 28px monospace'
+  ctx.fillText('⚡ Interactive Visualizers', 120, 640)
+  ctx.fillStyle = '#cbd5e1'
+  ctx.font = '22px sans-serif'
+  ctx.fillText('Step through algorithms and data structures frame-by-frame.', 120, 695)
+
+  // Card 2
+  ctx.fillStyle = '#0b0e14'
+  ctx.strokeStyle = '#1e2638'
+  fillSafeRoundRect(ctx, 80, 790, 920, 170, 20)
+  ctx.stroke()
+  ctx.fillStyle = '#10b981'
+  ctx.font = 'bold 28px monospace'
+  ctx.fillText('★ Star on GitHub', 120, 850)
+  ctx.fillStyle = '#cbd5e1'
+  ctx.font = '22px sans-serif'
+  ctx.fillText('Open-source developer education built for the community.', 120, 905)
+
+  // CTA Button
+  ctx.fillStyle = primary
+  fillSafeRoundRect(ctx, 80, 1030, 920, 96, 24)
+  ctx.fillStyle = '#070a10'
+  ctx.font = 'bold 34px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('learnblazinglyfast.tech', 540, 1088)
+  ctx.restore()
+
+  return c
 }
 
 /**
@@ -286,10 +530,12 @@ export function isVideoExportSupported() {
 }
 
 /**
- * Exports all slides as a vertical video clip (MP4 / WebM).
- * Plays through all 7 slides with live pacing, smooth cross-fades,
- * and a story segment progress bar at the top.
- * Supports standard 4:5 vertical video (TikTok/Reels/Pinterest) or 9:16 (YouTube Shorts).
+ * Exports video clip (TikTok/Reels 4:5, Pinterest 9:16, YouTube Shorts 9:16).
+ * Flow:
+ * 1. Intro Hook (Slide 1 Cover) capped at 2.0s
+ * 2. Looping Visualization (Slide 2) taking the bulk of the duration
+ * 3. Outro CTA (Slide 7) giving the viewer the clear next step
+ * Supports 17s / 30s / 60s durations.
  */
 export async function exportVideoClip(slideElements, slug, onProgress, concept, theme, options = {}) {
   try {
@@ -299,60 +545,11 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
     const resolvedTheme = (typeof theme === 'string' ? { primary: theme, secondary: theme } : theme) || getInitialThemeForConcept(concept)
     const primaryColor = resolvedTheme?.primary || '#38bdf8'
+    const domain = concept?.domain || 'Computer Science'
 
-    // Step 1: Pre-render all slides to high-res canvases
-    // Each entry stores { canvas, originalIndex } so duration mapping is always correct
-    // regardless of which slides succeed or fail to render.
-    const renderedEntries = []
-    const total = slideElements.length
-    for (let i = 0; i < total; i++) {
-      if (onProgress) {
-        onProgress({
-          phase: 'rendering',
-          percent: Math.round(((i + 1) / total) * 30),
-          currentSec: 0,
-          totalSec: options?.videoDuration || 17,
-          message: `Rendering slide frame ${i + 1} of ${total}...`
-        })
-      }
-      const el = slideElements[i]
-      if (!el) continue
-
-      // Attempt render with one retry on failure
-      let c = await renderSlideCanvas(el)
-      if (!c) {
-        await new Promise((r) => setTimeout(r, 120))
-        c = await renderSlideCanvas(el)
-      }
-
-      if (c) {
-        renderedEntries.push({ canvas: c, originalIndex: i })
-      } else {
-        // Create a solid placeholder so every slide slot always has a frame
-        const placeholder = document.createElement('canvas')
-        placeholder.width = 1080
-        placeholder.height = 1350
-        const pCtx = placeholder.getContext('2d')
-        if (pCtx) {
-          pCtx.fillStyle = '#0b0e14'
-          pCtx.fillRect(0, 0, 1080, 1350)
-        }
-        renderedEntries.push({ canvas: placeholder, originalIndex: i })
-        console.warn(`Slide ${i + 1} failed to render — using placeholder.`)
-      }
-    }
-
-    const renderedCanvases = renderedEntries.map((e) => e.canvas)
-    const renderedIndices = renderedEntries.map((e) => e.originalIndex)
-
-    if (renderedCanvases.length === 0) {
-      throw new Error('No slide frames could be captured.')
-    }
-
-    // Step 2: Offscreen recording canvas
-    const is9x16 = options?.aspectRatio === '9:16' || options?.platform === 'youtube'
+    const is9x16 = options?.aspectRatio === '9:16' || options?.platform === 'youtube' || options?.platform === 'pinterest'
     const width = 720
-    const height = is9x16 ? 1280 : 900 // 9:16 vertical video (YouTube Shorts) or 4:5 (TikTok/Pinterest)
+    const height = is9x16 ? 1280 : 900 // 9:16 vertical video (YouTube Shorts/Pinterest) or 4:5 (TikTok/Reels)
     const recCanvas = document.createElement('canvas')
     recCanvas.width = width
     recCanvas.height = height
@@ -373,59 +570,119 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
       cardX = Math.round((width - cardW) / 2) // 25px
       cardY = topSafeSpace // 32px
     }
-    const cardRadius = 12
+    const cardRadius = 16
 
-    // Prime the canvas with the first slide
+    // Pre-render the 3 essential slides for the motion video
+    if (onProgress) {
+      onProgress({
+        phase: 'rendering',
+        percent: 10,
+        currentSec: 0,
+        totalSec: options?.videoDuration || 17,
+        message: 'Preparing intro hook frame...'
+      })
+    }
+    let coverCanvas = null
+    if (slideElements?.[0]) {
+      coverCanvas = await renderSlideCanvas(slideElements[0])
+    }
+    if (!coverCanvas) {
+      coverCanvas = createFallbackCoverCanvas(concept, domain, resolvedTheme)
+    }
+
+    if (onProgress) {
+      onProgress({
+        phase: 'rendering',
+        percent: 20,
+        currentSec: 0,
+        totalSec: options?.videoDuration || 17,
+        message: 'Preparing visualization layout...'
+      })
+    }
+    let vizBaseCanvas = null
+    if (slideElements?.[1]) {
+      vizBaseCanvas = await renderSlideCanvas(slideElements[1])
+    }
+    if (!vizBaseCanvas) {
+      vizBaseCanvas = createFallbackVizBaseCanvas(concept, domain, resolvedTheme)
+    }
+
+    if (onProgress) {
+      onProgress({
+        phase: 'rendering',
+        percent: 30,
+        currentSec: 0,
+        totalSec: options?.videoDuration || 17,
+        message: 'Preparing outro CTA frame...'
+      })
+    }
+    const endEl = slideElements?.[slideElements.length - 1] || slideElements?.[6]
+    let endCanvas = null
+    if (endEl) {
+      endCanvas = await renderSlideCanvas(endEl)
+    }
+    if (!endCanvas) {
+      endCanvas = createFallbackEndCanvas(concept, domain, resolvedTheme)
+    }
+
+    const vizBox = getVizBox(slideElements?.[1], width, height, cardX, cardY, cardW, cardH)
+
+    // Timing plan:
+    // 1. First slide (Cover): capped at 2.0s
+    // 2. Outro (End CTA): 2.5s (17s) or 3.0s (30s/60s)
+    // 3. Visualization: Takes all remaining duration and LOOPS continuously!
+    const targetSec = Number(options?.videoDuration) || 17
+    const totalDurationMs = targetSec * 1000
+    const introDurationMs = 2000 // 2.0s intro cap
+    const endDurationMs = targetSec >= 30 ? 3000 : 2500
+    const vizDurationMs = Math.max(2000, totalDurationMs - introDurationMs - endDurationMs)
+    const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
+
+    const CROSSFADE_MS = 250
+    const LOOP_PERIOD = 4000 // 4.0s per complete visualization cycle
+
+    // Prime the canvas with the cover slide
     ctx.fillStyle = '#070a10'
     ctx.fillRect(0, 0, width, height)
     ctx.save()
     fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
     ctx.clip()
-    ctx.drawImage(renderedCanvases[0], cardX, cardY, cardW, cardH)
+    ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
     ctx.restore()
 
     const stream = recCanvas.captureStream(30)
+    const audioCleanup = attachSilentAudioTrack(stream)
     const { mimeType, extension } = getSupportedVideoMimeType()
-    const recorder = new MediaRecorder(stream, {
-      mimeType,
-      videoBitsPerSecond: 3500000
-    })
+    const recorderOptions = mimeType ? { mimeType, videoBitsPerSecond: 3500000 } : { videoBitsPerSecond: 3500000 }
+    const recorder = new MediaRecorder(stream, recorderOptions)
 
     const chunks = []
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) chunks.push(e.data)
     }
 
-    const vizBox = getVizBox(slideElements[1], width, height, cardX, cardY, cardW, cardH)
-
-    // Timing plan: base 17.0s (5.0s viz slide 2) scaled to target duration
-    // 7 slides base: [2000, 5000, 2000, 2000, 2000, 2000, 2000]
-    // IMPORTANT: use originalIndex (not position in renderedCanvases) for duration lookup
-    // so slide 2 (visualization) always gets its extended time regardless of render failures.
-    const BASE_DURATIONS = [2000, 5000, 2000, 2000, 2000, 2000, 2000]
-    const BASE_TOTAL_MS = BASE_DURATIONS.reduce((a, b) => a + b, 0) // 17000ms
-    const targetSec = options?.videoDuration || 17
-    const targetMs = targetSec * 1000
-    const durationScale = targetMs / BASE_TOTAL_MS
-    const slideDurations = renderedCanvases.map((_, pos) =>
-      Math.round((BASE_DURATIONS[renderedIndices[pos]] ?? 2000) * durationScale)
-    )
-    const totalDurationMs = slideDurations.reduce((a, b) => a + b, 0)
-    const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
-
-    const startTimes = []
-    let acc = 0
-    for (const d of slideDurations) {
-      startTimes.push(acc)
-      acc += d
-    }
-
-    const CROSSFADE_MS = 250
-
     return new Promise((resolve, reject) => {
       recorder.onstop = () => {
         try {
-          const blob = new Blob(chunks, { type: mimeType })
+          if (audioCleanup) {
+            try {
+              audioCleanup.osc.stop()
+              audioCleanup.audioCtx.close()
+            } catch (e) {
+              // ignore
+            }
+          }
+
+          const totalBytes = chunks.reduce((acc, c) => acc + (c.size || 0), 0)
+          console.log(`Video recording completed: ${chunks.length} chunks, ${totalBytes} bytes (${(totalBytes / (1024 * 1024)).toFixed(2)} MB), mime: ${mimeType}`)
+
+          if (chunks.length === 0 || totalBytes === 0) {
+            reject(new Error('Video recording produced an empty file. Please try again or use Carousel ZIP export.'))
+            return
+          }
+
+          const actualMime = mimeType || (recorder.mimeType || 'video/webm')
+          const blob = new Blob(chunks, { type: actualMime })
           const url = URL.createObjectURL(blob)
           let platformPrefix = `${Math.round(totalSec)}s-clip`
           if (options?.platform === 'youtube') {
@@ -443,7 +700,7 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           link.click()
           document.body.removeChild(link)
 
-          resolve({ success: true, blob, url, filename, extension, mimeType })
+          resolve({ success: true, blob, url, filename, extension, mimeType: actualMime, size: totalBytes })
         } catch (err) {
           reject(err)
         }
@@ -451,7 +708,8 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
       recorder.onerror = (e) => reject(e)
 
-      recorder.start(1000)
+      // Start recording with 250ms timeslice to ensure continuous chunk delivery
+      recorder.start(250)
 
       const startTime = performance.now()
 
@@ -470,16 +728,23 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           })
         }
 
+        const storyBarY = is9x16 ? Math.max(20, cardY - 26) : 12
+        const footerBarY = is9x16 ? cardY + cardH + 8 : height - 26
+        const footerLabel = options?.platform === 'youtube'
+          ? 'YouTube Shorts · 9:16'
+          : options?.platform === 'pinterest'
+            ? 'Pinterest Video Pin · 9:16'
+            : 'learnblazinglyfast.tech'
+
         if (elapsed >= totalDurationMs) {
           clearInterval(frameInterval)
           // Draw final clean frame
           ctx.fillStyle = '#070a10'
           ctx.fillRect(0, 0, width, height)
-          const lastCanvas = renderedCanvases[renderedCanvases.length - 1]
           ctx.save()
           fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
           ctx.clip()
-          ctx.drawImage(lastCanvas, cardX, cardY, cardW, cardH)
+          ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
           ctx.restore()
 
           // Subtle card border
@@ -493,68 +758,108 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           }
           ctx.restore()
 
-          drawStoryBars(ctx, width, renderedCanvases.length, renderedCanvases.length - 1, 1, primaryColor)
-          drawFooterBar(ctx, width, height, totalSec, totalSec, primaryColor)
+          drawStoryBars(ctx, width, 3, 2, 1.0, primaryColor, storyBarY)
+          drawFooterBar(ctx, width, height, totalSec, totalSec, primaryColor, footerBarY, footerLabel)
 
           setTimeout(() => {
-            if (recorder.state !== 'inactive') {
-              recorder.stop()
+            try {
+              if (recorder.state === 'recording' && typeof recorder.requestData === 'function') {
+                recorder.requestData()
+              }
+            } catch (e) {
+              // ignore
             }
-          }, 200)
+
+            setTimeout(() => {
+              try {
+                if (recorder.state !== 'inactive') {
+                  recorder.stop()
+                }
+              } catch (e) {
+                // ignore
+              }
+            }, 100)
+          }, 100)
           return
         }
-
-        // Determine current slide
-        let currentIdx = 0
-        for (let i = startTimes.length - 1; i >= 0; i--) {
-          if (elapsed >= startTimes[i]) {
-            currentIdx = i
-            break
-          }
-        }
-
-        const slideStart = startTimes[currentIdx]
-        const slideDur = slideDurations[currentIdx]
-        const slideElapsed = elapsed - slideStart
-        const slideRemaining = slideDur - slideElapsed
 
         // Clear canvas with dark base
         ctx.fillStyle = '#070a10'
         ctx.fillRect(0, 0, width, height)
 
-        // Draw slide inside card area with crossfade if near transition
+        let phaseIdx = 0
+        let phaseRatio = 0
+
         ctx.save()
         fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
         ctx.clip()
 
-        if (slideRemaining < CROSSFADE_MS && currentIdx < renderedCanvases.length - 1) {
-          const fade = (CROSSFADE_MS - slideRemaining) / CROSSFADE_MS
-          ctx.globalAlpha = 1 - fade
-          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
-          if (currentIdx === 1 && concept) {
-            const vizRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
-            try {
-              drawCanvasVizFrame(ctx, concept, vizBox, vizRatio, resolvedTheme)
-            } catch (vizErr) {
-              console.warn('Live viz frame render error:', vizErr)
+        if (elapsed < introDurationMs) {
+          // ─── Phase 0: Intro Hook (Slide 1 Cover) ───
+          phaseIdx = 0
+          phaseRatio = Math.min(1, elapsed / introDurationMs)
+          const introRemaining = introDurationMs - elapsed
+
+          if (introRemaining < CROSSFADE_MS) {
+            const fade = (CROSSFADE_MS - introRemaining) / CROSSFADE_MS
+            ctx.globalAlpha = 1 - fade
+            ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
+            ctx.globalAlpha = fade
+            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
+            if (concept) {
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, 0, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Viz frame render error:', vizErr)
+              }
+            }
+            ctx.globalAlpha = 1.0
+          } else {
+            ctx.globalAlpha = 1.0
+            ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
+          }
+        } else if (elapsed < introDurationMs + vizDurationMs) {
+          // ─── Phase 1: Looping Visualization (Slide 2) ───
+          phaseIdx = 1
+          const vizElapsed = elapsed - introDurationMs
+          phaseRatio = Math.min(1, vizElapsed / vizDurationMs)
+          const vizRemaining = vizDurationMs - vizElapsed
+          const loopProgress = (vizElapsed % LOOP_PERIOD) / LOOP_PERIOD
+
+          if (vizRemaining < CROSSFADE_MS) {
+            const fade = (CROSSFADE_MS - vizRemaining) / CROSSFADE_MS
+            ctx.globalAlpha = 1 - fade
+            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
+            if (concept) {
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, loopProgress, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Viz frame render error:', vizErr)
+              }
+            }
+            ctx.globalAlpha = fade
+            ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
+            ctx.globalAlpha = 1.0
+          } else {
+            ctx.globalAlpha = 1.0
+            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
+            if (concept) {
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, loopProgress, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Live viz frame loop error:', vizErr)
+              }
             }
           }
-          ctx.globalAlpha = fade
-          ctx.drawImage(renderedCanvases[currentIdx + 1], cardX, cardY, cardW, cardH)
-          ctx.globalAlpha = 1.0
         } else {
+          // ─── Phase 2: Outro CTA (Slide 7) ───
+          phaseIdx = 2
+          const endElapsed = elapsed - (introDurationMs + vizDurationMs)
+          phaseRatio = Math.min(1, endElapsed / endDurationMs)
           ctx.globalAlpha = 1.0
-          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
-          // Live playing visualization on Slide 2 (index 1)
-          if (currentIdx === 1 && concept) {
-            const vizRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
-            try {
-              drawCanvasVizFrame(ctx, concept, vizBox, vizRatio, resolvedTheme)
-            } catch (vizErr) {
-              console.warn('Live viz frame render error:', vizErr)
-            }
-          }
+          ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
         }
+
         ctx.restore()
 
         // Subtle card border
@@ -568,14 +873,10 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
         }
         ctx.restore()
 
-        // Draw Story Segment Progress Bars at top
-        const slideRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
-        const storyBarY = is9x16 ? Math.max(20, cardY - 26) : 12
-        drawStoryBars(ctx, width, renderedCanvases.length, currentIdx, slideRatio, primaryColor, storyBarY)
+        // 3 Story Segment Progress Bars (Hook, Looping Visual, CTA)
+        drawStoryBars(ctx, width, 3, phaseIdx, phaseRatio, primaryColor, storyBarY)
 
-        // Draw Footer Bar with live second counter
-        const footerBarY = is9x16 ? cardY + cardH + 8 : height - 26
-        const footerLabel = is9x16 ? 'YouTube Shorts · 9:16' : 'learnblazinglyfast.tech'
+        // Footer Bar
         drawFooterBar(ctx, width, height, currentSec, totalSec, primaryColor, footerBarY, footerLabel)
       }, 1000 / 30) // 30 fps
     })

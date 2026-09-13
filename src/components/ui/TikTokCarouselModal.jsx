@@ -205,7 +205,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
       }
 
       setExportingVideo(true)
-      setVideoProgress({ percent: 0, currentSec: 0, totalSec: 17, message: 'Starting video engine...' })
+      setVideoProgress({ percent: 0, currentSec: 0, totalSec: videoDuration, message: `Starting TikTok video engine (${videoDuration}s)...` })
 
       const caption = getTikTokCaption(concept)
       try {
@@ -1594,11 +1594,11 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
         tabIndex={-1}
         style={{
           position: 'fixed',
-          left: '-99999px',
+          left: '0px',
           top: 0,
           width: '540px',
-          height: '675px',
-          overflow: 'hidden',
+          height: 'auto',
+          opacity: 0,
           pointerEvents: 'none',
           zIndex: -99999,
           visibility: 'visible',
