@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
+import ysFixWebmDuration from 'fix-webm-duration'
 import { drawCanvasVizFrame } from './visualizerPlayback.js'
 import { getInitialThemeForConcept } from './themePalettes.js'
 
@@ -520,6 +521,175 @@ function createFallbackEndCanvas(concept, domain, theme) {
 }
 
 /**
+ * Calculates per-slide durations and visualization loop counts:
+ * - Slide 1 (Intro Hook): Capped at 2.0s always.
+ * - Slide 2 (Visualization):
+ *     - 17s: 4.0s (1 loop of 4.0s)
+ *     - 30s: 8.0s (2 loops of 4.0s)
+ *     - 60s: 18.0s (3 loops of 6.0s)
+ * - Slides 3-6: Scaled proportionally from base 2.0s each
+ * - Slide 7 (CTA Outro): Scaled proportionally from base 3.0s
+ */
+export function calculateSlideDurations(targetSec = 17) {
+  const totalMs = targetSec * 1000
+  const slide1Ms = 2000 // Always capped at 2.0s
+
+  let loopCount = 1
+  let slide2Ms = 4000
+  if (targetSec >= 50) {
+    loopCount = 3
+    slide2Ms = 18000 // 3 loops of 6.0s (total 18s)
+  } else if (targetSec >= 25) {
+    loopCount = 2
+    slide2Ms = 8000 // 2 loops of 4.0s (total 8s)
+  } else {
+    loopCount = 1
+    slide2Ms = 4000 // 1 loop of 4.0s (total 4s)
+  }
+
+  // Scale slides 3-7 to fill the remaining duration
+  const remainingMs = Math.max(5000, totalMs - slide1Ms - slide2Ms)
+  const baseWeights = [2000, 2000, 2000, 2000, 3000] // Slides 3, 4, 5, 6, 7
+  const baseWeightSum = 11000
+
+  const s3 = Math.round((baseWeights[0] / baseWeightSum) * remainingMs)
+  const s4 = Math.round((baseWeights[1] / baseWeightSum) * remainingMs)
+  const s5 = Math.round((baseWeights[2] / baseWeightSum) * remainingMs)
+  const s6 = Math.round((baseWeights[3] / baseWeightSum) * remainingMs)
+  const s7 = remainingMs - s3 - s4 - s5 - s6
+
+  const durations = [slide1Ms, slide2Ms, s3, s4, s5, s6, s7]
+  return {
+    durations,
+    loopCount,
+    vizLoopCycleMs: slide2Ms / loopCount,
+    totalMs: durations.reduce((a, b) => a + b, 0)
+  }
+}
+
+function createFallbackSlideCanvas(index, concept, domain, theme) {
+  if (index === 0) return createFallbackCoverCanvas(concept, domain, theme)
+  if (index === 1) return createFallbackVizBaseCanvas(concept, domain, theme)
+  if (index === 6) return createFallbackEndCanvas(concept, domain, theme)
+
+  const c = document.createElement('canvas')
+  c.width = 1080
+  c.height = 1350
+  const ctx = c.getContext('2d')
+  if (!ctx) return c
+
+  const primary = theme?.primary || '#38bdf8'
+  ctx.fillStyle = '#0b0e14'
+  ctx.fillRect(0, 0, 1080, 1350)
+
+  // Header row
+  ctx.save()
+  ctx.fillStyle = primary
+  ctx.font = 'bold 22px monospace'
+  ctx.fillText(`${domain || 'CODE'} · ${concept?.category || 'ALGORITHMS'}`, 60, 60)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.font = 'bold 22px monospace'
+  ctx.textAlign = 'right'
+  ctx.fillText(`0${index + 1} / 07`, 1020, 60)
+  ctx.textAlign = 'left'
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+  ctx.beginPath()
+  ctx.moveTo(60, 80)
+  ctx.lineTo(1020, 80)
+  ctx.stroke()
+
+  if (index === 2) {
+    // Definition
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText('The Definition & Intuition', 60, 150)
+
+    ctx.fillStyle = '#111622'
+    ctx.strokeStyle = '#1e2638'
+    fillSafeRoundRect(ctx, 60, 240, 960, 420, 20)
+    ctx.stroke()
+
+    ctx.fillStyle = primary
+    ctx.font = 'bold 24px monospace'
+    ctx.fillText('CORE DEFINITION', 90, 290)
+    ctx.fillStyle = '#e2e8f0'
+    ctx.font = '28px sans-serif'
+    wrapCanvasText(ctx, concept?.card?.intuition || 'A core computational structure solving performance and memory constraints.', 90, 350, 900, 42)
+  } else if (index === 3) {
+    // Complexity & Use Cases
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText('Complexity & Best Use Cases', 60, 150)
+
+    ctx.fillStyle = '#111622'
+    ctx.strokeStyle = '#1e2638'
+    fillSafeRoundRect(ctx, 60, 240, 460, 220, 20)
+    ctx.stroke()
+    ctx.fillStyle = primary
+    ctx.font = 'bold 24px monospace'
+    ctx.fillText('TIME COMPLEXITY', 90, 290)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 36px monospace'
+    ctx.fillText(concept?.card?.time_complexity || 'O(N)', 90, 360)
+
+    ctx.fillStyle = '#111622'
+    ctx.strokeStyle = '#1e2638'
+    fillSafeRoundRect(ctx, 560, 240, 460, 220, 20)
+    ctx.stroke()
+    ctx.fillStyle = '#a78bfa'
+    ctx.font = 'bold 22px monospace'
+    ctx.fillText('SPACE COMPLEXITY', 590, 290)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 36px monospace'
+    ctx.fillText(concept?.card?.space_complexity || 'O(1)', 590, 360)
+  } else if (index === 4) {
+    // Gotchas
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText('Common Pitfalls & Gotchas', 60, 150)
+
+    ctx.fillStyle = '#111622'
+    ctx.strokeStyle = '#ef444450'
+    fillSafeRoundRect(ctx, 60, 240, 960, 420, 20)
+    ctx.stroke()
+
+    ctx.fillStyle = '#ef4444'
+    ctx.font = 'bold 24px monospace'
+    ctx.fillText('WATCH OUT FOR', 90, 290)
+    ctx.fillStyle = '#cbd5e1'
+    ctx.font = '28px sans-serif'
+    wrapCanvasText(ctx, concept?.card?.gotchas || 'Edge cases with empty inputs or boundary conditions require explicit guard clauses.', 90, 350, 900, 42)
+  } else if (index === 5) {
+    // Challenge
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText('Terminal Challenge', 60, 150)
+
+    ctx.fillStyle = '#080b11'
+    ctx.strokeStyle = '#1e2638'
+    fillSafeRoundRect(ctx, 60, 240, 960, 420, 20)
+    ctx.stroke()
+
+    ctx.fillStyle = primary
+    ctx.font = 'bold 24px monospace'
+    ctx.fillText(`❯ test --concept="${concept?.slug || 'code'}"`, 90, 300)
+    ctx.fillStyle = '#94a3b8'
+    ctx.font = '24px monospace'
+    ctx.fillText('Can you spot the solution in your head?', 90, 360)
+  }
+
+  // Footer
+  ctx.fillStyle = '#64748b'
+  ctx.font = 'bold 22px monospace'
+  ctx.fillText('learnblazinglyfast.tech', 60, 1280)
+  ctx.restore()
+
+  return c
+}
+
+/**
  * Checks if browser supports in-canvas video capture and MediaRecorder.
  */
 export function isVideoExportSupported() {
@@ -530,12 +700,14 @@ export function isVideoExportSupported() {
 }
 
 /**
- * Exports video clip (TikTok/Reels 4:5, Pinterest 9:16, YouTube Shorts 9:16).
+ * Exports all 7 slides as a vertical video clip (TikTok/Reels 4:5, Pinterest 9:16, YouTube Shorts 9:16).
  * Flow:
- * 1. Intro Hook (Slide 1 Cover) capped at 2.0s
- * 2. Looping Visualization (Slide 2) taking the bulk of the duration
- * 3. Outro CTA (Slide 7) giving the viewer the clear next step
- * Supports 17s / 30s / 60s durations.
+ * - Slide 1 (Cover Hook): Capped at 2.0s
+ * - Slide 2 (Visualization): 4.0s at 17s (1 loop), 8.0s at 30s (2 loops), 18.0s at 60s (3 loops)
+ * - Slides 3-6: 2.0s at 17s, proportionally scaled at 30s and 60s
+ * - Slide 7 (CTA Outro): 3.0s at 17s, proportionally scaled at 30s and 60s
+ * - Seamless looping on Slide 2 with live canvas rendering
+ * - WebM EBML duration header fixed to prevent TikTok 60-minute rejection bug!
  */
 export async function exportVideoClip(slideElements, slug, onProgress, concept, theme, options = {}) {
   try {
@@ -572,82 +744,58 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
     }
     const cardRadius = 16
 
-    // Pre-render the 3 essential slides for the motion video
-    if (onProgress) {
-      onProgress({
-        phase: 'rendering',
-        percent: 10,
-        currentSec: 0,
-        totalSec: options?.videoDuration || 17,
-        message: 'Preparing intro hook frame...'
-      })
-    }
-    let coverCanvas = null
-    if (slideElements?.[0]) {
-      coverCanvas = await renderSlideCanvas(slideElements[0])
-    }
-    if (!coverCanvas) {
-      coverCanvas = createFallbackCoverCanvas(concept, domain, resolvedTheme)
+    const targetSec = Number(options?.videoDuration) || 17
+    const { durations: slideDurations, vizLoopCycleMs, totalMs: totalDurationMs } = calculateSlideDurations(targetSec)
+    const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
+
+    const startTimes = []
+    let acc = 0
+    for (const d of slideDurations) {
+      startTimes.push(acc)
+      acc += d
     }
 
-    if (onProgress) {
-      onProgress({
-        phase: 'rendering',
-        percent: 20,
-        currentSec: 0,
-        totalSec: options?.videoDuration || 17,
-        message: 'Preparing visualization layout...'
-      })
-    }
-    let vizBaseCanvas = null
-    if (slideElements?.[1]) {
-      vizBaseCanvas = await renderSlideCanvas(slideElements[1])
-    }
-    if (!vizBaseCanvas) {
-      vizBaseCanvas = createFallbackVizBaseCanvas(concept, domain, resolvedTheme)
-    }
+    // Step 1: Pre-render all 7 slides
+    const totalSlides = 7
+    const renderedCanvases = []
+    for (let i = 0; i < totalSlides; i++) {
+      if (onProgress) {
+        onProgress({
+          phase: 'rendering',
+          percent: Math.round(((i + 1) / totalSlides) * 30),
+          currentSec: 0,
+          totalSec,
+          message: `Preparing slide ${i + 1} of ${totalSlides}...`
+        })
+      }
 
-    if (onProgress) {
-      onProgress({
-        phase: 'rendering',
-        percent: 30,
-        currentSec: 0,
-        totalSec: options?.videoDuration || 17,
-        message: 'Preparing outro CTA frame...'
-      })
-    }
-    const endEl = slideElements?.[slideElements.length - 1] || slideElements?.[6]
-    let endCanvas = null
-    if (endEl) {
-      endCanvas = await renderSlideCanvas(endEl)
-    }
-    if (!endCanvas) {
-      endCanvas = createFallbackEndCanvas(concept, domain, resolvedTheme)
+      const el = slideElements?.[i]
+      let c = null
+      if (el) {
+        c = await renderSlideCanvas(el)
+        if (!c) {
+          await new Promise((r) => setTimeout(r, 120))
+          c = await renderSlideCanvas(el)
+        }
+      }
+
+      if (!c) {
+        c = createFallbackSlideCanvas(i, concept, domain, resolvedTheme)
+      }
+
+      renderedCanvases.push(c)
     }
 
     const vizBox = getVizBox(slideElements?.[1], width, height, cardX, cardY, cardW, cardH)
-
-    // Timing plan:
-    // 1. First slide (Cover): capped at 2.0s
-    // 2. Outro (End CTA): 2.5s (17s) or 3.0s (30s/60s)
-    // 3. Visualization: Takes all remaining duration and LOOPS continuously!
-    const targetSec = Number(options?.videoDuration) || 17
-    const totalDurationMs = targetSec * 1000
-    const introDurationMs = 2000 // 2.0s intro cap
-    const endDurationMs = targetSec >= 30 ? 3000 : 2500
-    const vizDurationMs = Math.max(2000, totalDurationMs - introDurationMs - endDurationMs)
-    const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
-
     const CROSSFADE_MS = 250
-    const LOOP_PERIOD = 4000 // 4.0s per complete visualization cycle
 
-    // Prime the canvas with the cover slide
+    // Prime the canvas with Slide 1
     ctx.fillStyle = '#070a10'
     ctx.fillRect(0, 0, width, height)
     ctx.save()
     fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
     ctx.clip()
-    ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
+    ctx.drawImage(renderedCanvases[0], cardX, cardY, cardW, cardH)
     ctx.restore()
 
     const stream = recCanvas.captureStream(30)
@@ -662,7 +810,7 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
     }
 
     return new Promise((resolve, reject) => {
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         try {
           if (audioCleanup) {
             try {
@@ -682,8 +830,22 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           }
 
           const actualMime = mimeType || (recorder.mimeType || 'video/webm')
-          const blob = new Blob(chunks, { type: actualMime })
-          const url = URL.createObjectURL(blob)
+          let rawBlob = new Blob(chunks, { type: actualMime })
+
+          // CRITICAL FIX: Fix WebM EBML duration header so platforms like TikTok
+          // do not report "Video is over the 60 minute time limit".
+          let finalBlob = rawBlob
+          if (extension === 'webm' || actualMime.includes('webm')) {
+            try {
+              finalBlob = await ysFixWebmDuration(rawBlob, totalDurationMs)
+              console.log(`Fixed WebM duration header to ${totalDurationMs}ms`)
+            } catch (fixErr) {
+              console.warn('Could not fix WebM duration header:', fixErr)
+              finalBlob = rawBlob
+            }
+          }
+
+          const url = URL.createObjectURL(finalBlob)
           let platformPrefix = `${Math.round(totalSec)}s-clip`
           if (options?.platform === 'youtube') {
             platformPrefix = 'youtube-shorts'
@@ -700,7 +862,7 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           link.click()
           document.body.removeChild(link)
 
-          resolve({ success: true, blob, url, filename, extension, mimeType: actualMime, size: totalBytes })
+          resolve({ success: true, blob: finalBlob, url, filename, extension, mimeType: actualMime, size: finalBlob.size })
         } catch (err) {
           reject(err)
         }
@@ -738,13 +900,13 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
         if (elapsed >= totalDurationMs) {
           clearInterval(frameInterval)
-          // Draw final clean frame
+          // Draw final clean frame (Slide 7)
           ctx.fillStyle = '#070a10'
           ctx.fillRect(0, 0, width, height)
           ctx.save()
           fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
           ctx.clip()
-          ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
+          ctx.drawImage(renderedCanvases[6], cardX, cardY, cardW, cardH)
           ctx.restore()
 
           // Subtle card border
@@ -758,7 +920,7 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           }
           ctx.restore()
 
-          drawStoryBars(ctx, width, 3, 2, 1.0, primaryColor, storyBarY)
+          drawStoryBars(ctx, width, 7, 6, 1.0, primaryColor, storyBarY)
           drawFooterBar(ctx, width, height, totalSec, totalSec, primaryColor, footerBarY, footerLabel)
 
           setTimeout(() => {
@@ -783,81 +945,67 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           return
         }
 
+        // Determine current slide
+        let currentIdx = 0
+        for (let i = startTimes.length - 1; i >= 0; i--) {
+          if (elapsed >= startTimes[i]) {
+            currentIdx = i
+            break
+          }
+        }
+
+        const slideStart = startTimes[currentIdx]
+        const slideDur = slideDurations[currentIdx]
+        const slideElapsed = elapsed - slideStart
+        const slideRemaining = slideDur - slideElapsed
+        const slideRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
+
         // Clear canvas with dark base
         ctx.fillStyle = '#070a10'
         ctx.fillRect(0, 0, width, height)
-
-        let phaseIdx = 0
-        let phaseRatio = 0
 
         ctx.save()
         fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
         ctx.clip()
 
-        if (elapsed < introDurationMs) {
-          // ─── Phase 0: Intro Hook (Slide 1 Cover) ───
-          phaseIdx = 0
-          phaseRatio = Math.min(1, elapsed / introDurationMs)
-          const introRemaining = introDurationMs - elapsed
-
-          if (introRemaining < CROSSFADE_MS) {
-            const fade = (CROSSFADE_MS - introRemaining) / CROSSFADE_MS
-            ctx.globalAlpha = 1 - fade
-            ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
-            ctx.globalAlpha = fade
-            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
-            if (concept) {
-              try {
-                drawCanvasVizFrame(ctx, concept, vizBox, 0, resolvedTheme)
-              } catch (vizErr) {
-                console.warn('Viz frame render error:', vizErr)
-              }
-            }
-            ctx.globalAlpha = 1.0
-          } else {
-            ctx.globalAlpha = 1.0
-            ctx.drawImage(coverCanvas, cardX, cardY, cardW, cardH)
-          }
-        } else if (elapsed < introDurationMs + vizDurationMs) {
-          // ─── Phase 1: Looping Visualization (Slide 2) ───
-          phaseIdx = 1
-          const vizElapsed = elapsed - introDurationMs
-          phaseRatio = Math.min(1, vizElapsed / vizDurationMs)
-          const vizRemaining = vizDurationMs - vizElapsed
-          const loopProgress = (vizElapsed % LOOP_PERIOD) / LOOP_PERIOD
-
-          if (vizRemaining < CROSSFADE_MS) {
-            const fade = (CROSSFADE_MS - vizRemaining) / CROSSFADE_MS
-            ctx.globalAlpha = 1 - fade
-            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
-            if (concept) {
-              try {
-                drawCanvasVizFrame(ctx, concept, vizBox, loopProgress, resolvedTheme)
-              } catch (vizErr) {
-                console.warn('Viz frame render error:', vizErr)
-              }
-            }
-            ctx.globalAlpha = fade
-            ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
-            ctx.globalAlpha = 1.0
-          } else {
-            ctx.globalAlpha = 1.0
-            ctx.drawImage(vizBaseCanvas, cardX, cardY, cardW, cardH)
-            if (concept) {
-              try {
-                drawCanvasVizFrame(ctx, concept, vizBox, loopProgress, resolvedTheme)
-              } catch (vizErr) {
-                console.warn('Live viz frame loop error:', vizErr)
-              }
+        if (slideRemaining < CROSSFADE_MS && currentIdx < totalSlides - 1) {
+          const fade = (CROSSFADE_MS - slideRemaining) / CROSSFADE_MS
+          // Outgoing slide
+          ctx.globalAlpha = 1 - fade
+          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
+          if (currentIdx === 1 && concept) {
+            const cycleElapsed = slideElapsed % vizLoopCycleMs
+            const loopRatio = cycleElapsed / vizLoopCycleMs
+            try {
+              drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
+            } catch (vizErr) {
+              console.warn('Viz frame render error:', vizErr)
             }
           }
-        } else {
-          // ─── Phase 2: Outro CTA (Slide 7) ───
-          phaseIdx = 2
-          const endElapsed = elapsed - (introDurationMs + vizDurationMs)
-          phaseRatio = Math.min(1, endElapsed / endDurationMs)
+
+          // Incoming slide
+          ctx.globalAlpha = fade
+          ctx.drawImage(renderedCanvases[currentIdx + 1], cardX, cardY, cardW, cardH)
+          if (currentIdx + 1 === 1 && concept) {
+            try {
+              drawCanvasVizFrame(ctx, concept, vizBox, 0, resolvedTheme)
+            } catch (vizErr) {
+              console.warn('Viz frame render error:', vizErr)
+            }
+          }
           ctx.globalAlpha = 1.0
-          ctx.drawImage(endCanvas, cardX, cardY, cardW, cardH)
+        } else {
+          ctx.globalAlpha = 1.0
+          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
+          if (currentIdx === 1 && concept) {
+            const cycleElapsed = slideElapsed % vizLoopCycleMs
+            const loopRatio = cycleElapsed / vizLoopCycleMs
+            try {
+              drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
+            } catch (vizErr) {
+              console.warn('Live viz frame loop error:', vizErr)
+            }
+          }
         }
 
         ctx.restore()
@@ -873,8 +1021,8 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
         }
         ctx.restore()
 
-        // 3 Story Segment Progress Bars (Hook, Looping Visual, CTA)
-        drawStoryBars(ctx, width, 3, phaseIdx, phaseRatio, primaryColor, storyBarY)
+        // 7 Story Segment Progress Bars (one for each slide)
+        drawStoryBars(ctx, width, 7, currentIdx, slideRatio, primaryColor, storyBarY)
 
         // Footer Bar
         drawFooterBar(ctx, width, height, currentSec, totalSec, primaryColor, footerBarY, footerLabel)

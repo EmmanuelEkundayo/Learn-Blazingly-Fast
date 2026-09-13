@@ -137,5 +137,42 @@ describe('tiktokExport utility functions', () => {
     const result = await generatePinterestCard(null, 'test-slug')
     expect(result).toBe(false)
   })
+
+  it('calculateSlideDurations scales correctly for 17s, 30s, and 60s', async () => {
+    const { calculateSlideDurations } = await import('./tiktokExport.js')
+
+    // 17s base
+    const base = calculateSlideDurations(17)
+    expect(base.durations).toHaveLength(7)
+    expect(base.durations[0]).toBe(2000) // Slide 1: 2s
+    expect(base.durations[1]).toBe(4000) // Slide 2: 4s
+    expect(base.durations[2]).toBe(2000) // Slide 3: 2s
+    expect(base.durations[3]).toBe(2000) // Slide 4: 2s
+    expect(base.durations[4]).toBe(2000) // Slide 5: 2s
+    expect(base.durations[5]).toBe(2000) // Slide 6: 2s
+    expect(base.durations[6]).toBe(3000) // Slide 7: 3s
+    expect(base.loopCount).toBe(1)
+    expect(base.totalMs).toBe(17000)
+
+    // 30s preset
+    const mid = calculateSlideDurations(30)
+    expect(mid.durations).toHaveLength(7)
+    expect(mid.durations[0]).toBe(2000) // Slide 1 capped at 2s
+    expect(mid.durations[1]).toBe(8000) // Slide 2: 8s (2 loops of 4s)
+    expect(mid.loopCount).toBe(2)
+    expect(mid.durations[2]).toBeGreaterThan(3000) // scaled longer
+    expect(mid.durations[6]).toBeGreaterThan(5000) // slide 7 scaled longer
+    expect(mid.totalMs).toBe(30000)
+
+    // 60s preset
+    const long = calculateSlideDurations(60)
+    expect(long.durations).toHaveLength(7)
+    expect(long.durations[0]).toBe(2000) // Slide 1 capped at 2s
+    expect(long.durations[1]).toBe(18000) // Slide 2: 18s (3 loops of 6s)
+    expect(long.loopCount).toBe(3)
+    expect(long.durations[2]).toBeGreaterThan(7000) // scaled longer
+    expect(long.durations[6]).toBeGreaterThan(10000) // slide 7 scaled longer
+    expect(long.totalMs).toBe(60000)
+  })
 })
 
