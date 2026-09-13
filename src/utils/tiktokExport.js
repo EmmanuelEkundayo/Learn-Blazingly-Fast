@@ -372,11 +372,17 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
     const vizBox = getVizBox(slideElements[1], width, height, cardX, cardY, cardW, cardH)
 
-    // Timing plan: 17.0s total (5.0s dedicated to live visualization playback on slide 2)
-    // 7 slides: [2000, 5000, 2000, 2000, 2000, 2000, 2000]
-    const defaultDurations = [2000, 5000, 2000, 2000, 2000, 2000, 2000]
-    const slideDurations = renderedCanvases.map((_, i) => defaultDurations[i] || 2000)
-    const totalDurationMs = slideDurations.reduce((a, b) => a + b, 0) // 17000ms
+    // Timing plan: base 17.0s (5.0s viz slide 2) scaled to target duration
+    // 7 slides base: [2000, 5000, 2000, 2000, 2000, 2000, 2000]
+    const BASE_DURATIONS = [2000, 5000, 2000, 2000, 2000, 2000, 2000]
+    const BASE_TOTAL_MS = BASE_DURATIONS.reduce((a, b) => a + b, 0) // 17000ms
+    const targetSec = options?.videoDuration || 17
+    const targetMs = targetSec * 1000
+    const durationScale = targetMs / BASE_TOTAL_MS
+    const slideDurations = renderedCanvases.map((_, i) =>
+      Math.round((BASE_DURATIONS[i] || 2000) * durationScale)
+    )
+    const totalDurationMs = slideDurations.reduce((a, b) => a + b, 0)
     const totalSec = parseFloat((totalDurationMs / 1000).toFixed(1))
 
     const startTimes = []

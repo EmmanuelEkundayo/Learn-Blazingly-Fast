@@ -40,6 +40,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
   const [activeSlide, setActiveSlide] = useState(0)
   const [exportMode, setExportMode] = useState('video') // 'video' | 'carousel'
   const [selectedTheme, setSelectedTheme] = useState(() => getInitialThemeForConcept(concept))
+  const [videoDuration, setVideoDuration] = useState(17) // 17 | 30 | 60 seconds
   const [exportingZip, setExportingZip] = useState(false)
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 7 })
   const [exportingVideo, setExportingVideo] = useState(false)
@@ -215,14 +216,14 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
 
       const result = await exportVideoClip(elements, concept?.slug, (prog) => {
         setVideoProgress(prog)
-      }, concept, selectedTheme)
+      }, concept, selectedTheme, { videoDuration })
 
       setExportingVideo(false)
 
       if (result && result.success) {
         setVideoResult(result)
         toast.success('Motion video downloaded & caption copied! Opening TikTok Studio...', { duration: 4500 })
-        trackShare({ slug: concept?.slug, title: concept?.title, platform: 'tiktok_video_17s', method: 'export_video' })
+        trackShare({ slug: concept?.slug, title: concept?.title, platform: `tiktok_video_${videoDuration}s`, method: 'export_video' })
         setTimeout(() => {
           openTikTokUpload()
         }, 800)
@@ -417,7 +418,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
         return
       }
       setExportingVideo(true)
-      setVideoProgress({ percent: 0, currentSec: 0, totalSec: 17, message: 'Starting Pinterest video engine...' })
+      setVideoProgress({ percent: 0, currentSec: 0, totalSec: videoDuration, message: `Starting Pinterest video engine (${videoDuration}s)...` })
       try {
         await navigator.clipboard.writeText(`${getPinterestPinTitle(concept)}\n\n${getPinterestPinDescription(concept)}`)
       } catch {
@@ -427,7 +428,8 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
         setVideoProgress(prog)
       }, concept, selectedTheme, {
         aspectRatio: '9:16',
-        platform: 'pinterest'
+        platform: 'pinterest',
+        videoDuration,
       })
       setExportingVideo(false)
       if (result && result.success) {
@@ -457,7 +459,7 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
         return
       }
       setExportingVideo(true)
-      setVideoProgress({ percent: 0, currentSec: 0, totalSec: 17, message: 'Starting YouTube Shorts video engine...' })
+      setVideoProgress({ percent: 0, currentSec: 0, totalSec: videoDuration, message: `Starting YouTube Shorts engine (${videoDuration}s)...` })
       try {
         await navigator.clipboard.writeText(`${getYouTubeShortsTitle(concept)}\n\n${getYouTubeShortsDescription(concept)}`)
       } catch {
@@ -467,7 +469,8 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
         setVideoProgress(prog)
       }, concept, selectedTheme, {
         aspectRatio: '9:16',
-        platform: 'youtube'
+        platform: 'youtube',
+        videoDuration,
       })
       setExportingVideo(false)
       if (result && result.success) {
@@ -999,6 +1002,31 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
                       </p>
                     </div>
 
+                    {/* Video Duration Selector */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Duration:</span>
+                      <div className="flex items-center gap-1 p-0.5 bg-[#0b0e14] border border-[#1e2638] rounded-lg">
+                        {[17, 30, 60].map((sec) => (
+                          <button
+                            key={sec}
+                            onClick={() => setVideoDuration(sec)}
+                            disabled={exportingVideo}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                              videoDuration === sec
+                                ? 'text-white'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                            style={videoDuration === sec ? {
+                              backgroundColor: selectedTheme.primary,
+                              boxShadow: `0 0 8px ${selectedTheme.glow}`,
+                            } : {}}
+                          >
+                            {sec === 60 ? '1 min' : `${sec}s`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Encoding Progress Bar */}
                     {exportingVideo && (
                       <div className="p-3 rounded-lg bg-[#0b0e14] border border-[#1e2638] space-y-2">
@@ -1129,6 +1157,31 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
                     <p className="text-[11px] text-slate-400 leading-relaxed">
                       High-resolution 9:16 vertical video (720x1280) with centered card and HUD safe zones tailored for YouTube Shorts native overlays.
                     </p>
+                  </div>
+
+                  {/* Video Duration Selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Duration:</span>
+                    <div className="flex items-center gap-1 p-0.5 bg-[#0b0e14] border border-[#1e2638] rounded-lg">
+                      {[17, 30, 60].map((sec) => (
+                        <button
+                          key={sec}
+                          onClick={() => setVideoDuration(sec)}
+                          disabled={exportingVideo}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                            videoDuration === sec
+                              ? 'text-white'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
+                          style={videoDuration === sec ? {
+                            backgroundColor: selectedTheme.primary,
+                            boxShadow: `0 0 8px ${selectedTheme.glow}`,
+                          } : {}}
+                        >
+                          {sec === 60 ? '1 min' : `${sec}s`}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Encoding Progress Bar */}
@@ -1304,6 +1357,31 @@ export default function TikTokCarouselModal({ isOpen, onClose, concept, accent, 
                       <p className="text-[11px] text-slate-400 leading-relaxed">
                         Combines all 7 slides into a continuous video clip with 5-second visualization playback, smooth cross-fades, and story timer.
                       </p>
+                    </div>
+
+                    {/* Video Duration Selector */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Duration:</span>
+                      <div className="flex items-center gap-1 p-0.5 bg-[#0b0e14] border border-[#1e2638] rounded-lg">
+                        {[17, 30, 60].map((sec) => (
+                          <button
+                            key={sec}
+                            onClick={() => setVideoDuration(sec)}
+                            disabled={exportingVideo}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                              videoDuration === sec
+                                ? 'text-white'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                            style={videoDuration === sec ? {
+                              backgroundColor: selectedTheme.primary,
+                              boxShadow: `0 0 8px ${selectedTheme.glow}`,
+                            } : {}}
+                          >
+                            {sec === 60 ? '1 min' : `${sec}s`}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Encoding Progress Bar */}
