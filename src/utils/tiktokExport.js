@@ -112,9 +112,11 @@ export async function renderSlideCanvas(element) {
           offscreenContainer.style.overflow = 'visible'
           offscreenContainer.style.visibility = 'visible'
           offscreenContainer.style.display = 'block'
+          offscreenContainer.style.opacity = '1'
         }
         if (clonedEl && clonedEl.style) {
           clonedEl.style.visibility = 'visible'
+          clonedEl.style.opacity = '1'
         }
 
         // Sync any live canvas elements
@@ -286,32 +288,6 @@ export function getSupportedVideoMimeType() {
   return { mimeType: '', extension: isSafari ? 'mp4' : 'webm' }
 }
 
-/**
- * Attaches a silent Web Audio track to a MediaStream so video muxers
- * never stall or produce empty recordings waiting for audio samples.
- */
-function attachSilentAudioTrack(stream) {
-  try {
-    const AudioContextClass = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)
-    if (!AudioContextClass) return null
-    const audioCtx = new AudioContextClass()
-    const osc = audioCtx.createOscillator()
-    const gain = audioCtx.createGain()
-    gain.gain.value = 0 // completely silent
-    osc.connect(gain)
-    const dst = audioCtx.createMediaStreamDestination()
-    gain.connect(dst)
-    osc.start()
-    const track = dst.stream.getAudioTracks()[0]
-    if (track) {
-      stream.addTrack(track)
-      return { audioCtx, osc }
-    }
-  } catch (e) {
-    console.warn('Silent audio track attachment skipped:', e)
-  }
-  return null
-}
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
   if (!text) return
@@ -799,7 +775,6 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
     ctx.restore()
 
     const stream = recCanvas.captureStream(30)
-    const audioCleanup = attachSilentAudioTrack(stream)
     const { mimeType, extension } = getSupportedVideoMimeType()
     const recorderOptions = mimeType ? { mimeType, videoBitsPerSecond: 3500000 } : { videoBitsPerSecond: 3500000 }
     const recorder = new MediaRecorder(stream, recorderOptions)
@@ -812,15 +787,6 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
     return new Promise((resolve, reject) => {
       recorder.onstop = async () => {
         try {
-          if (audioCleanup) {
-            try {
-              audioCleanup.osc.stop()
-              audioCleanup.audioCtx.close()
-            } catch (e) {
-              // ignore
-            }
-          }
-
           const totalBytes = chunks.reduce((acc, c) => acc + (c.size || 0), 0)
           console.log(`Video recording completed: ${chunks.length} chunks, ${totalBytes} bytes (${(totalBytes / (1024 * 1024)).toFixed(2)} MB), mime: ${mimeType}`)
 
@@ -874,13 +840,16 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
       recorder.start(250)
 
       const startTime = performance.now()
+      let lastProgressUpdate = 0
 
       const frameInterval = setInterval(() => {
         const elapsed = performance.now() - startTime
         const progressRatio = Math.min(1, elapsed / totalDurationMs)
         const currentSec = Math.min(totalSec, parseFloat((elapsed / 1000).toFixed(1)))
 
-        if (onProgress) {
+        const now = performance.now()
+        if (onProgress && (now - lastProgressUpdate >= 250 || elapsed >= totalDurationMs)) {
+          lastProgressUpdate = now
           onProgress({
             phase: 'recording',
             percent: 30 + Math.round(progressRatio * 70),
@@ -900,28 +869,35 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
 
         if (elapsed >= totalDurationMs) {
           clearInterval(frameInterval)
-          // Draw final clean frame (Slide 7)
-          ctx.fillStyle = '#070a10'
-          ctx.fillRect(0, 0, width, height)
-          ctx.save()
-          fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
-          ctx.clip()
-          ctx.drawImage(renderedCanvases[6], cardX, cardY, cardW, cardH)
-          ctx.restore()
+          try {
+            // Draw final clean frame (Slide 7)
+            ctx.fillStyle = '#070a10'
+            ctx.fillRect(0, 0, width, height)
+            ctx.save()
+            fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
+            ctx.clip()
+            const finalCanvas = renderedCanvases[6] || renderedCanvases[renderedCanvases.length - 1]
+            if (finalCanvas) {
+              ctx.drawImage(finalCanvas, cardX, cardY, cardW, cardH)
+            }
+            ctx.restore()
 
-          // Subtle card border
-          ctx.save()
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-          ctx.lineWidth = 1.5
-          if (typeof ctx.roundRect === 'function') {
-            ctx.beginPath()
-            ctx.roundRect(cardX, cardY, cardW, cardH, cardRadius)
-            ctx.stroke()
+            // Subtle card border
+            ctx.save()
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+            ctx.lineWidth = 1.5
+            if (typeof ctx.roundRect === 'function') {
+              ctx.beginPath()
+              ctx.roundRect(cardX, cardY, cardW, cardH, cardRadius)
+              ctx.stroke()
+            }
+            ctx.restore()
+
+            drawStoryBars(ctx, width, 7, 6, 1.0, primaryColor, storyBarY)
+            drawFooterBar(ctx, width, height, totalSec, totalSec, primaryColor, footerBarY, footerLabel)
+          } catch (finalDrawErr) {
+            console.warn('Final frame render warning:', finalDrawErr)
           }
-          ctx.restore()
-
-          drawStoryBars(ctx, width, 7, 6, 1.0, primaryColor, storyBarY)
-          drawFooterBar(ctx, width, height, totalSec, totalSec, primaryColor, footerBarY, footerLabel)
 
           setTimeout(() => {
             try {
@@ -945,87 +921,94 @@ export async function exportVideoClip(slideElements, slug, onProgress, concept, 
           return
         }
 
-        // Determine current slide
-        let currentIdx = 0
-        for (let i = startTimes.length - 1; i >= 0; i--) {
-          if (elapsed >= startTimes[i]) {
-            currentIdx = i
-            break
-          }
-        }
-
-        const slideStart = startTimes[currentIdx]
-        const slideDur = slideDurations[currentIdx]
-        const slideElapsed = elapsed - slideStart
-        const slideRemaining = slideDur - slideElapsed
-        const slideRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
-
-        // Clear canvas with dark base
-        ctx.fillStyle = '#070a10'
-        ctx.fillRect(0, 0, width, height)
-
-        ctx.save()
-        fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
-        ctx.clip()
-
-        if (slideRemaining < CROSSFADE_MS && currentIdx < totalSlides - 1) {
-          const fade = (CROSSFADE_MS - slideRemaining) / CROSSFADE_MS
-          // Outgoing slide
-          ctx.globalAlpha = 1 - fade
-          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
-          if (currentIdx === 1 && concept) {
-            const cycleElapsed = slideElapsed % vizLoopCycleMs
-            const loopRatio = cycleElapsed / vizLoopCycleMs
-            try {
-              drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
-            } catch (vizErr) {
-              console.warn('Viz frame render error:', vizErr)
+        try {
+          // Determine current slide
+          let currentIdx = 0
+          for (let i = startTimes.length - 1; i >= 0; i--) {
+            if (elapsed >= startTimes[i]) {
+              currentIdx = i
+              break
             }
           }
 
-          // Incoming slide
-          ctx.globalAlpha = fade
-          ctx.drawImage(renderedCanvases[currentIdx + 1], cardX, cardY, cardW, cardH)
-          if (currentIdx + 1 === 1 && concept) {
-            try {
-              drawCanvasVizFrame(ctx, concept, vizBox, 0, resolvedTheme)
-            } catch (vizErr) {
-              console.warn('Viz frame render error:', vizErr)
+          const slideStart = startTimes[currentIdx]
+          const slideDur = slideDurations[currentIdx]
+          const slideElapsed = elapsed - slideStart
+          const slideRemaining = slideDur - slideElapsed
+          const slideRatio = Math.min(1, Math.max(0, slideElapsed / slideDur))
+
+          // Clear canvas with dark base
+          ctx.fillStyle = '#070a10'
+          ctx.fillRect(0, 0, width, height)
+
+          ctx.save()
+          fillSafeRoundRect(ctx, cardX, cardY, cardW, cardH, cardRadius)
+          ctx.clip()
+
+          const curCanvas = renderedCanvases[currentIdx] || renderedCanvases[0]
+          const nextCanvas = renderedCanvases[currentIdx + 1] || renderedCanvases[renderedCanvases.length - 1]
+
+          if (slideRemaining < CROSSFADE_MS && currentIdx < totalSlides - 1) {
+            const fade = (CROSSFADE_MS - slideRemaining) / CROSSFADE_MS
+            // Outgoing slide
+            ctx.globalAlpha = 1 - fade
+            if (curCanvas) ctx.drawImage(curCanvas, cardX, cardY, cardW, cardH)
+            if (currentIdx === 1 && concept) {
+              const cycleElapsed = slideElapsed % vizLoopCycleMs
+              const loopRatio = cycleElapsed / vizLoopCycleMs
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Viz frame render error:', vizErr)
+              }
+            }
+
+            // Incoming slide
+            ctx.globalAlpha = fade
+            if (nextCanvas) ctx.drawImage(nextCanvas, cardX, cardY, cardW, cardH)
+            if (currentIdx + 1 === 1 && concept) {
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, 0, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Viz frame render error:', vizErr)
+              }
+            }
+            ctx.globalAlpha = 1.0
+          } else {
+            ctx.globalAlpha = 1.0
+            if (curCanvas) ctx.drawImage(curCanvas, cardX, cardY, cardW, cardH)
+            if (currentIdx === 1 && concept) {
+              const cycleElapsed = slideElapsed % vizLoopCycleMs
+              const loopRatio = cycleElapsed / vizLoopCycleMs
+              try {
+                drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
+              } catch (vizErr) {
+                console.warn('Live viz frame loop error:', vizErr)
+              }
             }
           }
-          ctx.globalAlpha = 1.0
-        } else {
-          ctx.globalAlpha = 1.0
-          ctx.drawImage(renderedCanvases[currentIdx], cardX, cardY, cardW, cardH)
-          if (currentIdx === 1 && concept) {
-            const cycleElapsed = slideElapsed % vizLoopCycleMs
-            const loopRatio = cycleElapsed / vizLoopCycleMs
-            try {
-              drawCanvasVizFrame(ctx, concept, vizBox, loopRatio, resolvedTheme)
-            } catch (vizErr) {
-              console.warn('Live viz frame loop error:', vizErr)
-            }
+
+          ctx.restore()
+
+          // Subtle card border
+          ctx.save()
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+          ctx.lineWidth = 1.5
+          if (typeof ctx.roundRect === 'function') {
+            ctx.beginPath()
+            ctx.roundRect(cardX, cardY, cardW, cardH, cardRadius)
+            ctx.stroke()
           }
+          ctx.restore()
+
+          // 7 Story Segment Progress Bars (one for each slide)
+          drawStoryBars(ctx, width, 7, currentIdx, slideRatio, primaryColor, storyBarY)
+
+          // Footer Bar
+          drawFooterBar(ctx, width, height, currentSec, totalSec, primaryColor, footerBarY, footerLabel)
+        } catch (frameErr) {
+          console.warn('Frame render loop warning:', frameErr)
         }
-
-        ctx.restore()
-
-        // Subtle card border
-        ctx.save()
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-        ctx.lineWidth = 1.5
-        if (typeof ctx.roundRect === 'function') {
-          ctx.beginPath()
-          ctx.roundRect(cardX, cardY, cardW, cardH, cardRadius)
-          ctx.stroke()
-        }
-        ctx.restore()
-
-        // 7 Story Segment Progress Bars (one for each slide)
-        drawStoryBars(ctx, width, 7, currentIdx, slideRatio, primaryColor, storyBarY)
-
-        // Footer Bar
-        drawFooterBar(ctx, width, height, currentSec, totalSec, primaryColor, footerBarY, footerLabel)
       }, 1000 / 30) // 30 fps
     })
   } catch (err) {
