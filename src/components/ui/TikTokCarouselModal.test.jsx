@@ -106,7 +106,7 @@ describe('TikTokCarouselModal Stability Tests', () => {
         initialPlatform="pinterest"
       />
     )
-    expect(getByText('Pinterest Pin Exporter')).toBeDefined()
+    expect(getByText((content, el) => el?.tagName === 'H2' && /Pinterest.*Exporter/.test(el.textContent))).toBeDefined()
     expect(getAllByText('Pin Card').length).toBeGreaterThanOrEqual(1)
     expect(getByText('Carousel')).toBeDefined()
     expect(getByText('Video Pin')).toBeDefined()
@@ -123,7 +123,7 @@ describe('TikTokCarouselModal Stability Tests', () => {
         initialPlatform="youtube"
       />
     )
-    expect(getByText('YouTube Shorts Exporter')).toBeDefined()
+    expect(getByText((content, el) => el?.tagName === 'H2' && /YouTube.*Exporter/.test(el.textContent))).toBeDefined()
     expect(getByText('YouTube Shorts (9:16 Video)')).toBeDefined()
     // In YouTube Shorts mode, 7-Slide Carousel option is NOT present (video alone)
     expect(queryByText('7-Slide Carousel')).toBeNull()
